@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,6 +28,21 @@ namespace GymManagementSystem
         private void NavMembers_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Content = new MembersView();
+        }
+
+        private void NavPayments_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new PaymentsView();
+        }
+
+        private void NavAttendance_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new AttendanceView();
+        }
+
+        private void NavReports_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new ReportsView();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)

@@ -1,0 +1,203 @@
+<UserControl x:Class="GymManagementSystem.AttendanceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GymManagementSystem"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <Grid Margin="0,20,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.4*"/>
+            <ColumnDefinition Width="0.6*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Side (Check-in Zone) -->
+        <Border Grid.Column="0" Background="#141416" CornerRadius="15" Padding="20" Margin="0,0,10,0">
+            <StackPanel>
+                <TextBlock Text="Member Check-in" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                <!-- Search/Check-in Input -->
+                <Grid Margin="0,0,0,10">
+                    <TextBox x:Name="txtMemberSearch" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Height="50" 
+                             FontSize="20" 
+                             Padding="10,0" 
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Left"
+                             Tag="Enter Member ID or Name..." 
+                             Text="" 
+                             GotFocus="TxtMemberSearch_GotFocus"
+                             LostFocus="TxtMemberSearch_LostFocus"
+                             KeyDown="TxtMemberSearch_KeyDown"
+                             TextChanged="TxtMemberSearch_TextChanged"/>
+                    
+                    <!-- Search Results Popup -->
+                    <Popup x:Name="popSearch" PlacementTarget="{Binding ElementName=txtMemberSearch}" Placement="Bottom" StaysOpen="False" Width="{Binding ElementName=txtMemberSearch, Path=ActualWidth}">
+                        <Border Background="#222" BorderBrush="#333" BorderThickness="1" CornerRadius="0,0,10,10">
+                            <ListBox x:Name="lstSearchResults" Background="Transparent" BorderThickness="0" Foreground="White" MaxHeight="200" SelectionChanged="LstSearchResults_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="10,5">
+                                            <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="14"/>
+                                            <TextBlock Text="{Binding MemberID}" Foreground="Gray" FontSize="12"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+                    </Popup>
+                </Grid>
+                <TextBlock Text="Press Enter to check in or select from list" Foreground="Gray" FontSize="12" Margin="5,0,0,20"/>
+
+                <!-- Live Status Indicator -->
+                <Border x:Name="brdStatusIndicator" 
+                    Height="150" 
+                    CornerRadius="10" 
+                    Background="#333" 
+                    Margin="0,20,0,20">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock x:Name="txtStatusIcon" Text="" Foreground="White" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="txtStatusMessage" Text="AWAITING INPUT" Foreground="White" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                 <Border x:Name="brdMemberProfile" 
+                    Background="#1a191b" 
+                    CornerRadius="10" 
+                    Padding="15" 
+                    Visibility="Collapsed">     
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="80" Height="80" CornerRadius="40" Background="#333" Margin="0,0,15,0">
+                            <Image x:Name="imgProfilePicture" Stretch="UniformToFill"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="lblMemberName" Text="" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <TextBlock Text="Membership: " Foreground="Gray" FontSize="14"/>
+                                <TextBlock x:Name="lblMembershipType" Text="" Foreground="White" FontSize="14"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Days Remaining: " Foreground="Gray" FontSize="14"/>
+                                <TextBlock x:Name="lblDaysRemaining" Text="" Foreground="White" FontSize="14"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Right Side (Daily History) -->
+        <Border Grid.Column="1" Background="#141416" CornerRadius="15" Padding="20" Margin="10,0,0,0">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,20">
+                    <TextBlock Text="Today's Attendance" Foreground="White" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="lblTotalMembers" Text="Total: 0 members" Foreground="Gray" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                </DockPanel>
+
+                <!-- Attendance Log (DataGrid) -->
+                <DataGrid x:Name="dgAttendanceLog" AutoGenerateColumns="False" Background="Transparent" BorderThickness="0" 
+                          CanUserAddRows="False" RowHeaderWidth="0" GridLinesVisibility="None"
+                          Foreground="White" FontSize="14" RowHeight="50" ItemsSource="{Binding TodayAttendance}">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="Gray"/>
+                            <Setter Property="Padding" Value="15,10"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1a1a1c"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Padding" Value="15,0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                            <ContentPresenter VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+    <DataGridTextColumn Header="Name" 
+                        Binding="{Binding Name}" 
+                        Width="1.5*"/>
+    
+    <DataGridTextColumn Header="Membership Type" 
+                        Binding="{Binding MembershipType}" 
+                        Width="1.5*"/>
+    
+    <DataGridTextColumn Header="Time In" 
+                        Binding="{Binding CheckInTime}" 
+                        Width="1*"/>
+    
+    <DataGridTextColumn Header="Time Out" 
+                        Binding="{Binding CheckOutTime}" 
+                        Width="1*"/>
+    
+    <DataGridTemplateColumn Header="Actions" 
+                            Width="1.2*">
+        <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <Button Content="⏱ Time Out" 
+                        Foreground="#ff6b00" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        FontSize="12" 
+                        Cursor="Hand" 
+                        HorizontalAlignment="Left"
+                        Click="TimeOut_Click" 
+                        CommandParameter="{Binding AttendanceID}"
+                        Padding="5,2">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CheckOutTime}" Value="">
+                                    <Setter Property="IsEnabled" Value="True"/>
+                                </DataTrigger>
+                                <Trigger Property="IsEnabled" Value="True">
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+</DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
+
+        <!-- Alert Overlay (Initially hidden) -->
+        <Border x:Name="brdAlertOverlay" 
+                Grid.ColumnSpan="2" 
+                Background="#4CAF50" 
+                CornerRadius="10" 
+                Padding="20" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Top" 
+                Margin="0,50,0,0"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="txtAlertIcon" Text="✓" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,10,0"/>
+                <TextBlock x:Name="txtAlertMessage" Text="Check-in Successful!" Foreground="White" FontSize="24" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
