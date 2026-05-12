@@ -160,16 +160,19 @@ namespace GymManagementSystem.Views.MainViews
                 UpdateStatusIndicator("Check-in Denied", "✕", Colors.White, "#ff3333");
                 btnCheckIn.Visibility = Visibility.Collapsed;
             }
-            if (DateTime.TryParse(member.ExpiryDate, out DateTime expiry) && expiry.Date < DateTime.Now.Date)
+            // 3. Check for expired membership
+            else if (DateTime.TryParse(member.ExpiryDate, out DateTime expiry) && expiry.Date < DateTime.Now.Date)
             {
                 UpdateStatusIndicator("Membership Expired", "✕", Colors.White, "#ff3333");
                 btnCheckIn.Visibility = Visibility.Collapsed;
             }
+            // 4. Check if already timed in
             else if (IsMemberAlreadyTimedIn(member.MemberID))
             {
                 UpdateStatusIndicator("Already Timed In", "✕", Colors.White, "#ff3333");
                 btnCheckIn.Visibility = Visibility.Collapsed;
             }
+            // 5. Allow check-in if all conditions pass
             else
             {
                 UpdateStatusIndicator("Ready to Check In", "✓", Color.FromRgb(47, 205, 112), "#1e3a2a");
