@@ -55,6 +55,23 @@ namespace GymManagementSystem
             }
         }
 
+        private void PayMember_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var member = button?.CommandParameter as Member;
+
+            if (member != null)
+            {
+                // Access the MainWindow and its MainFrame to change the content
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                if (mainWindow != null)
+                {
+                    // Pass the member object to the PaymentsView constructor
+                    mainWindow.MainFrame.Content = new PaymentsView(member);
+                }
+            }
+        }
+
         private void AddMember_Click(object sender, RoutedEventArgs e)
         {
             AddMemberWindow addWin = new AddMemberWindow();
@@ -100,7 +117,6 @@ namespace GymManagementSystem
 
             if (string.IsNullOrEmpty(memberId)) return;
 
-            // 1. Find the member in our collection to check their status
             Member? memberToCheck = null;
             foreach (var m in MembersList)
             {
@@ -111,16 +127,13 @@ namespace GymManagementSystem
                 }
             }
 
-            // 2. The Logic Check: Prevent deletion if status is "Active"
-            // Note: Ensure the string comparison matches exactly what is in your database (e.g., "Active" vs "active")
             if (memberToCheck != null && memberToCheck.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show("Cannot delete active members. Please deactivate the member first.",
                                 "Action Denied", MessageBoxButton.OK, MessageBoxImage.Stop);
-                return; // Stop the method here
+                return;
             }
 
-            // 3. If they aren't active, proceed with the confirmation and deletion
             if (MessageBox.Show($"Are you sure you want to delete member {memberId}?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 try
@@ -136,10 +149,9 @@ namespace GymManagementSystem
                         }
                     }
 
-                    // Clean up the photo file if it exists to save storage
                     if (memberToCheck != null && !string.IsNullOrEmpty(memberToCheck.PhotoPath) && System.IO.File.Exists(memberToCheck.PhotoPath))
                     {
-                        try { System.IO.File.Delete(memberToCheck.PhotoPath); } catch { /* Ignore file lock errors */ }
+                        try { System.IO.File.Delete(memberToCheck.PhotoPath); } catch { }
                     }
 
                     LoadMembers();
@@ -152,6 +164,7 @@ namespace GymManagementSystem
         }
     }
 
+    // The Member class remains here
     public class Member
     {
         public string MemberID { get; set; } = string.Empty;

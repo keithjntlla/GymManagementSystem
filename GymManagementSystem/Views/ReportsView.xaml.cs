@@ -2,43 +2,83 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace GymManagementSystem
 {
     public partial class ReportsView : UserControl
     {
+        // ── Financial ────────────────────────────────────────────────
         public ObservableCollection<PaymentRecord> Transactions { get; set; }
             = new ObservableCollection<PaymentRecord>();
 
+        // ── Attendance ───────────────────────────────────────────────
+        private ObservableCollection<AttendanceRecord> _allAttendanceRecords
+            = new ObservableCollection<AttendanceRecord>();
+        public ObservableCollection<AttendanceRecord> FilteredAttendanceRecords { get; set; }
+            = new ObservableCollection<AttendanceRecord>();
+
+        // ── Expirations ──────────────────────────────────────────────
+        private List<ExpirationRecord> _allExpirationRecords = new List<ExpirationRecord>();
+        public ObservableCollection<ExpirationRecord> FilteredExpirationRecords { get; set; }
+            = new ObservableCollection<ExpirationRecord>();
+
+        // Max days used to scale the progress bar (pixels)
+        private const double ProgressBarMaxWidth = 100.0;
+
+        // ────────────────────────────────────────────────────────────
         public ReportsView()
         {
             InitializeComponent();
 
             dpStart.SelectedDate = DateTime.Now.AddMonths(-1);
             dpEnd.SelectedDate = DateTime.Now;
+            dpAttendanceDate.SelectedDate = DateTime.Now;
 
             dgTransactions.ItemsSource = Transactions;
+            dgAttendanceReport.ItemsSource = FilteredAttendanceRecords;
+            dgExpirations.ItemsSource = FilteredExpirationRecords;
 
             LoadFinancialData();
         }
 
-        // ── DatePicker fires RoutedPropertyChangedEventArgs<DateTime?> ──────────
+        // ══════════════════════════════════════════════════════════════
+        //  TAB SWITCHING
+        // ══════════════════════════════════════════════════════════════
+        private void TabFinancial_Click(object sender, RoutedEventArgs e)
+        {
+            FinancialReportGrid.Visibility = Visibility.Visible;
+            AttendanceReportGrid.Visibility = Visibility.Collapsed;
+            ExpirationsReportGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void TabAttendance_Click(object sender, RoutedEventArgs e)
+        {
+            FinancialReportGrid.Visibility = Visibility.Collapsed;
+            AttendanceReportGrid.Visibility = Visibility.Visible;
+            ExpirationsReportGrid.Visibility = Visibility.Collapsed;
+            LoadAttendanceData();
+        }
+
+        private void TabExpirations_Click(object sender, RoutedEventArgs e)
+        {
+            FinancialReportGrid.Visibility = Visibility.Collapsed;
+            AttendanceReportGrid.Visibility = Visibility.Collapsed;
+            ExpirationsReportGrid.Visibility = Visibility.Visible;
+            LoadExpirationsData();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  FINANCIAL
+        // ══════════════════════════════════════════════════════════════
         private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
             if (IsLoaded) LoadFinancialData();
         }
 
-        // ── ComboBox fires SelectionChangedEventArgs ─────────────────────────────
         private void Filter_Changed(object sender, SelectionChangedEventArgs e)
         {
             if (IsLoaded) LoadFinancialData();
@@ -49,8 +89,6 @@ namespace GymManagementSystem
             if (dpStart.SelectedDate == null || dpEnd.SelectedDate == null) return;
 
             string startDate = dpStart.SelectedDate.Value.ToString("yyyy-MM-dd");
-            // Add 1 day to end date so the end date itself is included (BETWEEN is inclusive
-            // on SQLite text comparisons, but dates stored without time are fine as-is)
             string endDate = dpEnd.SelectedDate.Value.ToString("yyyy-MM-dd");
             string planFilter = (cbPlanFilter.SelectedItem as ComboBoxItem)?.Content.ToString()
                                 ?? "All Plans";
@@ -68,7 +106,7 @@ namespace GymManagementSystem
                 {
                     conn.Open();
 
-                    var sb = new System.Text.StringBuilder(
+                    var sb = new StringBuilder(
                         "SELECT * FROM Payments WHERE DateOfTransaction BETWEEN @start AND @end");
 
                     if (planFilter != "All Plans")
@@ -102,15 +140,9 @@ namespace GymManagementSystem
                                 totalRevenue += record.AmountPaid;
 
                                 if (record.MembershipType == "Daily")
-                                {
-                                    walkInRevenue += record.AmountPaid;
-                                    walkInCount++;
-                                }
+                                { walkInRevenue += record.AmountPaid; walkInCount++; }
                                 else
-                                {
-                                    subscriptionRevenue += record.AmountPaid;
-                                    subscriptionCount++;
-                                }
+                                { subscriptionRevenue += record.AmountPaid; subscriptionCount++; }
                             }
                         }
                     }
@@ -128,17 +160,300 @@ namespace GymManagementSystem
             }
         }
 
-        // ── Tab buttons ──────────────────────────────────────────────────────────
-        private void TabFinancial_Click(object sender, RoutedEventArgs e)
-            => FinancialReportGrid.Visibility = Visibility.Visible;
+        // ══════════════════════════════════════════════════════════════
+        //  ATTENDANCE
+        // ══════════════════════════════════════════════════════════════
+        private void BtnPrevDay_Click(object sender, RoutedEventArgs e)
+            => dpAttendanceDate.SelectedDate =
+               (dpAttendanceDate.SelectedDate ?? DateTime.Now).AddDays(-1);
 
-        private void TabAttendance_Click(object sender, RoutedEventArgs e)
-            => FinancialReportGrid.Visibility = Visibility.Collapsed;
+        private void BtnNextDay_Click(object sender, RoutedEventArgs e)
+            => dpAttendanceDate.SelectedDate =
+               (dpAttendanceDate.SelectedDate ?? DateTime.Now).AddDays(1);
 
-        private void TabExpirations_Click(object sender, RoutedEventArgs e)
-            => FinancialReportGrid.Visibility = Visibility.Collapsed;
+        private void DpAttendanceDate_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded && AttendanceReportGrid.Visibility == Visibility.Visible)
+                LoadAttendanceData();
+        }
+
+        private void BtnRefreshAttendance_Click(object sender, RoutedEventArgs e)
+            => LoadAttendanceData();
+
+        private void TxtAttendanceSearch_TextChanged(object sender, TextChangedEventArgs e)
+            => ApplyAttendanceFilter();
+
+        private void ApplyAttendanceFilter()
+        {
+            string query = txtAttendanceSearch.Text.Trim().ToLower();
+            FilteredAttendanceRecords.Clear();
+
+            foreach (var r in _allAttendanceRecords)
+            {
+                if (string.IsNullOrEmpty(query) ||
+                    r.Name.ToLower().Contains(query) ||
+                    r.MembershipType.ToLower().Contains(query))
+                    FilteredAttendanceRecords.Add(r);
+            }
+
+            UpdateAttendanceSummary();
+        }
+
+        private void LoadAttendanceData()
+        {
+            if (dpAttendanceDate.SelectedDate == null) return;
+
+            string selectedDate = dpAttendanceDate.SelectedDate.Value.ToString("yyyy-MM-dd");
+            _allAttendanceRecords.Clear();
+            FilteredAttendanceRecords.Clear();
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"
+                        SELECT A.AttendanceID, A.CheckInTime, A.CheckOutTime,
+                               M.MemberID, M.FullName, M.ExpiryDate, M.Status
+                        FROM   Attendance A
+                        JOIN   Members    M ON A.MemberID = M.MemberID
+                        WHERE  A.CheckInDate = @date
+                        ORDER BY A.CheckInTime ASC";
+
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@date", selectedDate);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                _allAttendanceRecords.Add(new AttendanceRecord
+                                {
+                                    AttendanceID = Convert.ToInt32(reader["AttendanceID"] ?? 0),
+                                    MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
+                                    Name = reader["FullName"]?.ToString() ?? string.Empty,
+                                    CheckInTime = FormatTime(reader["CheckInTime"]?.ToString() ?? string.Empty),
+                                    CheckOutTime = FormatTime(reader["CheckOutTime"]?.ToString() ?? string.Empty),
+                                    MembershipType = DeriveMembershipType(reader["ExpiryDate"]?.ToString() ?? string.Empty),
+                                    Status = reader["Status"]?.ToString() ?? string.Empty
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading attendance data: " + ex.Message);
+                return;
+            }
+
+            ApplyAttendanceFilter();
+        }
+
+        private void UpdateAttendanceSummary()
+        {
+            lblTotalVisitors.Text = FilteredAttendanceRecords.Count.ToString();
+            lblPeakHour.Text = CalculatePeakHour(_allAttendanceRecords);
+        }
+
+        private string CalculatePeakHour(IEnumerable<AttendanceRecord> records)
+        {
+            var hourCounts = new Dictionary<int, int>();
+            foreach (var r in records)
+            {
+                if (DateTime.TryParse(r.CheckInTime, out DateTime dt))
+                {
+                    if (!hourCounts.ContainsKey(dt.Hour)) hourCounts[dt.Hour] = 0;
+                    hourCounts[dt.Hour]++;
+                }
+            }
+            if (hourCounts.Count == 0) return "--";
+            int peak = hourCounts.OrderByDescending(kv => kv.Value).First().Key;
+            return DateTime.Today.AddHours(peak).ToString("hh tt");
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  EXPIRATIONS
+        // ══════════════════════════════════════════════════════════════
+        private void CbExpirationWindow_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded && ExpirationsReportGrid.Visibility == Visibility.Visible)
+                LoadExpirationsData();
+        }
+
+        private void TxtExpirationSearch_TextChanged(object sender, TextChangedEventArgs e)
+            => ApplyExpirationFilter();
+
+        private void LoadExpirationsData()
+        {
+            string window = (cbExpirationWindow.SelectedItem as ComboBoxItem)?.Content.ToString()
+                            ?? "Expiring Today";
+
+            _allExpirationRecords.Clear();
+            FilteredExpirationRecords.Clear();
+
+            // Build date range for the SQL query
+            string today = DateTime.Now.ToString("yyyy-MM-dd");
+            string sql;
+
+            if (window == "Expired (Past 30 Days)")
+            {
+                // Already expired within the past 30 days
+                string past30 = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
+                sql = $@"SELECT MemberID, FullName, Phone, ExpiryDate, Status
+                         FROM   Members
+                         WHERE  Date(ExpiryDate) BETWEEN Date('{past30}') AND Date('{today}', '-1 day')
+                         AND    Status = 'Expired'
+                         ORDER BY Date(ExpiryDate) ASC";
+            }
+            else
+            {
+                int days = window switch
+                {
+                    "Expiring Today" => 0,
+                    "Expiring within 3 Days" => 3,
+                    "Expiring within 7 Days" => 7,
+                    _ => 7
+                };
+
+                sql = $@"SELECT MemberID, FullName, Phone, ExpiryDate, Status
+                         FROM   Members
+                         WHERE  Date(ExpiryDate) BETWEEN Date('{today}') AND Date('{today}', '+{days} days')
+                         AND    Status = 'Active'
+                         ORDER BY Date(ExpiryDate) ASC";
+            }
+
+            // Determine max days for progress bar scaling
+            int maxDays = window switch
+            {
+                "Expiring Today" => 1,
+                "Expiring within 3 Days" => 3,
+                "Expiring within 7 Days" => 7,
+                _ => 30
+            };
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string expiryStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
+                            int days = CalcDaysRemaining(expiryStr);
+                            string urgency = ClassifyUrgency(days);
+                            double progress = days <= 0
+                                ? 0
+                                : Math.Min((double)days / maxDays, 1.0) * ProgressBarMaxWidth;
+
+                            _allExpirationRecords.Add(new ExpirationRecord
+                            {
+                                MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
+                                FullName = reader["FullName"]?.ToString() ?? string.Empty,
+                                Phone = reader["Phone"]?.ToString() ?? string.Empty,
+                                PlanType = DeriveMembershipType(expiryStr),
+                                ExpiryDate = FormatExpiryDate(expiryStr),
+                                DaysRemaining = days,
+                                DaysRemainingLabel = BuildDaysLabel(days),
+                                UrgencyLevel = urgency,
+                                ProgressWidth = progress
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading expirations data: " + ex.Message);
+                return;
+            }
+
+            ApplyExpirationFilter();
+        }
+
+        private void ApplyExpirationFilter()
+        {
+            string query = txtExpirationSearch.Text.Trim().ToLower();
+            FilteredExpirationRecords.Clear();
+
+            int critical = 0;
+            int pending = 0;
+
+            foreach (var r in _allExpirationRecords)
+            {
+                if (string.IsNullOrEmpty(query) || r.FullName.ToLower().Contains(query))
+                {
+                    FilteredExpirationRecords.Add(r);
+
+                    if (r.UrgencyLevel == "Critical") critical++;
+                    if (r.UrgencyLevel == "Expired") pending++;
+                }
+            }
+
+            lblCriticalCount.Text = critical.ToString();
+            lblPendingRenewals.Text = pending.ToString();
+        }
+
+        // ── Helpers ─────────────────────────────────────────────────
+
+        private static int CalcDaysRemaining(string expiryDateStr)
+        {
+            if (DateTime.TryParse(expiryDateStr, out DateTime expiry))
+                return (int)(expiry.Date - DateTime.Now.Date).TotalDays;
+            return 0;
+        }
+
+        private static string ClassifyUrgency(int days)
+        {
+            if (days < 0) return "Expired";
+            if (days <= 2) return "Critical";
+            return "Warning";
+        }
+
+        private static string BuildDaysLabel(int days)
+        {
+            if (days < 0) return $"{Math.Abs(days)} days ago";
+            if (days == 0) return "0 days";
+            return $"{days} days";
+        }
+
+        private static string FormatExpiryDate(string raw)
+        {
+            if (DateTime.TryParse(raw, out DateTime dt))
+                return dt.ToString("yyyy-MM-dd");
+            return raw;
+        }
+
+        private static string FormatTime(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+            if (DateTime.TryParse(raw, out DateTime dt))
+                return dt.ToString("hh:mm tt");
+            return raw;
+        }
+
+        private static string DeriveMembershipType(string expiryDateString)
+        {
+            if (DateTime.TryParse(expiryDateString, out DateTime expiry))
+            {
+                TimeSpan remaining = expiry - DateTime.Now;
+                if (remaining.TotalDays <= 1) return "Daily";
+                if (remaining.TotalDays <= 7) return "Weekly";
+                if (remaining.TotalDays <= 15) return "Half-Month";
+                if (remaining.TotalDays <= 30) return "Monthly";
+                if (remaining.TotalDays <= 365) return "Yearly";
+            }
+            return "Unknown";
+        }
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    //  DATA MODELS
+    // ══════════════════════════════════════════════════════════════════
     public class PaymentRecord
     {
         public int PaymentID { get; set; }
@@ -148,5 +463,18 @@ namespace GymManagementSystem
         public string PaymentMode { get; set; } = string.Empty;
         public string MembershipType { get; set; } = string.Empty;
         public string DateOfTransaction { get; set; } = string.Empty;
+    }
+
+    public class ExpirationRecord
+    {
+        public string MemberID { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string PlanType { get; set; } = string.Empty;
+        public string ExpiryDate { get; set; } = string.Empty;
+        public int DaysRemaining { get; set; }
+        public string DaysRemainingLabel { get; set; } = string.Empty;
+        public string UrgencyLevel { get; set; } = string.Empty;
+        public double ProgressWidth { get; set; }
     }
 }

@@ -77,7 +77,7 @@
             <Grid>
                 <StackPanel Margin="10,20">
                     <StackPanel Orientation="Horizontal" Margin="15,0,0,40">
-                        <Image Source="C:\Users\Keith\Desktop\Organized_GymManagementSystem_Fixed\GymManagementSystem\Assets\logo.png" Width="30" Height="30" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Image Source="/Assets/logo.png" Width="30" Height="30" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <TextBlock Text="Gym Dashboard" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
 
@@ -90,7 +90,7 @@
                     <Separator Background="#222" Margin="15,20"/>
 
                     <RadioButton Content="Reports" Style="{StaticResource MenuButtonStyle}" Click="NavReports_Click"/>
-                    <RadioButton Content="Settings" Style="{StaticResource MenuButtonStyle}"/>
+                    <RadioButton Content="Settings" Style="{StaticResource MenuButtonStyle}" Click="NavSettings_Click"/>
                 </StackPanel>
 
                 <Button VerticalAlignment="Bottom" Margin="20,0,20,30" Background="Transparent" BorderThickness="0" Click="Logout_Click">

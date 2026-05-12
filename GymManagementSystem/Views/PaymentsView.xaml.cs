@@ -1,11 +1,12 @@
+using GymManagementSystem.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Data.SQLite;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Data.SQLite;
-using System.Collections.ObjectModel;
 using System.Windows.Media.Imaging;
-using System.IO;
 
 namespace GymManagementSystem
 {
@@ -14,11 +15,74 @@ namespace GymManagementSystem
         private Member? selectedMember;
         private double totalAmount = 0;
         private string selectedMembershipType = "";
+        private int selectedDurationDays = 0;
 
         public PaymentsView()
         {
             InitializeComponent();
             lblTransactionDate.Text = DateTime.Now.ToString("M/d/yyyy");
+            LoadDynamicRates(); // Loads rates from the database [cite: 651]
+        }
+
+        public PaymentsView(Member member) : this()
+        {
+            selectedMember = member;
+            txtSearch.Text = member.FullName;
+            DisplayMemberInfo(member);
+            CheckIfMemberIsActive(member);
+        }
+
+        private void LoadDynamicRates()
+        {
+            List<GymPlan> plans = new List<GymPlan>();
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT * FROM Rates";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            plans.Add(new GymPlan
+                            {
+                                PlanName = reader["PlanName"].ToString() ?? "",
+                                Price = Convert.ToDouble(reader["Price"]),
+                                DurationDays = Convert.ToInt32(reader["DurationDays"])
+                            });
+                        }
+                    }
+                }
+                icRates.ItemsSource = plans; // Binds to the dynamic ItemsControl in XAML [cite: 683]
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading rates: " + ex.Message);
+            }
+        }
+
+        private void Rate_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is GymPlan plan)
+            {
+                totalAmount = plan.Price;
+                selectedMembershipType = plan.PlanName;
+                selectedDurationDays = plan.DurationDays;
+
+                lblTotalAmount.Text = $"₱{totalAmount:N2}";
+                CalculateChange();
+                CalculateNewExpiry();
+            }
+        }
+
+        private void CalculateNewExpiry()
+        {
+            if (selectedDurationDays == 0) return;
+
+            DateTime newExpiry = DateTime.Now.AddDays(selectedDurationDays);
+            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd");
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -89,6 +153,24 @@ namespace GymManagementSystem
                 DisplayMemberInfo(member);
                 popSearch.IsOpen = false;
                 txtSearch.Text = member.FullName;
+                CheckIfMemberIsActive(member); // Guard for active members [cite: 891]
+            }
+        }
+
+        private void CheckIfMemberIsActive(Member member)
+        {
+            if (member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show($"Member {member.FullName} is still Active. You cannot process a new payment until their current membership expires.",
+                                "Member Still Active", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                btnProcessPayment.IsEnabled = false;
+                btnProcessPayment.Opacity = 0.5;
+            }
+            else
+            {
+                btnProcessPayment.IsEnabled = true;
+                btnProcessPayment.Opacity = 1.0;
             }
         }
 
@@ -104,47 +186,19 @@ namespace GymManagementSystem
 
             if (!string.IsNullOrEmpty(member.PhotoPath) && File.Exists(member.PhotoPath))
             {
-                try
-                {
-                    imgMemberPhoto.Source = new BitmapImage(new Uri(member.PhotoPath));
-                }
-                catch
-                {
-                    imgMemberPhoto.Source = null;
-                }
+                try { imgMemberPhoto.Source = new BitmapImage(new Uri(member.PhotoPath)); }
+                catch { imgMemberPhoto.Source = null; }
             }
-            else
-            {
-                imgMemberPhoto.Source = null;
-            }
-        }
-
-        private void Rate_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string tag)
-            {
-                string[] parts = tag.Split('|');
-                if (parts.Length == 2)
-                {
-                    totalAmount = double.Parse(parts[0]);
-                    selectedMembershipType = parts[1];
-                    lblTotalAmount.Text = $"₱{totalAmount:N2}";
-                    CalculateChange();
-                    CalculateNewExpiry();
-                }
-            }
+            else { imgMemberPhoto.Source = null; }
         }
 
         private void TxtAmountPaid_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (double.TryParse(txtAmountPaid.Text, out double paid))
-            {
                 lblAmountPaidDisplay.Text = $"₱{paid:N2}";
-            }
             else
-            {
                 lblAmountPaidDisplay.Text = "₱0.00";
-            }
+
             CalculateChange();
         }
 
@@ -155,26 +209,7 @@ namespace GymManagementSystem
                 double change = paid - totalAmount;
                 lblChange.Text = $"₱{(change > 0 ? change : 0):N2}";
             }
-            else
-            {
-                lblChange.Text = "₱0.00";
-            }
-        }
-
-        private void CalculateNewExpiry()
-        {
-            if (string.IsNullOrEmpty(selectedMembershipType)) return;
-
-            DateTime newExpiry = DateTime.Now;
-            switch (selectedMembershipType)
-            {
-                case "Daily": newExpiry = DateTime.Now.AddDays(1); break;
-                case "Weekly": newExpiry = DateTime.Now.AddDays(7); break;
-                case "Half-Month": newExpiry = DateTime.Now.AddDays(15); break;
-                case "Monthly": newExpiry = DateTime.Now.AddMonths(1); break;
-                case "Yearly": newExpiry = DateTime.Now.AddYears(1); break;
-            }
-            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd");
+            else { lblChange.Text = "₱0.00"; }
         }
 
         private void ProcessPayment_Click(object sender, RoutedEventArgs e)
@@ -195,18 +230,6 @@ namespace GymManagementSystem
             {
                 MessageBox.Show("Insufficient amount paid.");
                 return;
-            }
-
-            if (selectedMember.Status == "Active")
-            {
-                if (DateTime.TryParse(selectedMember.ExpiryDate, out DateTime expiryDate))
-                {
-                    if (expiryDate > DateTime.Now)
-                    {
-                        MessageBox.Show("This member is already active with a valid membership. They cannot pay again until their membership expires.", "Payment Blocked", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-                }
             }
 
             try
@@ -239,11 +262,9 @@ namespace GymManagementSystem
                             cmd.Parameters.AddWithValue("@mid", selectedMember.MemberID);
                             cmd.ExecuteNonQuery();
                         }
-
                         trans.Commit();
                     }
                 }
-
                 MessageBox.Show("Payment Successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
             }
@@ -258,6 +279,7 @@ namespace GymManagementSystem
             selectedMember = null;
             totalAmount = 0;
             selectedMembershipType = "";
+            selectedDurationDays = 0;
             txtSearch.Clear();
             txtAmountPaid.Clear();
             lblTotalAmount.Text = "₱0.00";
@@ -266,6 +288,8 @@ namespace GymManagementSystem
             lblNewExpiryDate.Text = "-";
             panelMemberInfo.Visibility = Visibility.Collapsed;
             panelNoMember.Visibility = Visibility.Visible;
+            btnProcessPayment.IsEnabled = true; // Re-enables for next transaction [cite: 892]
+            btnProcessPayment.Opacity = 1.0;
         }
     }
 }

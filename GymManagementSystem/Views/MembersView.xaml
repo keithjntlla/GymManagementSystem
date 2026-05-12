@@ -12,7 +12,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <DockPanel Grid.Row="0" Margin="0,0,0,30">
             <TextBlock Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
             <Button HorizontalAlignment="Right" Padding="20,10" Background="Transparent" BorderThickness="0" Click="AddMember_Click">
@@ -35,7 +34,6 @@
             </Button>
         </DockPanel>
 
-        <!-- Members Table -->
         <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgMembers" AutoGenerateColumns="False" Background="Transparent" BorderThickness="0" 
                       CanUserAddRows="False" RowHeaderWidth="0" GridLinesVisibility="None"
@@ -79,7 +77,7 @@
                     <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="100"/>
                     <DataGridTextColumn Header="Date Joined" Binding="{Binding DateJoined}" Width="120"/>
                     <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" Width="120"/>
-                    
+
                     <DataGridTemplateColumn Header="Status" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -107,13 +105,60 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Actions" Width="100">
+                    <DataGridTemplateColumn Header="Actions" Width="150">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="✎" Foreground="#ff6b00" Background="Transparent" BorderThickness="0" FontSize="18" Margin="0,0,10,0" Cursor="Hand" Click="EditMember_Click" CommandParameter="{Binding MemberID}"/>
-                                    <Button Content="🗑" Foreground="#ff3333" Background="Transparent" BorderThickness="0" FontSize="18" Cursor="Hand" Click="DeleteMember_Click" CommandParameter="{Binding MemberID}"/>
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="₱" FontSize="18" Cursor="Hand" 
+                        Click="PayMember_Click" CommandParameter="{Binding}" ToolTip="Process Payment">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Foreground" Value="#4a90e2"/>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                        <Setter Property="Visibility" Value="Hidden"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+
+                                    <Button Grid.Column="1" Content="✎" Foreground="#ff6b00" FontSize="18" Cursor="Hand" 
+                        Click="EditMember_Click" CommandParameter="{Binding MemberID}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" Content="🗑" Foreground="#ff3333" FontSize="18" Cursor="Hand" 
+                        Click="DeleteMember_Click" CommandParameter="{Binding MemberID}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

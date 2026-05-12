@@ -1,3 +1,4 @@
+using GymManagementSystem.Views;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +44,11 @@ namespace GymManagementSystem
         private void NavReports_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Content = new ReportsView();
+        }
+
+        private void NavSettings_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new SettingsView();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
