@@ -1,0 +1,210 @@
+<UserControl x:Class="GymManagementSystem.Views.MainViews.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Margin="0,10,0,10">
+
+        <!-- Header -->
+        <TextBlock Text="Dashboard Overview" Foreground="White" FontSize="24" FontWeight="Bold"/>
+        <TextBlock x:Name="txtWelcomeMessage" Text="Welcome back! Here's what's happening today." Foreground="Gray" Margin="0,4,0,12"/>
+
+        <!-- Row 1: Members & Attendance -->
+        <TextBlock Text="MEMBERS &amp; ATTENDANCE" Foreground="#555" FontSize="11" FontWeight="Bold" 
+                       Margin="0,0,0,10"/>
+        <UniformGrid Columns="4" Margin="0,0,0,12">
+
+            <Border Background="#1a2b4d" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="👥" FontSize="26" Foreground="#4a90e2"/>
+                    <TextBlock Text="Active Members" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTotalMembers" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#2a1a3d" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="🚫" FontSize="26" Foreground="#9c6fe4"/>
+                    <TextBlock Text="Expired Members" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblExpiredMembers" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#1a3d2b" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="📋" FontSize="26" Foreground="#4caf50"/>
+                    <TextBlock Text="Today's Check-ins" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTodayCheckIns" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#1a3530" CornerRadius="16" Height="130" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="🏋️" FontSize="26" Foreground="#26c6a6"/>
+                    <TextBlock Text="Currently Inside" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblCurrentlyIn" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+        </UniformGrid>
+
+        <!-- Row 2: Revenue & Growth -->
+        <TextBlock Text="REVENUE &amp; GROWTH" Foreground="#555" FontSize="11" FontWeight="Bold" 
+                       Margin="0,0,0,10"/>
+        <UniformGrid Columns="3" Margin="0,0,0,12">
+
+            <Border Background="#143d26" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="💰" FontSize="26" Foreground="#4caf50"/>
+                    <TextBlock Text="Today's Revenue" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTodayRevenue" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#1a3520" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="📈" FontSize="26" Foreground="#81c784"/>
+                    <TextBlock Text="Monthly Revenue" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblMonthlyRevenue" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#3d2614" CornerRadius="16" Height="130" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="🌟" FontSize="26" Foreground="#ff9800"/>
+                    <TextBlock Text="New Members This Month" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblNewMembers" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+        </UniformGrid>
+
+        <!-- Row 3: Expiring Soon Alert + Recent Transactions side by side -->
+        <Grid Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="1.6*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Expiring Soon -->
+            <StackPanel Grid.Column="0" x:Name="ExpiringSoonSection">
+                <DockPanel Margin="0,0,0,10">
+                    <TextBlock Text="⚠️ EXPIRING SOON" Foreground="#ff9800" FontSize="11" FontWeight="Bold"/>
+                    <TextBlock x:Name="lblExpiringSubscriptions" Text="0" Foreground="#ff9800" 
+                                   FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
+                    <TextBlock Text=" members in the next 3 days" Foreground="#555" FontSize="11"/>
+                </DockPanel>
+
+                <Border Background="#141416" CornerRadius="14" Padding="5">
+                    <DataGrid x:Name="dgExpiringSoon" AutoGenerateColumns="False" CanUserAddRows="False"
+                                  Background="Transparent" Foreground="White" BorderThickness="0"
+                                  RowBackground="Transparent" AlternatingRowBackground="#1a1a1c"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#222"
+                                  HeadersVisibility="Column" RowHeight="48" FontSize="13">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="Padding" Value="12,8"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#333"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="12,0" Background="{TemplateBinding Background}">
+                                                <ContentPresenter VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Member" Binding="{Binding FullName}" Width="2*"/>
+                            <DataGridTextColumn Header="Expiry" Binding="{Binding ExpiryDate}" Width="1.2*"/>
+                            <DataGridTemplateColumn Header="Status" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="6" Padding="6,3" Background="#3d2800" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding DaysLeft}" Foreground="#ff9800" FontSize="11" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </StackPanel>
+
+            <!-- Recent Transactions -->
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="RECENT TRANSACTIONS" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+                <Border Background="#141416" CornerRadius="14" Padding="5">
+                    <DataGrid x:Name="dgRecentTransactions" AutoGenerateColumns="False" CanUserAddRows="False"
+                                  Background="Transparent" Foreground="White" BorderThickness="0"
+                                  RowBackground="Transparent" AlternatingRowBackground="#1a1a1c"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#222"
+                                  HeadersVisibility="Column" RowHeight="48" FontSize="13">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="Padding" Value="12,8"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#333"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="12,0" Background="{TemplateBinding Background}">
+                                                <ContentPresenter VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Member" Binding="{Binding MemberName}" Width="2*"/>
+                            <DataGridTextColumn Header="Plan" Binding="{Binding MembershipType}" Width="1.2*"/>
+                            <DataGridTemplateColumn Header="Amount" Width="1.2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AmountPaid}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="1.2*"/>
+                            <DataGridTemplateColumn Header="Mode" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <!-- Default values are set for 'Cash' (Green) -->
+                                        <Border x:Name="modeBorder" CornerRadius="6" Padding="6,3" Background="#1a2b1a" HorizontalAlignment="Left">
+                                            <TextBlock x:Name="modeText" Text="{Binding PaymentMode}" Foreground="#81c784" FontSize="11"/>
+                                        </Border>
+
+                                        <DataTemplate.Triggers>
+                                            <!-- Trigger for GCash (Blue) -->
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="GCash">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="#0d1f3d"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="#4a90e2"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+    </StackPanel>
+</UserControl>

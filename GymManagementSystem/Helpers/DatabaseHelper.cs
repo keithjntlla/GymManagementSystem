@@ -10,6 +10,7 @@ namespace GymManagementSystem
     {
         private const string dbName = "GymManagement.db";
         public static string ConnectionString = $"Data Source={dbName};Version=3;";
+        public static event Action? ProfileUpdated;
 
         public static void InitializeDatabase()
         {
@@ -19,28 +20,27 @@ namespace GymManagementSystem
             {
                 conn.Open();
 
-                // Table for Users (for login)
                 string usersTable = @"CREATE TABLE IF NOT EXISTS Users (
                     UserID TEXT PRIMARY KEY,
                     Username TEXT UNIQUE NOT NULL,
                     Password TEXT NOT NULL,
                     Role TEXT,
-                    CreatedDate TEXT
+                    Status TEXT DEFAULT 'Active',
+                    CreatedDate TEXT,
+                    MustChangePassword INTEGER NOT NULL DEFAULT 0
                 );";
 
                 using (var cmd = new SQLiteCommand(usersTable, conn))
                     cmd.ExecuteNonQuery();
 
-                // Check if default users exist, if not, insert them
                 string checkUsersSql = "SELECT COUNT(*) FROM Users";
                 using (var cmd = new SQLiteCommand(checkUsersSql, conn))
                 {
                     int userCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
                     if (userCount == 0)
                     {
-                        string insertUsersSql = @"INSERT INTO Users (UserID, Username, Password, Role, CreatedDate) VALUES 
-                                ('USR001', 'admin', 'admin123', 'Administrator', @date),
-                                ('USR002', 'staff', 'staff123', 'Staff', @date)";
+                        string insertUsersSql = @"INSERT INTO Users (UserID, Username, Password, Role, Status, CreatedDate, MustChangePassword) 
+                            VALUES ('USR001', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Administrator', 'Active', @date, 1)";
                         using (var insertCmd = new SQLiteCommand(insertUsersSql, conn))
                         {
                             insertCmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -60,7 +60,6 @@ namespace GymManagementSystem
                 using (var cmd = new SQLiteCommand(ratesTable, conn))
                     cmd.ExecuteNonQuery();
 
-                // Seed default rates if table is empty
                 string checkRatesSql = "SELECT COUNT(*) FROM Rates";
                 using (var cmd = new SQLiteCommand(checkRatesSql, conn))
                 {
@@ -80,7 +79,6 @@ namespace GymManagementSystem
                     }
                 }
 
-                // Table for Members
                 string memberTable = @"CREATE TABLE IF NOT EXISTS Members (
                     MemberID TEXT PRIMARY KEY,
                     FullName TEXT,
@@ -92,7 +90,6 @@ namespace GymManagementSystem
                     PhotoPath TEXT
                 );";
 
-                // Table for Payments
                 string paymentTable = @"CREATE TABLE IF NOT EXISTS Payments (
                     PaymentID INTEGER PRIMARY KEY AUTOINCREMENT,
                     MemberID TEXT,
@@ -113,7 +110,6 @@ namespace GymManagementSystem
                 using (var cmd = new SQLiteCommand(paymentTable, conn))
                     cmd.ExecuteNonQuery();
 
-                // Table for Attendance - Updated to store full datetime and check-out time
                 string attendanceTable = @"CREATE TABLE IF NOT EXISTS Attendance (
                     AttendanceID INTEGER PRIMARY KEY AUTOINCREMENT,
                     MemberID TEXT,
@@ -125,22 +121,114 @@ namespace GymManagementSystem
 
                 using (var cmd = new SQLiteCommand(attendanceTable, conn))
                     cmd.ExecuteNonQuery();
+
+                string gymProfileTable = @"CREATE TABLE IF NOT EXISTS GymProfile (
+                    ID INTEGER PRIMARY KEY CHECK (ID = 1),
+                    GymName TEXT,
+                    Address TEXT,
+                    ContactNumber TEXT,
+                    Email TEXT,
+                    LogoPath TEXT
+                );";
+
+                using (var cmd = new SQLiteCommand(gymProfileTable, conn))
+                    cmd.ExecuteNonQuery();
+            }
+
+            MigrateUsersTable();
+        }
+
+        public static void MigrateUsersTable()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasMustChange = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Users)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"]?.ToString() == "MustChangePassword")
+                        {
+                            hasMustChange = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!hasMustChange)
+                {
+                    string alter = "ALTER TABLE Users ADD COLUMN MustChangePassword INTEGER NOT NULL DEFAULT 0";
+                    using (var cmd = new SQLiteCommand(alter, conn))
+                        cmd.ExecuteNonQuery();
+                }
             }
         }
 
-        /// <summary>
-        /// Migrates existing Rates table to add IsArchived column if it doesn't exist yet.
-        /// Safe to call on every startup.
-        /// </summary>
+        public static void RestoreDefaultProfile()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"INSERT OR REPLACE INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath) 
+                       VALUES (1, 'Gym', '', '', '', '')";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                    cmd.ExecuteNonQuery();
+            }
+            ProfileUpdated?.Invoke();
+        }
+
+        public static void SaveGymProfile(string name, string address, string contact, string email, string logo)
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"INSERT OR REPLACE INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath)  
+                       VALUES (1, @name, @address, @contact, @email, @logo)";
+
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@address", address);
+                    cmd.Parameters.AddWithValue("@contact", contact);
+                    cmd.Parameters.AddWithValue("@email", email);
+                    cmd.Parameters.AddWithValue("@logo", logo);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            ProfileUpdated?.Invoke();
+        }
+
+        public static Dictionary<string, string> GetGymProfile()
+        {
+            var profile = new Dictionary<string, string>();
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                using (var cmd = new SQLiteCommand("SELECT * FROM GymProfile WHERE ID = 1", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        profile["GymName"] = reader["GymName"]?.ToString() ?? string.Empty;
+                        profile["Address"] = reader["Address"]?.ToString() ?? string.Empty;
+                        profile["ContactNumber"] = reader["ContactNumber"]?.ToString() ?? string.Empty;
+                        profile["Email"] = reader["Email"]?.ToString() ?? string.Empty;
+                        profile["LogoPath"] = reader["LogoPath"]?.ToString() ?? string.Empty;
+                    }
+                }
+            }
+            return profile;
+        }
+
         public static void MigrateRatesTable()
         {
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                // Check if IsArchived column already exists
-                string checkCol = "PRAGMA table_info(Rates)";
                 bool hasArchived = false;
-                using (var cmd = new SQLiteCommand(checkCol, conn))
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Rates)", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -161,9 +249,6 @@ namespace GymManagementSystem
             }
         }
 
-        /// <summary>
-        /// Returns true if any Active member has a payment record with the given plan name.
-        /// </summary>
         public static bool HasActiveMembers(string planName)
         {
             using (var conn = new SQLiteConnection(ConnectionString))
@@ -183,9 +268,6 @@ namespace GymManagementSystem
             }
         }
 
-        /// <summary>
-        /// Marks a plan as archived (IsArchived = 1) instead of deleting it.
-        /// </summary>
         public static void ArchivePlan(int rateId)
         {
             using (var conn = new SQLiteConnection(ConnectionString))
@@ -200,9 +282,6 @@ namespace GymManagementSystem
             }
         }
 
-        /// <summary>
-        /// Restores an archived plan back to active.
-        /// </summary>
         public static void RestorePlan(int rateId)
         {
             using (var conn = new SQLiteConnection(ConnectionString))
@@ -222,9 +301,8 @@ namespace GymManagementSystem
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                // Automatically set status to Expired if current date > ExpiryDate
-                // ExpiryDate format is expected to be yyyy-MM-dd for SQLite Date() function to work correctly
-                // However, the UI shows M/d/yyyy. We should store in yyyy-MM-dd for DB logic.
+                // Logic Fix: ExpiryDate is today. This query only expires if Date(ExpiryDate) < today. 
+                // This keeps daily members active for the duration of the current calendar date.
                 string updateSql = "UPDATE Members SET Status = 'Expired' WHERE ExpiryDate != '-' AND ExpiryDate != '' AND Date(ExpiryDate) < Date('now') AND Status = 'Active'";
                 using (var cmd = new SQLiteCommand(updateSql, conn))
                     cmd.ExecuteNonQuery();
