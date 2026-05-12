@@ -11,14 +11,30 @@ using System.Windows.Shapes;
 
 namespace GymManagementSystem
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+            // Load the dashboard by default
+            MainFrame.Content = new HomeView();
+        }
+
+        private void NavHome_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new HomeView();
+        }
+
+        private void NavMembers_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new MembersView();
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            LoginWindow login = new LoginWindow();
+            login.Show();
+            this.Close();
         }
     }
 }
