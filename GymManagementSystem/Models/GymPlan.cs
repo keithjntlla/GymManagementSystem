@@ -10,5 +10,6 @@ namespace GymManagementSystem.Models
         public string PlanName { get; set; } = "";
         public double Price { get; set; }
         public int DurationDays { get; set; }
+        public bool IsArchived { get; set; } = false;
     }
 }

@@ -158,13 +158,8 @@
                 <StackPanel>
                     <TextBlock Text="Filter by Plan" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <ComboBox x:Name="cbPlanFilter" Width="180" Style="{StaticResource ModernComboBox}"
-                              SelectionChanged="Filter_Changed">
+              SelectionChanged="Filter_Changed">
                         <ComboBoxItem Content="All Plans" IsSelected="True"/>
-                        <ComboBoxItem Content="Daily"/>
-                        <ComboBoxItem Content="Weekly"/>
-                        <ComboBoxItem Content="Half-Month"/>
-                        <ComboBoxItem Content="Monthly"/>
-                        <ComboBoxItem Content="Yearly"/>
                     </ComboBox>
                 </StackPanel>
             </StackPanel>

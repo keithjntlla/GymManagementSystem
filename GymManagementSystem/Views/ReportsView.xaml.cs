@@ -26,7 +26,6 @@ namespace GymManagementSystem
         public ObservableCollection<ExpirationRecord> FilteredExpirationRecords { get; set; }
             = new ObservableCollection<ExpirationRecord>();
 
-        // Max days used to scale the progress bar (pixels)
         private const double ProgressBarMaxWidth = 100.0;
 
         // ────────────────────────────────────────────────────────────
@@ -42,7 +41,44 @@ namespace GymManagementSystem
             dgAttendanceReport.ItemsSource = FilteredAttendanceRecords;
             dgExpirations.ItemsSource = FilteredExpirationRecords;
 
+            LoadPlanFilterComboBox();
             LoadFinancialData();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  PLAN FILTER COMBOBOX — loaded dynamically from Rates table
+        // ══════════════════════════════════════════════════════════════
+        private void LoadPlanFilterComboBox()
+        {
+            // Keep only the first item "All Plans" then add from DB
+            while (cbPlanFilter.Items.Count > 1)
+                cbPlanFilter.Items.RemoveAt(1);
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT PlanName FROM Rates ORDER BY DurationDays ASC";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            cbPlanFilter.Items.Add(new ComboBoxItem
+                            {
+                                Content = reader["PlanName"]?.ToString() ?? string.Empty
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading plan filter: " + ex.Message);
+            }
+
+            cbPlanFilter.SelectedIndex = 0;
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -212,12 +248,27 @@ namespace GymManagementSystem
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
+
+                    // Join to Payments to get the actual last MembershipType paid for,
+                    // instead of guessing from the expiry date
                     string sql = @"
-                        SELECT A.AttendanceID, A.CheckInTime, A.CheckOutTime,
-                               M.MemberID, M.FullName, M.ExpiryDate, M.Status
-                        FROM   Attendance A
-                        JOIN   Members    M ON A.MemberID = M.MemberID
-                        WHERE  A.CheckInDate = @date
+                        SELECT  A.AttendanceID,
+                                A.CheckInTime,
+                                A.CheckOutTime,
+                                M.MemberID,
+                                M.FullName,
+                                M.Status,
+                                COALESCE(
+                                    (SELECT P.MembershipType
+                                     FROM   Payments P
+                                     WHERE  P.MemberID = M.MemberID
+                                     ORDER BY P.PaymentID DESC
+                                     LIMIT 1),
+                                    'Unknown'
+                                ) AS MembershipType
+                        FROM    Attendance A
+                        JOIN    Members M ON A.MemberID = M.MemberID
+                        WHERE   A.CheckInDate = @date
                         ORDER BY A.CheckInTime ASC";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
@@ -234,7 +285,7 @@ namespace GymManagementSystem
                                     Name = reader["FullName"]?.ToString() ?? string.Empty,
                                     CheckInTime = FormatTime(reader["CheckInTime"]?.ToString() ?? string.Empty),
                                     CheckOutTime = FormatTime(reader["CheckOutTime"]?.ToString() ?? string.Empty),
-                                    MembershipType = DeriveMembershipType(reader["ExpiryDate"]?.ToString() ?? string.Empty),
+                                    MembershipType = reader["MembershipType"]?.ToString() ?? string.Empty,
                                     Status = reader["Status"]?.ToString() ?? string.Empty
                                 });
                             }
@@ -293,13 +344,11 @@ namespace GymManagementSystem
             _allExpirationRecords.Clear();
             FilteredExpirationRecords.Clear();
 
-            // Build date range for the SQL query
             string today = DateTime.Now.ToString("yyyy-MM-dd");
             string sql;
 
             if (window == "Expired (Past 30 Days)")
             {
-                // Already expired within the past 30 days
                 string past30 = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
                 sql = $@"SELECT MemberID, FullName, Phone, ExpiryDate, Status
                          FROM   Members
@@ -324,7 +373,6 @@ namespace GymManagementSystem
                          ORDER BY Date(ExpiryDate) ASC";
             }
 
-            // Determine max days for progress bar scaling
             int maxDays = window switch
             {
                 "Expiring Today" => 1,
@@ -388,7 +436,6 @@ namespace GymManagementSystem
                 if (string.IsNullOrEmpty(query) || r.FullName.ToLower().Contains(query))
                 {
                     FilteredExpirationRecords.Add(r);
-
                     if (r.UrgencyLevel == "Critical") critical++;
                     if (r.UrgencyLevel == "Expired") pending++;
                 }
@@ -436,6 +483,7 @@ namespace GymManagementSystem
             return raw;
         }
 
+        // Still used by Expirations tab to show plan badge color
         private static string DeriveMembershipType(string expiryDateString)
         {
             if (DateTime.TryParse(expiryDateString, out DateTime expiry))

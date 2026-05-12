@@ -56,13 +56,9 @@ namespace GymManagementSystem
             if (e.Key == Key.Enter)
             {
                 if (lstSearchResults.SelectedItem is Member selectedMember)
-                {
                     ShowCheckInConfirmation(selectedMember);
-                }
                 else
-                {
                     ProcessCheckIn(txtMemberSearch.Text.Trim());
-                }
                 e.Handled = true;
             }
         }
@@ -71,13 +67,9 @@ namespace GymManagementSystem
         {
             string query = txtMemberSearch.Text.Trim();
             if (query.Length >= 1 && query != (string)txtMemberSearch.Tag)
-            {
                 SearchMembers(query);
-            }
             else
-            {
                 popSearch.IsOpen = false;
-            }
         }
 
         private void SearchMembers(string query)
@@ -130,9 +122,6 @@ namespace GymManagementSystem
             }
         }
 
-        /// <summary>
-        /// Checks if a member is already timed in for today (has an active session with no Time Out).
-        /// </summary>
         private bool IsMemberAlreadyTimedIn(string memberId)
         {
             try
@@ -148,8 +137,7 @@ namespace GymManagementSystem
                     {
                         cmd.Parameters.AddWithValue("@memberId", memberId);
                         cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
-                        int count = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
-                        return count > 0;
+                        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
                     }
                 }
             }
@@ -160,9 +148,36 @@ namespace GymManagementSystem
             }
         }
 
+        // ── Gets the actual last paid plan name from Payments table ──
+        private string GetMembershipTypeFromPayments(string memberId)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"SELECT MembershipType FROM Payments 
+                                   WHERE MemberID = @memberId 
+                                   ORDER BY PaymentID DESC 
+                                   LIMIT 1";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@memberId", memberId);
+                        object? result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                            return result.ToString() ?? "Unknown";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error getting membership type: " + ex.Message);
+            }
+            return "Unknown";
+        }
+
         private void ShowCheckInConfirmation(Member member)
         {
-            // Check if member is Active
             if (member.Status != "Active")
             {
                 UpdateStatusIndicator("Check-in Denied", "✕", Colors.Red, "#ff3333");
@@ -171,7 +186,6 @@ namespace GymManagementSystem
                 return;
             }
 
-            // Check if membership is expired
             if (DateTime.TryParse(member.ExpiryDate, out DateTime expiryDate) && expiryDate < DateTime.Now)
             {
                 UpdateStatusIndicator("Membership Expired", "✕", Colors.Red, "#ff3333");
@@ -180,7 +194,6 @@ namespace GymManagementSystem
                 return;
             }
 
-            // Check for duplicate check-in (already timed in today with no time out)
             if (IsMemberAlreadyTimedIn(member.MemberID))
             {
                 UpdateStatusIndicator("Already Timed In", "✕", Colors.Red, "#ff3333");
@@ -189,18 +202,14 @@ namespace GymManagementSystem
                 return;
             }
 
-            // Show confirmation dialog
             MessageBoxResult result = MessageBox.Show(
                 $"Are you sure you want to check {member.FullName} in?",
                 "Confirm Check-in",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question
-            );
+                MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
-            {
                 ProcessCheckIn(member);
-            }
         }
 
         private void ProcessCheckIn(Member member)
@@ -220,11 +229,9 @@ namespace GymManagementSystem
                     }
                 }
 
-                // Updated colors here
                 UpdateStatusIndicator("Access Granted", "✓", Color.FromRgb(47, 205, 112), "#1e3a2a");
                 DisplayMemberMiniProfile(member);
                 LoadTodayAttendance();
-                // Updated colors here
                 ShowAlert("Check-in Successful!", "#1e3a2a");
             }
             catch (Exception ex)
@@ -297,22 +304,15 @@ namespace GymManagementSystem
         private void UpdateStatusIndicator(string message, string icon, Color iconColor, string bgColorHex)
         {
             brdStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
-
             txtStatusIcon.Text = icon;
             txtStatusMessage.Text = message;
-
-            // Set the icon to the specific color (Red/Green/Yellow)
             txtStatusIcon.Foreground = new SolidColorBrush(iconColor);
-
-            // Force the message text to be White for better readability on dark backgrounds
             txtStatusMessage.Foreground = Brushes.White;
         }
 
         private void ResetStatusIndicator()
         {
-            // Fix CS8600 by providing a fallback Brush (Brushes.DimGray) if conversion returns null
             brdStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString("#333") ?? Brushes.DimGray;
-
             txtStatusIcon.Text = "";
             txtStatusMessage.Text = "AWAITING INPUT";
             txtStatusIcon.Foreground = Brushes.White;
@@ -326,7 +326,9 @@ namespace GymManagementSystem
             {
                 brdMemberProfile.Visibility = Visibility.Visible;
                 lblMemberName.Text = member.FullName;
-                lblMembershipType.Text = GetMembershipTypeFromExpiry(member.ExpiryDate);
+
+                // ── Use actual payment record instead of guessing from expiry ──
+                lblMembershipType.Text = GetMembershipTypeFromPayments(member.MemberID);
 
                 if (DateTime.TryParse(member.ExpiryDate, out DateTime expiryDate))
                 {
@@ -350,14 +352,8 @@ namespace GymManagementSystem
 
                 if (!string.IsNullOrEmpty(member.PhotoPath) && File.Exists(member.PhotoPath))
                 {
-                    try
-                    {
-                        imgProfilePicture.Source = new BitmapImage(new Uri(member.PhotoPath));
-                    }
-                    catch
-                    {
-                        imgProfilePicture.Source = null;
-                    }
+                    try { imgProfilePicture.Source = new BitmapImage(new Uri(member.PhotoPath)); }
+                    catch { imgProfilePicture.Source = null; }
                 }
                 else
                 {
@@ -370,20 +366,6 @@ namespace GymManagementSystem
             }
         }
 
-        private string GetMembershipTypeFromExpiry(string expiryDateString)
-        {
-            if (DateTime.TryParse(expiryDateString, out DateTime expiryDate))
-            {
-                TimeSpan remaining = expiryDate - DateTime.Now;
-                if (remaining.TotalDays <= 1) return "Daily";
-                if (remaining.TotalDays <= 7) return "Weekly";
-                if (remaining.TotalDays <= 15) return "Half-Month";
-                if (remaining.TotalDays <= 30) return "Monthly";
-                if (remaining.TotalDays <= 365) return "Yearly";
-            }
-            return "Unknown";
-        }
-
         private void LoadTodayAttendance()
         {
             TodayAttendance.Clear();
@@ -393,11 +375,29 @@ namespace GymManagementSystem
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    string sql = @"SELECT A.AttendanceID, A.CheckInTime, A.CheckOutTime, M.MemberID, M.FullName, M.ExpiryDate, M.Status 
-                           FROM Attendance A 
-                           JOIN Members M ON A.MemberID = M.MemberID 
-                           WHERE A.CheckInDate = @today
-                           ORDER BY A.CheckInTime DESC";
+
+                    // ── Join Payments to get the actual last paid plan name ──
+                    string sql = @"
+                        SELECT  A.AttendanceID,
+                                A.CheckInTime,
+                                A.CheckOutTime,
+                                M.MemberID,
+                                M.FullName,
+                                M.ExpiryDate,
+                                M.Status,
+                                COALESCE(
+                                    (SELECT P.MembershipType
+                                     FROM   Payments P
+                                     WHERE  P.MemberID = M.MemberID
+                                     ORDER BY P.PaymentID DESC
+                                     LIMIT 1),
+                                    'Unknown'
+                                ) AS MembershipType
+                        FROM    Attendance A
+                        JOIN    Members M ON A.MemberID = M.MemberID
+                        WHERE   A.CheckInDate = @today
+                        ORDER BY A.CheckInTime DESC";
+
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
@@ -409,18 +409,17 @@ namespace GymManagementSystem
                                 string expiryDateStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
 
                                 if (DateTime.TryParse(expiryDateStr, out DateTime expiryDate) && expiryDate < DateTime.Now)
-                                {
                                     memberStatus = "Expired";
-                                }
 
                                 TodayAttendance.Add(new AttendanceRecord
                                 {
                                     AttendanceID = Convert.ToInt32(reader["AttendanceID"] ?? 0),
                                     MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
                                     Name = reader["FullName"]?.ToString() ?? string.Empty,
-                                    CheckInTime = DateTime.TryParse(reader["CheckInTime"]?.ToString(), out DateTime checkInTime) ? checkInTime.ToString("HH:mm tt") : string.Empty,
+                                    CheckInTime = DateTime.TryParse(reader["CheckInTime"]?.ToString(), out DateTime checkInTime)
+                                        ? checkInTime.ToString("HH:mm tt") : string.Empty,
                                     CheckOutTime = reader["CheckOutTime"]?.ToString() ?? string.Empty,
-                                    MembershipType = GetMembershipTypeFromExpiry(reader["ExpiryDate"]?.ToString() ?? string.Empty),
+                                    MembershipType = reader["MembershipType"]?.ToString() ?? "Unknown",
                                     Status = memberStatus
                                 });
                                 totalMembers++;
@@ -438,11 +437,10 @@ namespace GymManagementSystem
 
         private void ShowAlert(string message, string bgColorHex)
         {
-            // Added (Brush?) and ?? Brushes.Transparent to handle potential nulls
             brdAlertOverlay.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
-
             txtAlertMessage.Text = message;
-            txtAlertIcon.Text = message.Contains("Successful") ? "✓" : (message.Contains("Expired") || message.Contains("Error") || message.Contains("Denied") ? "✕" : "?");
+            txtAlertIcon.Text = message.Contains("Successful") ? "✓"
+                              : (message.Contains("Expired") || message.Contains("Error") || message.Contains("Denied") ? "✕" : "?");
             brdAlertOverlay.Visibility = Visibility.Visible;
             _alertTimer.Start();
         }
@@ -452,7 +450,6 @@ namespace GymManagementSystem
             var button = sender as Button;
             if (button?.CommandParameter is int attendanceId)
             {
-                // 1. Find the record in the current list to check its status
                 AttendanceRecord? recordToCheck = null;
                 foreach (var record in TodayAttendance)
                 {
@@ -463,7 +460,6 @@ namespace GymManagementSystem
                     }
                 }
 
-                // 2. Logic Check: If CheckOutTime is not empty, they already timed out
                 if (recordToCheck != null && !string.IsNullOrEmpty(recordToCheck.CheckOutTime))
                 {
                     MessageBox.Show("This member has already timed out for this session.",
@@ -471,18 +467,14 @@ namespace GymManagementSystem
                     return;
                 }
 
-                // 3. Proceed with confirmation if not yet timed out
                 MessageBoxResult result = MessageBox.Show(
                     "Are you sure you want to check this member out?",
                     "Confirm Check-out",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Question
-                );
+                    MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes)
-                {
                     ProcessCheckOut(attendanceId);
-                }
             }
         }
 
@@ -503,7 +495,6 @@ namespace GymManagementSystem
                 }
 
                 LoadTodayAttendance();
-                // Updated colors here
                 ShowAlert("Check-out Successful!", "#1e3a2a");
             }
             catch (Exception ex)
