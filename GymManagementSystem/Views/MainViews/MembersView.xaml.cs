@@ -1,19 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Data.SQLite;
-using System.Collections.ObjectModel;
 using GymManagementSystem.Models;
 using GymManagementSystem.Views.MainViews;
 using GymManagementSystem.Views.Windows;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data.SQLite;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace GymManagementSystem.Views.MainViews
 {
     public partial class MembersView : UserControl
     {
         public ObservableCollection<Member> MembersList { get; set; } = new ObservableCollection<Member>();
-
+        private ICollectionView? _membersView;
         public MembersView()
         {
             InitializeComponent();
@@ -28,7 +30,7 @@ namespace GymManagementSystem.Views.MainViews
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    // We join with Payments to get the latest membership type for each member[cite: 1, 15]
+                    // We join with Payments to get the latest membership type for each member
                     string sql = @"
                         SELECT M.*, 
                         COALESCE((SELECT P.MembershipType FROM Payments P WHERE P.MemberID = M.MemberID ORDER BY P.PaymentID DESC LIMIT 1), '-') as PlanName
@@ -57,12 +59,39 @@ namespace GymManagementSystem.Views.MainViews
                         }
                     }
                 }
+                _membersView = CollectionViewSource.GetDefaultView(MembersList);
+                _membersView.Filter = MemberFilterLogic;
                 dgMembers.ItemsSource = MembersList;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading members: " + ex.Message);
             }
+        }
+
+        private void Filter_Changed(object sender, EventArgs e)
+        {
+            // Refresh the table whenever user types OR changes the dropdown
+            _membersView?.Refresh();
+        }
+
+        private bool MemberFilterLogic(object obj)
+        {
+            if (obj is Member member)
+            {
+                // 1. Text Search Logic
+                string searchText = txtSearch.Text.Trim().ToLower();
+                bool matchesText = string.IsNullOrEmpty(searchText) ||
+                                   member.FullName.ToLower().Contains(searchText) ||
+                                   member.MemberID.ToLower().Contains(searchText); 
+
+        // 2. Status Dropdown Logic
+        string selectedStatus = (cbStatusFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Status";
+                bool matchesStatus = selectedStatus == "All Status" || member.Status == selectedStatus; 
+
+        return matchesText && matchesStatus;
+            }
+            return false;
         }
 
         private void PayMember_Click(object sender, RoutedEventArgs e)
@@ -78,6 +107,7 @@ namespace GymManagementSystem.Views.MainViews
                 {
                     // Pass the member object to the PaymentsView constructor
                     mainWindow.MainFrame.Content = new PaymentsView(member);
+                    mainWindow.btnNavPayments.IsChecked = true;
                 }
             }
         }

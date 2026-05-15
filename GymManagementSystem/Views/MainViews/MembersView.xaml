@@ -14,6 +14,24 @@
 
         <DockPanel Grid.Row="0" Margin="0,0,0,30">
             <TextBlock Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <TextBox x:Name="txtSearch" 
+             Style="{StaticResource ModernTextBox}"
+             Width="250" Margin="30,0,10,0" 
+             HorizontalAlignment="Left"
+             Tag="Search Name or ID..." 
+             TextChanged="Filter_Changed"/>
+
+            <ComboBox x:Name="cbStatusFilter" 
+              Style="{StaticResource ModernComboBox}"
+              Width="150" Height="40" 
+              SelectionChanged="Filter_Changed">
+                <ComboBoxItem Content="All Status" IsSelected="True"/>
+                <ComboBoxItem Content="Active"/>
+                <ComboBoxItem Content="Pending"/>
+                <ComboBoxItem Content="Expired"/>
+            </ComboBox>
+
             <Button HorizontalAlignment="Right" Padding="20,10" Background="Transparent" BorderThickness="0" Click="AddMember_Click">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">

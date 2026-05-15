@@ -65,10 +65,15 @@ namespace GymManagementSystem
                 return (false, "", "Phone number can only contain numeric digits.");
             }
 
-            // Check length (10-11 digits for Philippine numbers)
-            if (cleaned.Length < 10 || cleaned.Length > 11)
+            if (cleaned.Length != 11)
             {
-                return (false, "", "Phone number must be between 10 and 11 digits.");
+                return (false, "", "Phone number must be exactly 11 digits.");
+            }
+
+            // Must start with "09"
+            if (!cleaned.StartsWith("09"))
+            {
+                return (false, "", "Phone number must start with '09'.");
             }
 
             return (true, cleaned, "");

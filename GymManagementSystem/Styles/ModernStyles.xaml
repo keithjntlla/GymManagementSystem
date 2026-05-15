@@ -20,11 +20,13 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="#ff6b00"/>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter Property="BorderBrush" Value="#ff6b00"/>
                         </Trigger>
-                        <Trigger Property="Text" Value="">
-                            <Setter TargetName="Message" Property="Visibility" Value="Visible"/>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="#121214"/>
+                            <Setter Property="BorderBrush" Value="#252525"/>
+                            <Setter Property="Opacity" Value="0.6"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

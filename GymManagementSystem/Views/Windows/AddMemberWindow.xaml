@@ -43,7 +43,18 @@
                 </ComboBox>
 
                 <TextBlock Text="Date Joined" Foreground="White" Margin="0,0,0,5"/>
-                <DatePicker x:Name="dpDateJoined" Style="{StaticResource ModernDatePicker}" Margin="0,0,0,15"/>
+                <DatePicker x:Name="dpDateJoined" 
+                    Style="{StaticResource ModernDatePicker}" 
+                    Margin="0,0,0,15"
+                    IsHitTestVisible="False" 
+                    Focusable="False"
+                    Background="#1a1a1a">
+                    <DatePicker.Resources>
+                        <Style TargetType="Button">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Style>
+                    </DatePicker.Resources>
+                </DatePicker>
 
                 <TextBlock Text="Photo" Foreground="White" Margin="0,0,0,5"/>
                 <StackPanel Orientation="Horizontal">

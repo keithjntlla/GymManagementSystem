@@ -18,6 +18,7 @@ namespace GymManagementSystem.Views.Windows
         {
             InitializeComponent();
             dpDateJoined.SelectedDate = DateTime.Now;
+            dpDateJoined.IsEnabled = false;
             isEditMode = false;
         }
 
@@ -26,14 +27,16 @@ namespace GymManagementSystem.Views.Windows
             InitializeComponent();
             isEditMode = true;
             editMemberId = memberToEdit.MemberID;
-            
+
+            dpDateJoined.DisplayDateEnd = DateTime.Now;
+
             lblTitle.Text = "Edit Member";
             btnRegister.Content = "Update";
-            
+
             txtFullName.Text = memberToEdit.FullName;
             txtPhone.Text = memberToEdit.Phone;
             cmbGender.Text = memberToEdit.Gender;
-            
+
             if (DateTime.TryParse(memberToEdit.DateJoined, out DateTime joinDate))
             {
                 dpDateJoined.SelectedDate = joinDate;
@@ -42,7 +45,10 @@ namespace GymManagementSystem.Views.Windows
             {
                 dpDateJoined.SelectedDate = DateTime.Now;
             }
-            
+
+            dpDateJoined.IsEnabled = false;
+            dpDateJoined.ToolTip = "Joining date is a permanent system record.";
+
             if (!string.IsNullOrEmpty(memberToEdit.PhotoPath) && File.Exists(memberToEdit.PhotoPath))
             {
                 try
@@ -172,12 +178,21 @@ namespace GymManagementSystem.Views.Windows
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    string sql = "UPDATE Members SET FullName = @name, Phone = @phone, Gender = @gender WHERE MemberID = @id";
+                    // Added DateJoined to the SET clause
+                    string sql = @"UPDATE Members 
+                           SET FullName = @name, 
+                               Phone = @phone, 
+                               Gender = @gender, 
+                               DateJoined = @joined 
+                           WHERE MemberID = @id";
+
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@name", fullName);
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
+                        // Fetch the date from the DatePicker
+                        cmd.Parameters.AddWithValue("@joined", dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();
                     }

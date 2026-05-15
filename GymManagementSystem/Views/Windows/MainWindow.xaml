@@ -84,7 +84,7 @@
                     <RadioButton Content="Home" IsChecked="True" Style="{StaticResource MenuButtonStyle}" Click="NavHome_Click"/>
                     <RadioButton Content="Members" Style="{StaticResource MenuButtonStyle}" Click="NavMembers_Click"/>
 
-                    <RadioButton Content="Payments" Style="{StaticResource MenuButtonStyle}" Click="NavPayments_Click"/>
+                    <RadioButton x:Name="btnNavPayments" Content="Payments" Style="{StaticResource MenuButtonStyle}" Click="NavPayments_Click"/>
                     <RadioButton Content="Attendance" Style="{StaticResource MenuButtonStyle}" Click="NavAttendance_Click"/>
 
                     <Separator Background="#222" Margin="15,20"/>
