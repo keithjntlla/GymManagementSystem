@@ -128,7 +128,7 @@ namespace GymManagementSystem.Views.Windows
         private void AddNewMember(string fullName, string phone, string gender)
         {
             string memberId = GenerateMemberID();
-            string dateJoined = dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
+            string dateJoined = dpDateJoined.SelectedDate?.ToString("MM-dd-yyyy") ?? DateTime.Now.ToString("MM-dd-yyyy");
             string expiryDate = "-";
             string status = "Pending";
 
@@ -192,7 +192,7 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
                         // Fetch the date from the DatePicker
-                        cmd.Parameters.AddWithValue("@joined", dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@joined", dpDateJoined.SelectedDate?.ToString("MM-dd-yyyy"));
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();
                     }

@@ -186,7 +186,7 @@
                     </DataGrid.Resources>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1.5*"/>
-                        <DataGridTextColumn Header="Membership Type" Binding="{Binding MembershipType}" Width="1.5*"/>
+                        <DataGridTextColumn Header="Membership Plan" Binding="{Binding MembershipType}" Width="1.5*"/>
                         <DataGridTextColumn Header="Time In" Binding="{Binding CheckInTime}" Width="1*"/>
                         <DataGridTextColumn Header="Time Out" Binding="{Binding CheckOutTime}" Width="1*"/>
                         <DataGridTemplateColumn Header="Actions" Width="1.2*">

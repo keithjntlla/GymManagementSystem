@@ -137,7 +137,7 @@ namespace GymManagementSystem.Views.MainViews
                 panelNoMemberAttendance.Visibility = Visibility.Collapsed;
 
                 // 2. Show the Status Indicator and Profile
-                brdStatusIndicator.Visibility = Visibility.Visible; // <--- ADD THIS LINE
+                brdStatusIndicator.Visibility = Visibility.Visible; 
                 brdMemberProfile.Visibility = Visibility.Visible;
                 btnCheckIn.Visibility = Visibility.Visible;
 
@@ -225,7 +225,7 @@ namespace GymManagementSystem.Views.MainViews
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@memberId", member.MemberID);
-                        cmd.Parameters.AddWithValue("@checkInTime", DateTime.Now.ToString("HH:mm tt"));
+                        cmd.Parameters.AddWithValue("@checkInTime", DateTime.Now.ToString("hh:mm tt").ToUpper());
                         cmd.Parameters.AddWithValue("@checkInDate", DateTime.Now.ToString("yyyy-MM-dd"));
                         cmd.ExecuteNonQuery();
                     }
@@ -459,7 +459,7 @@ namespace GymManagementSystem.Views.MainViews
                                     MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
                                     Name = reader["FullName"]?.ToString() ?? string.Empty,
                                     CheckInTime = DateTime.TryParse(reader["CheckInTime"]?.ToString(), out DateTime checkInTime)
-                                        ? checkInTime.ToString("HH:mm tt") : string.Empty,
+                                        ? checkInTime.ToString("hh:mm tt").ToUpper() : string.Empty,
                                     CheckOutTime = reader["CheckOutTime"]?.ToString() ?? string.Empty,
                                     MembershipType = reader["MembershipType"]?.ToString() ?? "Unknown",
                                     Status = memberStatus
@@ -528,7 +528,7 @@ namespace GymManagementSystem.Views.MainViews
                     string sql = "UPDATE Attendance SET CheckOutTime = @checkOutTime WHERE AttendanceID = @attendanceId";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("@checkOutTime", DateTime.Now.ToString("HH:mm tt"));
+                        cmd.Parameters.AddWithValue("@checkOutTime", DateTime.Now.ToString("hh:mm tt").ToUpper());
                         cmd.Parameters.AddWithValue("@attendanceId", attendanceId);
                         cmd.ExecuteNonQuery();
                     }

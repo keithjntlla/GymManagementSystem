@@ -92,7 +92,7 @@ namespace GymManagementSystem.Views.MainViews
             {
                 newExpiry = DateTime.Today.AddDays(selectedDurationDays);
             }
-            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd");
+            lblNewExpiryDate.Text = newExpiry.ToString("M/d/yyyy"); ;
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -247,8 +247,13 @@ namespace GymManagementSystem.Views.MainViews
 
             if (paid < totalAmount)
             {
-                MessageBox.Show($"Insufficient amount. Total is ₱{totalAmount:N2} but you entered ₱{paid:N2}.",
-                    "Insufficient Amount", MessageBoxButton.OK, MessageBoxImage.Warning);
+                double lacking = totalAmount - paid;
+
+                MessageBox.Show($"Insufficient amount.\n\n" +
+                                $"Total: ₱{totalAmount:N2}\n" +
+                                $"Paid: ₱{paid:N2}\n" +
+                                $"Lacking: ₱{lacking:N2}",
+                                "Insufficient Amount", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

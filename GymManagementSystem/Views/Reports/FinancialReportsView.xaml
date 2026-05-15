@@ -14,25 +14,34 @@
         </Grid.RowDefinitions>
 
         <!-- Filters -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,25">
-            <StackPanel Margin="0,0,20,0">
-                <TextBlock Text="Start Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
-                <DatePicker x:Name="dpStart" Width="180" Style="{StaticResource ModernDatePicker}"
+        <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="15" Margin="0,0,0,25">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock Text="Start Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                    <DatePicker x:Name="dpStart" Width="180" Height="40" 
+                        Style="{StaticResource ModernDatePicker}"
                         SelectedDateChanged="DatePicker_SelectedDateChanged"/>
-            </StackPanel>
-            <StackPanel Margin="0,0,20,0">
-                <TextBlock Text="End Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
-                <DatePicker x:Name="dpEnd" Width="180" Style="{StaticResource ModernDatePicker}"
+                </StackPanel>
+
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock Text="End Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                    <DatePicker x:Name="dpEnd" Width="180" Height="40" 
+                        Style="{StaticResource ModernDatePicker}"
                         SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Filter by Plan" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                    <ComboBox x:Name="cbPlanFilter" 
+                            Width="180" 
+                            Height="40" 
+                            Style="{StaticResource ModernComboBox}"
+                            SelectionChanged="Filter_Changed">
+                        <ComboBoxItem Content="All Plans" IsSelected="True"/>
+                    </ComboBox>
+                </StackPanel>
             </StackPanel>
-            <StackPanel>
-                <TextBlock Text="Filter by Plan" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
-                <ComboBox x:Name="cbPlanFilter" Width="180" Style="{StaticResource ModernComboBox}"
-      SelectionChanged="Filter_Changed">
-                    <ComboBoxItem Content="All Plans" IsSelected="True"/>
-                </ComboBox>
-            </StackPanel>
-        </StackPanel>
+        </Border>
 
         <!-- Summary Cards -->
         <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,30">
@@ -76,11 +85,19 @@
         </UniformGrid>
 
         <!-- Transaction DataGrid -->
-        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
-            <DataGrid x:Name="dgTransactions" Background="Transparent" BorderThickness="0"
-                  Foreground="White" AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" RowBackground="Transparent"
-                  AlternatingRowBackground="#1a1a1c" GridLinesVisibility="None">
+        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10,10,10,25" Margin="0,0,0,10">
+            <DataGrid x:Name="dgTransactions" 
+                    Background="Transparent" 
+                    BorderThickness="0"
+                    Foreground="White" 
+                    AutoGenerateColumns="False" 
+                    IsReadOnly="True"
+                    CanUserAddRows="False" 
+                    RowBackground="Transparent"
+                    AlternatingRowBackground="#1a1a1c" 
+                    GridLinesVisibility="None" 
+                    HeadersVisibility="Column"
+                    RowHeaderWidth="0">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Background" Value="Transparent"/>
@@ -108,7 +125,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date"           Binding="{Binding DateOfTransaction}" Width="*"/>
                     <DataGridTextColumn Header="Member Name"    Binding="{Binding MemberName}"        Width="1.5*"/>
-                    <DataGridTextColumn Header="Plan"           Binding="{Binding MembershipType}"    Width="*"/>
+                    <DataGridTextColumn Header="Membership Plan" Binding="{Binding MembershipType}"    Width="*"/>
                     <DataGridTextColumn Header="Amount"         Binding="{Binding AmountPaid, StringFormat=₱\{0:N0\}}" Width="*"/>
                     <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMode}"       Width="*"/>
                 </DataGrid.Columns>
