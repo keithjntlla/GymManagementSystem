@@ -50,14 +50,20 @@ namespace GymManagementSystem.Views.Reports
             string today = DateTime.Now.ToString("yyyy-MM-dd");
             string sql;
 
+            // Base query with a subquery to get the latest plan name from the Payments table
+            string baseQuery = @"SELECT M.MemberID, M.FullName, M.Phone, M.ExpiryDate, M.Status,
+                         COALESCE((SELECT P.MembershipType FROM Payments P 
+                                   WHERE P.MemberID = M.MemberID 
+                                   ORDER BY P.PaymentID DESC LIMIT 1), '-') as PlanName
+                         FROM Members M";
+
             if (window == "Expired (Past 30 Days)")
             {
                 string past30 = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
-                sql = $@"SELECT MemberID, FullName, Phone, ExpiryDate, Status
-                         FROM   Members
-                         WHERE  Date(ExpiryDate) BETWEEN Date('{past30}') AND Date('{today}', '-1 day')
-                         AND    Status = 'Expired'
-                         ORDER BY Date(ExpiryDate) ASC";
+                sql = $@"{baseQuery}
+                 WHERE  Date(M.ExpiryDate) BETWEEN Date('{past30}') AND Date('{today}', '-1 day')
+                 AND    M.Status = 'Expired'
+                 ORDER BY Date(M.ExpiryDate) ASC";
             }
             else
             {
@@ -69,11 +75,10 @@ namespace GymManagementSystem.Views.Reports
                     _ => 7
                 };
 
-                sql = $@"SELECT MemberID, FullName, Phone, ExpiryDate, Status
-                         FROM   Members
-                         WHERE  Date(ExpiryDate) BETWEEN Date('{today}') AND Date('{today}', '+{days} days')
-                         AND    Status = 'Active'
-                         ORDER BY Date(ExpiryDate) ASC";
+                sql = $@"{baseQuery}
+                 WHERE  Date(M.ExpiryDate) BETWEEN Date('{today}') AND Date('{today}', '+{days} days')
+                 AND    M.Status = 'Active'
+                 ORDER BY Date(M.ExpiryDate) ASC";
             }
 
             int maxDays = window switch
@@ -95,21 +100,22 @@ namespace GymManagementSystem.Views.Reports
                         while (reader.Read())
                         {
                             string expiryStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
-                            int days = CalcDaysRemaining(expiryStr);
-                            string urgency = ClassifyUrgency(days);
-                            double progress = days <= 0
+                            int daysRemaining = CalcDaysRemaining(expiryStr);
+                            string urgency = ClassifyUrgency(daysRemaining);
+                            double progress = daysRemaining <= 0
                                 ? 0
-                                : Math.Min((double)days / maxDays, 1.0) * ProgressBarMaxWidth;
+                                : Math.Min((double)daysRemaining / maxDays, 1.0) * ProgressBarMaxWidth;
 
                             _allExpirationRecords.Add(new ExpirationRecord
                             {
                                 MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
                                 FullName = reader["FullName"]?.ToString() ?? string.Empty,
                                 Phone = reader["Phone"]?.ToString() ?? string.Empty,
-                                PlanType = DeriveMembershipType(expiryStr),
+                                // Use the real plan name from the database subquery
+                                PlanType = reader["PlanName"]?.ToString() ?? "-",
                                 ExpiryDate = FormatExpiryDate(expiryStr),
-                                DaysRemaining = days,
-                                DaysRemainingLabel = BuildDaysLabel(days),
+                                DaysRemaining = daysRemaining,
+                                DaysRemainingLabel = BuildDaysLabel(daysRemaining),
                                 UrgencyLevel = urgency,
                                 ProgressWidth = progress
                             });

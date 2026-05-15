@@ -162,7 +162,7 @@ namespace GymManagementSystem.Views.Reports
         {
             if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
             if (DateTime.TryParse(raw, out DateTime dt))
-                return dt.ToString("hh:mm tt");
+                return dt.ToString("hh:mm tt").ToUpper();
             return raw;
         }
     }
