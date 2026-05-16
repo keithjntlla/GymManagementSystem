@@ -16,10 +16,18 @@
                         <Grid>
                             <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
                             <TextBlock x:Name="Message" Text="{TemplateBinding Tag}" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" 
-                                       Visibility="Collapsed" IsHitTestVisible="False"/>
+                                   Visibility="Collapsed" IsHitTestVisible="False"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="Message" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Message" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter Property="BorderBrush" Value="#ff6b00"/>
                         </Trigger>

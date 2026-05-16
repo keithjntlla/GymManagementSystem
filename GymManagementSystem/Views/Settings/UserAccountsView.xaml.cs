@@ -5,9 +5,9 @@ using System.Windows;
 using System.Windows.Controls;
 using GymManagementSystem.Models;
 using GymManagementSystem.Views.Windows;
-using GymManagementSystem.Views.Reports;
+using GymManagementSystem.Views.Settings;
 
-namespace GymManagementSystem.Views.Reports
+namespace GymManagementSystem.Views.Settings
 {
     public partial class UserAccountsView : UserControl
     {

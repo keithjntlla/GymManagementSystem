@@ -6,6 +6,76 @@ namespace GymManagementSystem
     public static class InputValidator
     {
         /// <summary>
+        /// Validates and cleans the Gym Name field.
+        /// </summary>
+        public static (bool isValid, string cleanedValue, string errorMessage) ValidateGymName(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return (false, "", "Gym Name cannot be empty.");
+            }
+
+            string cleaned = input.Trim();
+            cleaned = Regex.Replace(cleaned, @"\s+", " "); // Remove extra spaces
+
+            if (cleaned.Length < 2)
+            {
+                return (false, "", "Gym Name must be at least 2 characters long.");
+            }
+
+            if (cleaned.Length > 100)
+            {
+                return (false, "", "Gym Name cannot exceed 100 characters.");
+            }
+
+            return (true, cleaned, "");
+        }
+
+        /// <summary>
+        /// Validates and cleans the Address field.
+        /// </summary>
+        public static (bool isValid, string cleanedValue, string errorMessage) ValidateAddress(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return (false, "", "Address cannot be empty.");
+            }
+
+            string cleaned = input.Trim();
+            cleaned = Regex.Replace(cleaned, @"\s+", " ");
+
+            if (cleaned.Length < 5)
+            {
+                return (false, "", "Address must be at least 5 characters long.");
+            }
+
+            return (true, cleaned, "");
+        }
+
+        /// <summary>
+        /// Validates the Email Address field.
+        /// </summary>
+        public static (bool isValid, string cleanedValue, string errorMessage) ValidateEmail(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return (false, "", "Email address cannot be empty.");
+            }
+
+            string cleaned = input.Trim();
+
+            // Standard email regex pattern
+            string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+
+            if (!Regex.IsMatch(cleaned, emailPattern))
+            {
+                return (false, "", "Please enter a valid email address (e.g., info@gym.com).");
+            }
+
+            return (true, cleaned, "");
+        }
+
+        /// <summary>
         /// Validates and cleans the Name field.
         /// Accepts only alphabetic characters and spaces.
         /// Automatically trims leading/trailing whitespace.
@@ -58,12 +128,6 @@ namespace GymManagementSystem
 
             // Remove all non-numeric characters
             string cleaned = Regex.Replace(input.Trim(), @"[^0-9]", "");
-
-            // Check if it contains only numbers
-            if (!Regex.IsMatch(cleaned, @"^\d+$"))
-            {
-                return (false, "", "Phone number can only contain numeric digits.");
-            }
 
             if (cleaned.Length != 11)
             {

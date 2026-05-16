@@ -33,7 +33,7 @@ namespace GymManagementSystem.Views.Settings
         private void LoadSettings()
         {
             var profile = DatabaseHelper.GetGymProfile();
-            // Setting .Text directly ensures current name is shown, not just a hint[cite: 23]
+            // Setting .Text directly ensures current name is shown, not just a hint
             txtGymName.Text = profile.GetValueOrDefault("GymName", "Gym");
             txtAddress.Text = profile.GetValueOrDefault("Address", "");
             txtContact.Text = profile.GetValueOrDefault("ContactNumber", "");
@@ -47,12 +47,13 @@ namespace GymManagementSystem.Views.Settings
             }
             else
             {
-                // Revert to your specific default logo file[cite: 18]
+                // Revert to your specific default logo file
                 imgLogo.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/logo.png"));
                 txtLogoPlaceholder.Visibility = Visibility.Visible;
             }
             lblUnsavedHint.Visibility = Visibility.Collapsed;
         }
+
         private void BtnRestore_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show("Restore all settings to default? This will rename the gym to 'Gym'.",
@@ -78,6 +79,48 @@ namespace GymManagementSystem.Views.Settings
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
+            // 1. Validate Gym Name Field
+            var nameCheck = InputValidator.ValidateGymName(txtGymName.Text);
+            if (!nameCheck.isValid)
+            {
+                MessageBox.Show(nameCheck.errorMessage, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtGymName.Focus();
+                return;
+            }
+
+            // 2. Validate Address Field
+            var addressCheck = InputValidator.ValidateAddress(txtAddress.Text);
+            if (!addressCheck.isValid)
+            {
+                MessageBox.Show(addressCheck.errorMessage, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtAddress.Focus();
+                return;
+            }
+
+            // 3. Validate Contact Number Field (reusing your Philippine phone check rules)
+            var contactCheck = InputValidator.ValidatePhoneNumber(txtContact.Text);
+            if (!contactCheck.isValid)
+            {
+                MessageBox.Show(contactCheck.errorMessage, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtContact.Focus();
+                return;
+            }
+
+            // 4. Validate Email Address Field
+            var emailCheck = InputValidator.ValidateEmail(txtEmail.Text);
+            if (!emailCheck.isValid)
+            {
+                MessageBox.Show(emailCheck.errorMessage, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtEmail.Focus();
+                return;
+            }
+
+            // If everything passes, update inputs with their auto-cleaned values and save to database
+            txtGymName.Text = nameCheck.cleanedValue;
+            txtAddress.Text = addressCheck.cleanedValue;
+            txtContact.Text = contactCheck.cleanedValue;
+            txtEmail.Text = emailCheck.cleanedValue;
+
             try
             {
                 DatabaseHelper.SaveGymProfile(txtGymName.Text, txtAddress.Text, txtContact.Text, txtEmail.Text, selectedLogoPath);
