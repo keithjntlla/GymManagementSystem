@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:GymManagementSystem"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1000">
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="0,20,0,20">
             <Grid.RowDefinitions>
@@ -20,8 +21,12 @@
             <StackPanel Grid.Row="1" Margin="0,0,0,20">
                 <TextBlock Text="Search Member" Foreground="Gray" Margin="0,0,0,5"/>
                 <Grid>
-                    <TextBox x:Name="txtSearch" Background="#1a1a1c" Foreground="White" BorderBrush="#333" Padding="35,12,10,12" 
-                             FontSize="14" TextChanged="TxtSearch_TextChanged" GotFocus="TxtSearch_GotFocus"/>
+                    <TextBox x:Name="txtSearch" 
+                             Style="{StaticResource ModernTextBox}"
+                             Padding="35,12,10,12" 
+                             FontSize="14" 
+                             TextChanged="TxtSearch_TextChanged" 
+                             GotFocus="TxtSearch_GotFocus"/>
                     <TextBlock Text="🔍" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0" IsHitTestVisible="False"/>
                     <Popup x:Name="popSearch" PlacementTarget="{Binding ElementName=txtSearch}" Placement="Bottom" StaysOpen="False" Width="{Binding ElementName=txtSearch, Path=ActualWidth}">
                         <Border Background="#222" BorderBrush="#333" BorderThickness="1" CornerRadius="0,0,10,10">
@@ -92,12 +97,10 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Margin="5" Padding="10" Background="#1a1a1c" BorderBrush="#333" 
-                                            Click="Rate_Click" Tag="{Binding}">
+                                    <Button Margin="5" Padding="10" Background="#1a1a1c" BorderBrush="#333" Click="Rate_Click" Tag="{Binding}">
                                         <StackPanel>
                                             <TextBlock Text="{Binding PlanName}" Foreground="Gray" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Price, StringFormat=₱\{0:N0\}}" Foreground="White" 
-                                                       FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Price, StringFormat=₱\{0:N0\}}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
                                 </DataTemplate>

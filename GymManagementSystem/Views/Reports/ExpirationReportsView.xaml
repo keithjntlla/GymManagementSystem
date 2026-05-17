@@ -7,14 +7,13 @@
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1000">
 
-    <Grid x:Name="ExpirationsReportGrid" Grid.Row="2" Grid.RowSpan="2" Margin="0,20,0,0">
+    <Grid x:Name="ExpirationsReportGrid" Margin="0,20,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Filter Bar -->
         <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="20" Margin="0,0,0,15">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -22,7 +21,6 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: Window Filter -->
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
                     <TextBlock Text="Expiration Window" Foreground="Gray" FontSize="12" Margin="0,0,0,8"/>
                     <ComboBox x:Name="cbExpirationWindow" Width="220" Height="40"
@@ -35,7 +33,6 @@
                     </ComboBox>
                 </StackPanel>
 
-                <!-- Right: Search -->
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Search Member" Foreground="Gray" FontSize="12" Margin="0,0,0,8"/>
                     <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1"
@@ -85,101 +82,55 @@
             </Grid>
         </Border>
 
-        <!-- Summary Cards -->
         <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
-
-            <!-- Critical Count -->
             <Border CornerRadius="15" Padding="20" Margin="0,0,8,0" Height="180" Background="#3a1020">
                 <DockPanel VerticalAlignment="Center">
                     <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                        <Border Width="36" Height="36" Background="#5a1a30" CornerRadius="10"
-                            HorizontalAlignment="Left" Margin="0,0,0,12">
-                            <TextBlock Text="⚠" FontSize="18" Foreground="#ff4060"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Width="36" Height="36" Background="#5a1a30" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,12">
+                            <TextBlock Text="⚠" FontSize="18" Foreground="#ff4060" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="Critical Count (48 Hours)" Foreground="#cc7788" FontSize="13"/>
-                        <TextBlock x:Name="lblCriticalCount" Text="0" Foreground="White"
-                               FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
-                        <TextBlock Text="Immediate action needed" Foreground="#885566"
-                               FontSize="12" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="lblCriticalCount" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Immediate action needed" Foreground="#885566" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
 
-            <!-- Pending Renewals -->
             <Border CornerRadius="15" Padding="20" Margin="8,0,0,0" Height="180" Background="#3a2010">
                 <DockPanel VerticalAlignment="Center">
                     <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                        <Border Width="36" Height="36" Background="#5a3010" CornerRadius="10"
-                            HorizontalAlignment="Left" Margin="0,0,0,12">
-                            <TextBlock Text="⏱" FontSize="18" Foreground="#ffaa40"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Width="36" Height="36" Background="#5a3010" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,12">
+                            <TextBlock Text="⏱" FontSize="18" Foreground="#ffaa40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="Pending Renewals" Foreground="#cc9966" FontSize="13"/>
-                        <TextBlock x:Name="lblPendingRenewals" Text="0" Foreground="White"
-                               FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
-                        <TextBlock Text="Already expired members" Foreground="#886644"
-                               FontSize="12" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="lblPendingRenewals" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Already expired members" Foreground="#886644" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
         </UniformGrid>
 
-        <!-- Expirations DataGrid -->
-        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
-            <DataGrid x:Name="dgExpirations" Background="Transparent" BorderThickness="0"
-                  Foreground="White" AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" GridLinesVisibility="Horizontal"
-                  HorizontalGridLinesBrush="#1e1e20" RowHeight="56" FontSize="14"
-                  HeadersVisibility="Column">
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="Gray"/>
-                        <Setter Property="Padding" Value="15,10"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="FontSize" Value="13"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#2a2a2c"/>
-                    </Style>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#202022"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="15,0" Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
+        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
+            <DataGrid x:Name="dgExpirations" 
+                      Style="{StaticResource ModernDataGrid}"
+                      IsReadOnly="True"
+                      RowHeaderWidth="0"
+                      RowHeight="56" 
+                      FontSize="14"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
 
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Style.Triggers>
-                            <!-- Expired: subtle red tint -->
                             <DataTrigger Binding="{Binding UrgencyLevel}" Value="Expired">
                                 <Setter Property="Background" Value="#1f0a0a"/>
                             </DataTrigger>
-                            <!-- Critical <=2 days: subtle yellow/amber tint -->
                             <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
                                 <Setter Property="Background" Value="#1a1500"/>
                             </DataTrigger>
-                            <!-- Warning 3-7 days: subtle blue tint -->
                             <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
                                 <Setter Property="Background" Value="#050d1a"/>
                             </DataTrigger>
@@ -191,17 +142,12 @@
                 </DataGrid.RowStyle>
 
                 <DataGrid.Columns>
-
-                    <!-- Member Name with urgency dot -->
                     <DataGridTemplateColumn Header="Member Name" Width="1.8*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse x:Name="UrgencyDot" Width="8" Height="8"
-                 Margin="0,0,8,0" VerticalAlignment="Center"
-                 Fill="Transparent"/>
-                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold"
-                   Foreground="White" VerticalAlignment="Center"/>
+                                    <Ellipse x:Name="UrgencyDot" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center" Fill="Transparent"/>
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding DaysRemaining}" Value="0">
@@ -212,24 +158,20 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Phone Number -->
                     <DataGridTextColumn Header="Phone Number" Binding="{Binding Phone}" Width="1.4*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="#aaaaaa"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!-- Plan Type badge -->
                     <DataGridTemplateColumn Header="Plan Type" Width="1.2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border x:Name="PlanBadge" CornerRadius="6" Padding="10,4"
-                                    HorizontalAlignment="Left" VerticalAlignment="Center"
-                                    Background="#2a2a2c">
-                                    <TextBlock x:Name="PlanText" Text="{Binding PlanType}"
-                                           FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                                <Border x:Name="PlanBadge" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#2a2a2c">
+                                    <TextBlock x:Name="PlanText" Text="{Binding PlanType}" FontSize="12" FontWeight="SemiBold" Foreground="White"/>
                                 </Border>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding PlanType}" Value="Daily">
@@ -257,29 +199,22 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Expiry Date -->
                     <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" Width="1.2*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="#aaaaaa"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!-- Days Remaining with progress bar -->
                     <DataGridTemplateColumn Header="Days Remaining" Width="1.6*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center" Margin="0,4,0,4">
-                                    <TextBlock x:Name="DaysLabel"
-                   Text="{Binding DaysRemainingLabel}"
-                   FontWeight="SemiBold" FontSize="13"
-                   Foreground="#aaaaaa" Margin="0,0,0,4"/>
-                                    <Border x:Name="ProgressTrack" Height="5" CornerRadius="3"
-                Background="#2a2a2c" Visibility="Visible">
-                                        <Border x:Name="ProgressFill" HorizontalAlignment="Left"
-                    CornerRadius="3" Background="#4090f0"
-                    Width="{Binding ProgressWidth}"/>
+                                    <TextBlock x:Name="DaysLabel" Text="{Binding DaysRemainingLabel}" FontWeight="SemiBold" FontSize="13" Foreground="#aaaaaa" Margin="0,0,0,4"/>
+                                    <Border x:Name="ProgressTrack" Height="5" CornerRadius="3" Background="#2a2a2c" Visibility="Visible">
+                                        <Border x:Name="ProgressFill" HorizontalAlignment="Left" CornerRadius="3" Background="#4090f0" Width="{Binding ProgressWidth}"/>
                                     </Border>
                                 </StackPanel>
                                 <DataTemplate.Triggers>
@@ -299,17 +234,12 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Status badge -->
                     <DataGridTemplateColumn Header="Status" Width="1*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse x:Name="StatusDot" Width="8" Height="8"
-                 VerticalAlignment="Center" Margin="0,0,6,0"
-                 Fill="#4090f0"/>
-                                    <TextBlock x:Name="StatusLabel" Text="{Binding UrgencyLevel}"
-                   FontSize="12" FontWeight="SemiBold"
-                   Foreground="#4090f0" VerticalAlignment="Center"/>
+                                    <Ellipse x:Name="StatusDot" Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0" Fill="#4090f0"/>
+                                    <TextBlock x:Name="StatusLabel" Text="{Binding UrgencyLevel}" FontSize="12" FontWeight="SemiBold" Foreground="#4090f0" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding UrgencyLevel}" Value="Expired">
@@ -328,7 +258,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

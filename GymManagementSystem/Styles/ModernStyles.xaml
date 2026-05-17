@@ -31,6 +31,7 @@
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter Property="BorderBrush" Value="#ff6b00"/>
                         </Trigger>
+
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Background" Value="#121214"/>
                             <Setter Property="BorderBrush" Value="#252525"/>
@@ -175,7 +176,6 @@
         </Setter>
     </Style>
 
-    <!-- ── Summary Card ───────────────────────────────────────── -->
     <Style x:Key="SummaryCardStyle" TargetType="Border">
         <Setter Property="CornerRadius" Value="15"/>
         <Setter Property="Padding" Value="20"/>
@@ -183,7 +183,6 @@
         <Setter Property="Height" Value="180"/>
     </Style>
 
-    <!-- ── Nav Button (Prev/Next) ─────────────────────────────── -->
     <Style x:Key="NavButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="#1a1a1c"/>
         <Setter Property="Foreground" Value="White"/>
@@ -213,7 +212,6 @@
         </Setter>
     </Style>
 
-    <!-- ── Icon Button (Refresh) ──────────────────────────────── -->
     <Style x:Key="IconButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="#1a1a1c"/>
         <Setter Property="Foreground" Value="White"/>
@@ -241,6 +239,106 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Width" Value="8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                        <Track x:Name="PART_Track" IsDirectionReversed="true" IsEnabled="{TemplateBinding IsEnabled}">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Background="Transparent" BorderThickness="0">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Background="Transparent" BorderThickness="0">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Background="#3a3a3c" CornerRadius="4" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="Bg" Property="Background" Value="#05FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ModernDataGrid" TargetType="DataGrid">
+        <Style.Resources>
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="Gray"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Setter Property="BorderBrush" Value="#333"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridColumnHeader">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="12,10,12,10">
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="DataGridCell">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridCell">
+                            <Border Background="{TemplateBinding Background}" Padding="12,0">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="#222"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="RowBackground" Value="Transparent"/>
+        <Setter Property="AlternatingRowBackground" Value="#1a1a1c"/>
+        <Setter Property="GridLinesVisibility" Value="None"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="RowHeight" Value="48"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="AutoGenerateColumns" Value="False"/>
     </Style>
 
 </ResourceDictionary>

@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:GymManagementSystem"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
+
     <Grid Margin="0,20,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,16 +17,16 @@
             <TextBlock Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
 
             <TextBox x:Name="txtSearch" 
-             Style="{StaticResource ModernTextBox}"
-             Width="250" Margin="30,0,10,0" 
-             HorizontalAlignment="Left"
-             Tag="Search Name or ID..." 
-             TextChanged="Filter_Changed"/>
+                     Style="{StaticResource ModernTextBox}"
+                     Width="250" Margin="30,0,10,0" 
+                     HorizontalAlignment="Left"
+                     Tag="Search Name or ID..." 
+                     TextChanged="Filter_Changed"/>
 
             <ComboBox x:Name="cbStatusFilter" 
-              Style="{StaticResource ModernComboBox}"
-              Width="150" Height="40" 
-              SelectionChanged="Filter_Changed">
+                      Style="{StaticResource ModernComboBox}"
+                      Width="150" Height="40" 
+                      SelectionChanged="Filter_Changed">
                 <ComboBoxItem Content="All Status" IsSelected="True"/>
                 <ComboBoxItem Content="Active"/>
                 <ComboBoxItem Content="Pending"/>
@@ -53,17 +54,8 @@
         </DockPanel>
 
         <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
-            <DataGrid x:Name="dgMembers" AutoGenerateColumns="False" Background="Transparent" BorderThickness="0" 
-                      CanUserAddRows="False" RowHeaderWidth="0" GridLinesVisibility="None"
-                      Foreground="White" FontSize="14" RowHeight="60">
+            <DataGrid x:Name="dgMembers" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
                 <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="Gray"/>
-                        <Setter Property="Padding" Value="15,10"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                    </Style>
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
@@ -72,19 +64,6 @@
                                 <Setter Property="Background" Value="#1a1a1c"/>
                             </Trigger>
                         </Style.Triggers>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="Padding" Value="15,0"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
                     </Style>
                 </DataGrid.Resources>
 
@@ -100,7 +79,7 @@
                     <DataGridTemplateColumn Header="Status" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Ellipse Width="8" Height="8" Margin="0,0,8,0">
                                         <Ellipse.Style>
                                             <Style TargetType="Ellipse">
@@ -127,7 +106,7 @@
                     <DataGridTemplateColumn Header="Actions" Width="150">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Grid>
+                                <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="40"/>
                                         <ColumnDefinition Width="40"/>
@@ -135,7 +114,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <Button Grid.Column="0" Content="₱" FontSize="18" Cursor="Hand" 
-                        Click="PayMember_Click" CommandParameter="{Binding}" ToolTip="Process Payment">
+                                            Click="PayMember_Click" CommandParameter="{Binding}" ToolTip="Process Payment">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border Background="Transparent" BorderThickness="0">
@@ -157,7 +136,7 @@
                                     </Button>
 
                                     <Button Grid.Column="1" Content="✎" Foreground="#ff6b00" FontSize="18" Cursor="Hand" 
-                        Click="EditMember_Click" CommandParameter="{Binding MemberID}">
+                                            Click="EditMember_Click" CommandParameter="{Binding MemberID}">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border Background="Transparent" BorderThickness="0">
@@ -168,7 +147,7 @@
                                     </Button>
 
                                     <Button Grid.Column="2" Content="🗑" Foreground="#ff3333" FontSize="18" Cursor="Hand" 
-                        Click="DeleteMember_Click" CommandParameter="{Binding MemberID}">
+                                            Click="DeleteMember_Click" CommandParameter="{Binding MemberID}">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border Background="Transparent" BorderThickness="0">

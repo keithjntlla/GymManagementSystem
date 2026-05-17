@@ -144,23 +144,17 @@
             <StackPanel>
                 <DockPanel Margin="0,0,0,20">
                     <TextBlock Text="Today's Attendance" Foreground="White" FontSize="24" 
-                               FontWeight="Bold" VerticalAlignment="Center"/>
+                       FontWeight="Bold" VerticalAlignment="Center"/>
                     <TextBlock x:Name="lblTotalMembers" Text="Total: 0 members" Foreground="Gray" 
-                               FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                       FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                 </DockPanel>
 
-                <DataGrid x:Name="dgAttendanceLog" AutoGenerateColumns="False" Background="Transparent" 
-                          BorderThickness="0" CanUserAddRows="False" RowHeaderWidth="0" 
-                          GridLinesVisibility="None" Foreground="White" FontSize="14" RowHeight="50" 
-                          ItemsSource="{Binding TodayAttendance}">
+                <DataGrid x:Name="dgAttendanceLog" 
+                  Style="{StaticResource ModernDataGrid}"
+                  RowHeaderWidth="0" 
+                  ItemsSource="{Binding TodayAttendance}">
+
                     <DataGrid.Resources>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="Gray"/>
-                            <Setter Property="Padding" Value="15,10"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                        </Style>
                         <Style TargetType="DataGridRow">
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="BorderThickness" Value="0"/>
@@ -170,20 +164,8 @@
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="Padding" Value="15,0"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="DataGridCell">
-                                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                            <ContentPresenter VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
                     </DataGrid.Resources>
+
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1.5*"/>
                         <DataGridTextColumn Header="Membership Plan" Binding="{Binding MembershipType}" Width="1.5*"/>
@@ -193,9 +175,9 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Content="⏱ Time Out" Foreground="#ff6b00" Background="Transparent" 
-                                            BorderThickness="0" FontSize="12" Cursor="Hand" 
-                                            HorizontalAlignment="Left" Click="TimeOut_Click" 
-                                            CommandParameter="{Binding AttendanceID}" Padding="5,2">
+                                    BorderThickness="0" FontSize="12" Cursor="Hand" 
+                                    HorizontalAlignment="Left" Click="TimeOut_Click" 
+                                    CommandParameter="{Binding AttendanceID}" Padding="5,2">
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="IsEnabled" Value="True"/>

@@ -6,15 +6,14 @@
              xmlns:local="clr-namespace:GymManagementSystem.Views.Reports"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1000">
-    
-    <Grid x:Name="AttendanceReportGrid" Grid.Row="2" Grid.RowSpan="2" Margin="0,20,0,0">
+
+    <Grid x:Name="AttendanceReportGrid" Margin="0,20,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Toolbar -->
         <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
@@ -79,7 +78,6 @@
             </DockPanel>
         </Border>
 
-        <!-- Summary Cards -->
         <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
             <Border Style="{StaticResource SummaryCardStyle}" Background="#1a2a4a" Margin="0,0,8,0">
                 <DockPanel VerticalAlignment="Center">
@@ -109,66 +107,36 @@
             </Border>
         </UniformGrid>
 
-        <!-- Attendance DataGrid -->
-        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
-            <DataGrid x:Name="dgAttendanceReport" Background="Transparent" BorderThickness="0"
-                  Foreground="White" AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" RowBackground="Transparent"
-                  AlternatingRowBackground="#1a1a1c" GridLinesVisibility="Horizontal"
-                  HorizontalGridLinesBrush="#222" RowHeight="52" FontSize="14"
-                  HeadersVisibility="Column">
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="Gray"/>
-                        <Setter Property="Padding" Value="15,10"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="FontSize" Value="13"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#2a2a2c"/>
-                    </Style>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#202022"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="15,0" Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
+        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
+            <DataGrid x:Name="dgAttendanceReport" 
+                      Style="{StaticResource ModernDataGrid}"
+                      IsReadOnly="True"
+                      RowHeaderWidth="0"
+                      RowHeight="52" 
+                      FontSize="14"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Time of Entry" Binding="{Binding CheckInTime}"  Width="1.2*"/>
                     <DataGridTextColumn Header="Time Out"      Binding="{Binding CheckOutTime}" Width="1.2*"/>
-                    <DataGridTextColumn Header="Member Name"   Binding="{Binding Name}"         Width="2*">
+                    <DataGridTextColumn Header="Member Name"   Binding="{Binding Name}"          Width="2*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
+
                     <DataGridTemplateColumn Header="Membership Type" Width="1.5*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border x:Name="BadgeBorder" CornerRadius="6" Padding="10,4"
-                                    HorizontalAlignment="Left" VerticalAlignment="Center"
-                                    Background="#2a2a2c">
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        Background="#2a2a2c">
                                     <TextBlock x:Name="BadgeText" Text="{Binding MembershipType}"
-                                           FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                                               FontSize="12" FontWeight="SemiBold" Foreground="White"/>
                                 </Border>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding MembershipType}" Value="Daily">

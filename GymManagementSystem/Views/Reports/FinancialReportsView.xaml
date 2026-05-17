@@ -6,128 +6,104 @@
              xmlns:local="clr-namespace:GymManagementSystem.Views.Reports"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1000">
-    <Grid x:Name="FinancialReportGrid" Grid.Row="2" Grid.RowSpan="2" Margin="0,20,0,0">
+
+    <Grid x:Name="FinancialReportGrid" Margin="0,20,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Filters -->
         <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="15" Margin="0,0,0,25">
             <StackPanel Orientation="Horizontal">
                 <StackPanel Margin="0,0,20,0">
                     <TextBlock Text="Start Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <DatePicker x:Name="dpStart" Width="180" Height="40" 
-                        Style="{StaticResource ModernDatePicker}"
-                        SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+                                Style="{StaticResource ModernDatePicker}"
+                                SelectedDateChanged="DatePicker_SelectedDateChanged"/>
                 </StackPanel>
 
                 <StackPanel Margin="0,0,20,0">
                     <TextBlock Text="End Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <DatePicker x:Name="dpEnd" Width="180" Height="40" 
-                        Style="{StaticResource ModernDatePicker}"
-                        SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+                                Style="{StaticResource ModernDatePicker}"
+                                SelectedDateChanged="DatePicker_SelectedDateChanged"/>
                 </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="Filter by Plan" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <ComboBox x:Name="cbPlanFilter" 
-                            Width="180" 
-                            Height="40" 
-                            Style="{StaticResource ModernComboBox}"
-                            SelectionChanged="Filter_Changed">
+                              Width="180" 
+                              Height="40" 
+                              Style="{StaticResource ModernComboBox}"
+                              SelectionChanged="Filter_Changed">
                         <ComboBoxItem Content="All Plans" IsSelected="True"/>
                     </ComboBox>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <!-- Summary Cards -->
         <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,30">
             <Border Style="{StaticResource SummaryCardStyle}" Background="#1a3a2a">
                 <StackPanel VerticalAlignment="Center">
-                    <Border Width="40" Height="40" Background="#2a4a3a" CornerRadius="10"
-                        HorizontalAlignment="Left" Margin="0,0,0,15">
+                    <Border Width="40" Height="40" Background="#2a4a3a" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                         <TextBlock Text="💵" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="Total Revenue" Foreground="Gray" FontSize="14"/>
-                    <TextBlock x:Name="lblTotalRevenue" Text="₱0" Foreground="White"
-                           FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                    <TextBlock x:Name="lblTotalRevenue" Text="₱0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
             <Border Style="{StaticResource SummaryCardStyle}" Background="#1a2a4a">
                 <StackPanel VerticalAlignment="Center">
-                    <Border Width="40" Height="40" Background="#2a3a5a" CornerRadius="10"
-                        HorizontalAlignment="Left" Margin="0,0,0,15">
+                    <Border Width="40" Height="40" Background="#2a3a5a" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                         <TextBlock Text="👤" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="Walk-ins (₱90)" Foreground="Gray" FontSize="14"/>
-                    <TextBlock x:Name="lblWalkIns" Text="₱0" Foreground="White"
-                           FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
-                    <TextBlock x:Name="lblWalkInsCount" Text="0 transactions" Foreground="Gray"
-                           FontSize="12" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="lblWalkIns" Text="₱0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                    <TextBlock x:Name="lblWalkInsCount" Text="0 transactions" Foreground="Gray" FontSize="12" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
             <Border Style="{StaticResource SummaryCardStyle}" Background="#3a2a1a" Margin="0,0,0,0">
                 <StackPanel VerticalAlignment="Center">
-                    <Border Width="40" Height="40" Background="#4a3a2a" CornerRadius="10"
-                        HorizontalAlignment="Left" Margin="0,0,0,15">
+                    <Border Width="40" Height="40" Background="#4a3a2a" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                         <TextBlock Text="📄" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="Subscriptions" Foreground="LightGray" FontSize="14"/>
-                    <TextBlock x:Name="lblSubscriptions" Text="₱0" Foreground="White"
-                           FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
-                    <TextBlock x:Name="lblSubscriptionsCount" Text="0 transactions" Foreground="LightGray"
-                           FontSize="12" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="lblSubscriptions" Text="₱0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                    <TextBlock x:Name="lblSubscriptionsCount" Text="0 transactions" Foreground="LightGray" FontSize="12" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
         </UniformGrid>
 
-        <!-- Transaction DataGrid -->
-        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10,10,10,25" Margin="0,0,0,10">
+        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
             <DataGrid x:Name="dgTransactions" 
-                    Background="Transparent" 
-                    BorderThickness="0"
-                    Foreground="White" 
-                    AutoGenerateColumns="False" 
-                    IsReadOnly="True"
-                    CanUserAddRows="False" 
-                    RowBackground="Transparent"
-                    AlternatingRowBackground="#1a1a1c" 
-                    GridLinesVisibility="None" 
-                    HeadersVisibility="Column"
-                    RowHeaderWidth="0">
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="Gray"/>
-                        <Setter Property="Padding" Value="10"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#333"/>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="Padding" Value="10"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="{TemplateBinding Padding}"
-                                        Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
+                      Style="{StaticResource ModernDataGrid}"
+                      IsReadOnly="True"
+                      RowHeaderWidth="0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date"           Binding="{Binding DateOfTransaction}" Width="*"/>
                     <DataGridTextColumn Header="Member Name"    Binding="{Binding MemberName}"        Width="1.5*"/>
                     <DataGridTextColumn Header="Membership Plan" Binding="{Binding MembershipType}"    Width="*"/>
-                    <DataGridTextColumn Header="Amount"         Binding="{Binding AmountPaid, StringFormat=₱\{0:N0\}}" Width="*"/>
-                    <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMode}"       Width="*"/>
+                    <DataGridTextColumn Header="Amount"         Binding="{Binding AmountPaid, StringFormat=₱\{0:N0\}}" Width="*" Foreground="#4caf50" FontWeight="SemiBold"/>
+
+                    <DataGridTemplateColumn Header="Mode" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border x:Name="modeBorder" CornerRadius="6" Padding="6,3" Background="#1a2b1a" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock x:Name="modeText" Text="{Binding PaymentMode}" Foreground="#81c784" FontSize="11"/>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding PaymentMode}" Value="GCash">
+                                        <Setter TargetName="modeBorder" Property="Background" Value="#0d1f3d"/>
+                                        <Setter TargetName="modeText" Property="Foreground" Value="#4a90e2"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
