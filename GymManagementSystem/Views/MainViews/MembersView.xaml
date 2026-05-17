@@ -41,23 +41,17 @@
                 <ComboBoxItem Content="Expired"/>
             </ComboBox>
 
-            <Button Grid.Column="3" Padding="20,10" Background="Transparent" BorderThickness="0" Click="AddMember_Click" VerticalAlignment="Center">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="10">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="#ff6b00" Offset="0"/>
-                                    <GradientStop Color="#ff0000" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <StackPanel Orientation="Horizontal" Margin="15,5">
-                                <TextBlock Text="+" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Add New Member" Foreground="White" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
+            <Button Grid.Column="3" 
+                    Style="{StaticResource ModernGradientButton}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="AddMember_Click">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Add Member" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button.Content>
             </Button>
         </Grid>
 

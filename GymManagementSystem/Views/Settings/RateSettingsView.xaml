@@ -16,58 +16,16 @@
 
         <DockPanel Grid.Row="0" Margin="0,0,0,25">
             <TextBlock Text="Membership Rates &amp; Plans" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,25"/>
-            
-            <Button HorizontalAlignment="Right" 
-                    Padding="25,12" 
-                    FontWeight="Bold" 
-                    FontSize="15"
-                    Foreground="White" 
-                    BorderThickness="0" 
-                    Cursor="Hand"
+
+            <Button Style="{StaticResource ModernGradientButton}"
+                    HorizontalAlignment="Right"
                     Click="AddRate_Click">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Add New Plan" VerticalAlignment="Center"/>
+                        <TextBlock Text="Add New Rate" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button.Content>
-
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="btnBorder" 
-                                            CornerRadius="20" 
-                                            Padding="{TemplateBinding Padding}">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                <GradientStop Color="#FF5722" Offset="0.0"/>
-                                                <GradientStop Color="#FF1100" Offset="1.0"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                        <Border.Effect>
-                                            <DropShadowEffect BlurRadius="15" Direction="270" ShadowDepth="2" Opacity="0.3" Color="#FF1100"/>
-                                        </Border.Effect>
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="btnBorder" Property="Opacity" Value="0.9"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="btnBorder" Property="RenderTransform">
-                                                <Setter.Value>
-                                                    <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
             </Button>
         </DockPanel>
 

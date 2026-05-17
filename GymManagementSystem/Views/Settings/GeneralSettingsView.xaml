@@ -49,24 +49,19 @@
                             </Border>
 
                             <StackPanel VerticalAlignment="Center" Margin="25,0,0,0">
-                                <Button Height="40" Padding="25,0" Click="BtnUploadLogo_Click" Cursor="Hand">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border CornerRadius="8" x:Name="border">
-                                                <Border.Background>
-                                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                                        <GradientStop Color="#ff6b00" Offset="0"/>
-                                                        <GradientStop Color="#ff3d00" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Border.Background>
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15,0">
-                                                    <TextBlock Text="📷" Margin="0,0,10,0" Foreground="White" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Upload Logo" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Button.Template>
+                                
+                                <Button Style="{StaticResource ModernGradientButton}"
+                                        HorizontalAlignment="Right"
+                                        Click="BtnUploadLogo_Click"
+                                        Cursor="Hand">
+                                    <Button.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="📷" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Upload Logo" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button.Content>
                                 </Button>
+
                                 <TextBlock Text="Recommended size: 512x512px" Foreground="#555" Margin="0,10,0,0" FontSize="12"/>
                             </StackPanel>
                         </StackPanel>

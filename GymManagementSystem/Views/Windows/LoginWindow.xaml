@@ -72,35 +72,12 @@
                        Margin="0,15,0,30" Cursor="Hand" FontSize="14"
                        MouseLeftButtonUp="ForgotPassword_Click"/>
 
-            <Button x:Name="btnSignIn" Content="Sign In" Height="55" FontSize="18" 
+            <Button Style="{StaticResource ModernGradientButton}"
+                    Height="55" FontSize="18" Width="368"
                     FontWeight="Bold" Foreground="White" BorderThickness="0"
+                    HorizontalAlignment="Right"
+                    Content="Sign In"
                     Click="btnSignIn_Click">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="#ff6b00" Offset="0"/>
-                                    <GradientStop Color="#ff0000" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="15">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
             </Button>
 
         </StackPanel>

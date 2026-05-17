@@ -1,9 +1,10 @@
+using GymManagementSystem.Views.MainViews;
+using GymManagementSystem.Views.Windows;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
-using System.Data.SQLite;
-using GymManagementSystem.Views.MainViews;
 
 namespace GymManagementSystem.Views.MainViews
 {
@@ -29,16 +30,15 @@ namespace GymManagementSystem.Views.MainViews
         public HomeView()
         {
             InitializeComponent();
-            DatabaseHelper.ProfileUpdated += RefreshHeader; // Subscribe[cite: 19]
+            DatabaseHelper.ProfileUpdated += RefreshHeader;
             RefreshHeader();
             LoadDashboardData();
         }
 
         private void RefreshHeader()
         {
-            var profile = DatabaseHelper.GetGymProfile();
-            string gymName = profile.GetValueOrDefault("GymName", "Gym");
-            txtWelcomeMessage.Text = $"Welcome to {gymName}! Here's what's happening today.";
+            string username = LoginWindow.CurrentUser?.Username ?? "User";
+            txtWelcomeMessage.Text = $"Welcome back, {username}! Here's what's happening today.";
         }
 
         private void LoadDashboardData()
