@@ -4,26 +4,26 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" d:DesignHeight="800" d:DesignWidth="1100">
-    <Grid Margin="0,15,0,0">
+
+    <Grid Margin="0,10,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header Section -->
-        <Grid Margin="0,0,0,30">
+        <DockPanel Grid.Row="0" Margin="0,0,0,25">
             <TextBlock Text="User Accounts &amp; Staff Management" 
-                       Foreground="White" FontSize="26" FontWeight="SemiBold" 
+                       Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,25"
                        VerticalAlignment="Center"/>
 
             <Button HorizontalAlignment="Right"
-        Padding="25,12"
-        FontWeight="Bold"
-        FontSize="15"
-        Foreground="White"
-        BorderThickness="0"
-        Cursor="Hand"
-        Click="btnAddUser_Click">
+                    Padding="25,12"
+                    FontWeight="Bold"
+                    FontSize="15"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="btnAddUser_Click">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
@@ -36,8 +36,8 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="btnBorder"
-                                CornerRadius="20"
-                                Padding="{TemplateBinding Padding}">
+                                            CornerRadius="20"
+                                            Padding="{TemplateBinding Padding}">
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                                 <GradientStop Color="#FF5722" Offset="0.0"/>
@@ -67,64 +67,33 @@
                     </Style>
                 </Button.Style>
             </Button>
-        </Grid>
+        </DockPanel>
 
-        <!-- Large Table Container -->
-        <Border Grid.Row="1" Background="#121212" CornerRadius="12" BorderBrush="#252525" BorderThickness="1">
-            <DataGrid x:Name="dgUsers" Background="Transparent" Foreground="White" 
-                      AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="0"
-                      RowHeight="80" HeadersVisibility="Column" GridLinesVisibility="None"
-                      CanUserAddRows="False" SelectionMode="Single" HorizontalScrollBarVisibility="Disabled">
-
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="#666"/>
-                        <Setter Property="Padding" Value="25,20"/>
-                        <Setter Property="FontSize" Value="15"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#252525"/>
-                    </Style>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#181818"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="15,0" Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
+        <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
+            <DataGrid x:Name="dgUsers" 
+                      Style="{StaticResource ModernDataGrid}"
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True" 
+                      RowHeaderWidth="0"
+                      RowHeight="70" 
+                      CanUserAddRows="False" 
+                      SelectionMode="Single" 
+                      HorizontalScrollBarVisibility="Disabled">
 
                 <DataGrid.Columns>
-                    <!-- Username Column -->
                     <DataGridTemplateColumn Header="Username" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Username}" VerticalAlignment="Center" 
-                                           Margin="25,0,0,0" Foreground="White" FontSize="16"/>
+                                           Foreground="White" FontSize="15" Margin="10,0,0,0"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Role Badge Column -->
                     <DataGridTemplateColumn Header="Role" Width="200">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="12" Padding="15,6" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Border CornerRadius="8" Padding="12,5" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="#2D1A3D"/>
@@ -135,7 +104,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="{Binding Role}" FontSize="13" FontWeight="SemiBold">
+                                    <TextBlock Text="{Binding Role}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Foreground" Value="#B176F0"/>
@@ -152,11 +121,10 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Status Badge Column -->
                     <DataGridTemplateColumn Header="Status" Width="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="12" Padding="15,6" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Border CornerRadius="8" Padding="12,5" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="#1A3D25"/>
@@ -167,7 +135,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="{Binding Status}" FontSize="13" FontWeight="SemiBold" Foreground="#5BE582">
+                                    <TextBlock Text="{Binding Status}" FontSize="13" FontWeight="SemiBold" Foreground="#5BE582" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Style.Triggers>
@@ -183,13 +151,12 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Actions Column -->
                     <DataGridTemplateColumn Header="Actions" Width="160">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Width="110" Height="34" FontSize="13"
-                    Background="#222" Foreground="#AAA" BorderThickness="0"
-                    VerticalAlignment="Center" Cursor="Hand" Click="btnToggleStatus_Click">
+                                        Background="#222" Foreground="#AAA" BorderThickness="0"
+                                        VerticalAlignment="Center" Cursor="Hand" Click="btnToggleStatus_Click">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <Border Background="{TemplateBinding Background}" CornerRadius="6">

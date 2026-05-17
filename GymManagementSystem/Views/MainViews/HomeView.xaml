@@ -109,7 +109,15 @@
                     <DataGrid x:Name="dgRecentTransactions" Style="{StaticResource ModernDataGrid}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Member" Binding="{Binding MemberName}" Width="2*"/>
-                            <DataGridTextColumn Header="Plan" Binding="{Binding MembershipType}" Width="1.2*"/>
+
+                            <DataGridTemplateColumn Header="Plan" Width="1.2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ContentControl Content="{Binding MembershipType}" 
+                            Style="{StaticResource MembershipPlanBadge}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                             <DataGridTemplateColumn Header="Amount" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>

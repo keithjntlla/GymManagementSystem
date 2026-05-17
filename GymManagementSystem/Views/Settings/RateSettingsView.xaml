@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="1000">
+             d:DesignHeight="800" d:DesignWidth="1100">
 
     <Grid Margin="0,10,0,0">
         <Grid.RowDefinitions>
@@ -15,15 +15,16 @@
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0" Margin="0,0,0,25">
-            <TextBlock Text="Membership Rates &amp; Plans" Foreground="White" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="Membership Rates &amp; Plans" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,25"/>
+            
             <Button HorizontalAlignment="Right" 
-                Padding="25,12" 
-                FontWeight="Bold" 
-                FontSize="15"
-                Foreground="White" 
-                BorderThickness="0" 
-                Cursor="Hand"
-                Click="AddRate_Click">
+                    Padding="25,12" 
+                    FontWeight="Bold" 
+                    FontSize="15"
+                    Foreground="White" 
+                    BorderThickness="0" 
+                    Cursor="Hand"
+                    Click="AddRate_Click">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
@@ -37,8 +38,8 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="btnBorder" 
-                                CornerRadius="20" 
-                                Padding="{TemplateBinding Padding}">
+                                            CornerRadius="20" 
+                                            Padding="{TemplateBinding Padding}">
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                                 <GradientStop Color="#FF5722" Offset="0.0"/>
@@ -71,37 +72,21 @@
         </DockPanel>
 
         <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
-            <DataGrid x:Name="dgRates" AutoGenerateColumns="False" CanUserAddRows="False" 
-                      Background="Transparent" Foreground="White" BorderThickness="0"
-                      RowBackground="Transparent" AlternatingRowBackground="#1a1a1c" 
-                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#222"
-                      HeadersVisibility="Column" RowHeight="60" FontSize="15">
-
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="Gray"/>
-                        <Setter Property="Padding" Value="15,10"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#333"/>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="15,0" Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </DataGrid.Resources>
-
+            <DataGrid x:Name="dgRates" 
+                      Style="{StaticResource ModernDataGrid}"
+                      AutoGenerateColumns="False" 
+                      CanUserAddRows="False"
+                      RowHeaderWidth="0">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Plan Name" Binding="{Binding PlanName}" Width="1.5*"/>
+                    <DataGridTemplateColumn Header="Plan Name" Width="1.5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ContentControl Content="{Binding PlanName}" 
+                                                Style="{StaticResource MembershipPlanBadge}"
+                                                VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
                     <DataGridTemplateColumn Header="Price (₱)" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
@@ -116,7 +101,7 @@
                     <DataGridTemplateColumn Header="Actions" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Click="EditRate_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,15,0">
                                         <TextBlock Text="" FontFamily="Segoe UI Symbol" Foreground="#ff9800" FontSize="18"/>
                                     </Button>
@@ -140,42 +125,21 @@
                 </DockPanel>
 
                 <Border Background="#141416" CornerRadius="15" Padding="10">
-                    <DataGrid x:Name="dgArchivedRates" AutoGenerateColumns="False" CanUserAddRows="False"
-                              Background="Transparent" Foreground="#888" BorderThickness="0"
-                              RowBackground="Transparent" AlternatingRowBackground="#1a1a1c"
-                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#222"
-                              HeadersVisibility="Column" RowHeight="55" FontSize="14" MaxHeight="220">
-
-                        <DataGrid.Resources>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="#555"/>
-                                <Setter Property="Padding" Value="15,10"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                <Setter Property="BorderBrush" Value="#2a2a2a"/>
-                            </Style>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="DataGridCell">
-                                            <Border Padding="15,0" Background="{TemplateBinding Background}">
-                                                <ContentPresenter VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </DataGrid.Resources>
-
+                    <DataGrid x:Name="dgArchivedRates" 
+                              Style="{StaticResource ModernDataGrid}"
+                              AutoGenerateColumns="False" 
+                              CanUserAddRows="False"
+                              RowHeaderWidth="0"
+                              MaxHeight="220">
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Header="Plan Name" Width="1.5*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding PlanName}" Foreground="#666" VerticalAlignment="Center"/>
-                                            <Border Background="#2a2a2a" CornerRadius="4" Padding="6,2" Margin="8,0,0,0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ContentControl Content="{Binding PlanName}" 
+                                                            Style="{StaticResource MembershipPlanBadge}"
+                                                            Opacity="0.6"/>
+                                            <Border Background="#2a2a2a" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
                                                 <TextBlock Text="ARCHIVED" Foreground="#555" FontSize="10" FontWeight="Bold"/>
                                             </Border>
                                         </StackPanel>
@@ -197,7 +161,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Button Click="RestorePlan_Click" Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                                ToolTip="Restore plan to active">
+                                                ToolTip="Restore plan to active" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="↩" FontSize="16" Foreground="#4090f0" Margin="0,0,5,0" VerticalAlignment="Center"/>
                                                 <TextBlock Text="Restore" Foreground="#4090f0" FontSize="12" VerticalAlignment="Center"/>

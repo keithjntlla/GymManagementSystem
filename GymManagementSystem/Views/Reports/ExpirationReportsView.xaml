@@ -24,9 +24,9 @@
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
                     <TextBlock Text="Expiration Window" Foreground="Gray" FontSize="12" Margin="0,0,0,8"/>
                     <ComboBox x:Name="cbExpirationWindow" Width="220" Height="40"
-                          Style="{StaticResource ModernComboBox}"
-                          SelectionChanged="CbExpirationWindow_SelectionChanged">
-                        <ComboBoxItem Content="Expiring Today"           IsSelected="True"/>
+                              Style="{StaticResource ModernComboBox}"
+                              SelectionChanged="CbExpirationWindow_SelectionChanged">
+                        <ComboBoxItem Content="Expiring Today" IsSelected="True"/>
                         <ComboBoxItem Content="Expiring within 3 Days"/>
                         <ComboBoxItem Content="Expiring within 7 Days"/>
                         <ComboBoxItem Content="Expired (Past 30 Days)"/>
@@ -36,15 +36,15 @@
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Search Member" Foreground="Gray" FontSize="12" Margin="0,0,0,8"/>
                     <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1"
-                        CornerRadius="8" Padding="10,0" Height="40">
+                            CornerRadius="8" Padding="10,0" Height="40">
                         <DockPanel VerticalAlignment="Center">
                             <TextBlock Text="🔍" FontSize="14" Foreground="Gray"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" DockPanel.Dock="Left"/>
+                                       VerticalAlignment="Center" Margin="0,0,8,0" DockPanel.Dock="Left"/>
                             <TextBox x:Name="txtExpirationSearch" Background="Transparent"
-                                 BorderThickness="0" Foreground="White" CaretBrush="White"
-                                 FontSize="13" VerticalAlignment="Center"
-                                 Tag="Search by member name..."
-                                 TextChanged="TxtExpirationSearch_TextChanged">
+                                     BorderThickness="0" Foreground="White" CaretBrush="White"
+                                     FontSize="13" VerticalAlignment="Center"
+                                     Tag="Search by member name..."
+                                     TextChanged="TxtExpirationSearch_TextChanged">
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
                                         <Setter Property="Template">
@@ -52,12 +52,12 @@
                                                 <ControlTemplate TargetType="TextBox">
                                                     <Grid>
                                                         <ScrollViewer x:Name="PART_ContentHost"
-                                                                  Background="Transparent"
-                                                                  VerticalAlignment="Center"/>
+                                                                      Background="Transparent"
+                                                                      VerticalAlignment="Center"/>
                                                         <TextBlock Foreground="Gray" FontSize="13"
-                                                               VerticalAlignment="Center"
-                                                               IsHitTestVisible="False"
-                                                               Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
+                                                                   VerticalAlignment="Center"
+                                                                   IsHitTestVisible="False"
+                                                                   Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
                                                             <TextBlock.Style>
                                                                 <Style TargetType="TextBlock">
                                                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -129,10 +129,10 @@
                                 <Setter Property="Background" Value="#1f0a0a"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
-                                <Setter Property="Background" Value="#1a1500"/>
+                                <Setter Property="Background" Value="#291407"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
-                                <Setter Property="Background" Value="#050d1a"/>
+                                <Setter Property="Background" Value="#1a1500"/>
                             </DataTrigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="#252528"/>
@@ -170,31 +170,9 @@
                     <DataGridTemplateColumn Header="Plan Type" Width="1.2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border x:Name="PlanBadge" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#2a2a2c">
-                                    <TextBlock x:Name="PlanText" Text="{Binding PlanType}" FontSize="12" FontWeight="SemiBold" Foreground="White"/>
-                                </Border>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding PlanType}" Value="Daily">
-                                        <Setter TargetName="PlanBadge" Property="Background" Value="#3a2200"/>
-                                        <Setter TargetName="PlanText"  Property="Foreground" Value="#ff9940"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding PlanType}" Value="Weekly">
-                                        <Setter TargetName="PlanBadge" Property="Background" Value="#0a2a2a"/>
-                                        <Setter TargetName="PlanText"  Property="Foreground" Value="#30c0b0"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding PlanType}" Value="Half-Month">
-                                        <Setter TargetName="PlanBadge" Property="Background" Value="#251a3a"/>
-                                        <Setter TargetName="PlanText"  Property="Foreground" Value="#a070f0"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding PlanType}" Value="Monthly">
-                                        <Setter TargetName="PlanBadge" Property="Background" Value="#0a1a3a"/>
-                                        <Setter TargetName="PlanText"  Property="Foreground" Value="#4090f0"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding PlanType}" Value="Yearly">
-                                        <Setter TargetName="PlanBadge" Property="Background" Value="#0a2a1a"/>
-                                        <Setter TargetName="PlanText"  Property="Foreground" Value="#30c070"/>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
+                                <ContentControl Content="{Binding PlanType}" 
+                                                Style="{StaticResource MembershipPlanBadge}"
+                                                VerticalAlignment="Center"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -223,11 +201,12 @@
                                         <Setter TargetName="ProgressTrack" Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
-                                        <Setter TargetName="DaysLabel"    Property="Foreground" Value="#ffcc00"/>
-                                        <Setter TargetName="ProgressFill" Property="Background" Value="#ffcc00"/>
+                                        <Setter TargetName="DaysLabel"    Property="Foreground" Value="#ff6b00"/>
+                                        <Setter TargetName="ProgressFill" Property="Background" Value="#ff6b00"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
-                                        <Setter TargetName="DaysLabel" Property="Foreground" Value="White"/>
+                                        <Setter TargetName="DaysLabel" Property="Foreground" Value="#ffcc00"/>
+                                        <Setter TargetName="ProgressFill" Property="Background" Value="#ffcc00"/>
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
@@ -247,12 +226,12 @@
                                         <Setter TargetName="StatusLabel" Property="Foreground" Value="#ff4060"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
-                                        <Setter TargetName="StatusDot"   Property="Fill"       Value="#ffcc00"/>
-                                        <Setter TargetName="StatusLabel" Property="Foreground" Value="#ffcc00"/>
+                                        <Setter TargetName="StatusDot"   Property="Fill"       Value="#ff6b00"/>
+                                        <Setter TargetName="StatusLabel" Property="Foreground" Value="#ff6b00"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
-                                        <Setter TargetName="StatusDot"   Property="Fill"       Value="#4090f0"/>
-                                        <Setter TargetName="StatusLabel" Property="Foreground" Value="#4090f0"/>
+                                        <Setter TargetName="StatusDot"   Property="Fill"       Value="#ffcc00"/>
+                                        <Setter TargetName="StatusLabel" Property="Foreground" Value="#ffcc00"/>
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>

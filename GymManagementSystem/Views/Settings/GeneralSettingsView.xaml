@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="General Gym Information" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+        <TextBlock Grid.Row="0" Text="General Gym Information" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,25"/>
 
         <!-- Main Scrollable Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

@@ -89,7 +89,17 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date"           Binding="{Binding DateOfTransaction}" Width="*"/>
                     <DataGridTextColumn Header="Member Name"    Binding="{Binding MemberName}"        Width="1.5*"/>
-                    <DataGridTextColumn Header="Membership Plan" Binding="{Binding MembershipType}"    Width="*"/>
+                    
+                    <DataGridTemplateColumn Header="Plan Type" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ContentControl Content="{Binding MembershipType}" 
+                            Style="{StaticResource MembershipPlanBadge}"
+                            VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                     <DataGridTextColumn Header="Amount"         Binding="{Binding AmountPaid, StringFormat=₱\{0:N0\}}" Width="*" Foreground="#4caf50" FontWeight="SemiBold"/>
 
                     <DataGridTemplateColumn Header="Mode" Width="*">

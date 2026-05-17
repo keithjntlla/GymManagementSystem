@@ -10,6 +10,7 @@
             <Setter Property="Foreground" Value="Gray"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="FontSize" Value="16"/>
+            <Setter Property="GroupName" Value="SidebarGroup"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
@@ -42,6 +43,11 @@
                             </Trigger>
                             <Trigger Property="Content" Value="Settings">
                                 <Setter TargetName="icon" Property="Text" Value=""/>
+                            </Trigger>
+
+                            <Trigger Property="Content" Value="Log Out">
+                                <Setter TargetName="icon" Property="Text" Value=""/>
+                                <Setter Property="Foreground" Value="#ff6b6b"/>
                             </Trigger>
 
                             <Trigger Property="IsChecked" Value="True">
@@ -81,7 +87,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                            <Image x:Name="imgSidebarLogo" 
+                        <Image x:Name="imgSidebarLogo" 
                                Source="/Assets/logo.png" 
                                Width="30" 
                                Height="30" 
@@ -90,20 +96,19 @@
                                Grid.Column="0"/>
 
                         <TextBlock x:Name="txtSidebarGymName" 
-                           Text="Gym Dashboard" 
-                           Foreground="White" 
-                           FontSize="18" 
-                           FontWeight="Bold" 
-                           VerticalAlignment="Center"
-                           TextWrapping="Wrap"
-                           TextTrimming="CharacterEllipsis"
-                           MaxHeight="50"
-                           Grid.Column="1"/>
+                                   Text="Gym Dashboard" 
+                                   Foreground="White" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxHeight="50"
+                                   Grid.Column="1"/>
                     </Grid>
 
                     <RadioButton Content="Home" IsChecked="True" Style="{StaticResource MenuButtonStyle}" Click="NavHome_Click"/>
                     <RadioButton Content="Members" Style="{StaticResource MenuButtonStyle}" Click="NavMembers_Click"/>
-
                     <RadioButton x:Name="btnNavPayments" Content="Payments" Style="{StaticResource MenuButtonStyle}" Click="NavPayments_Click"/>
                     <RadioButton Content="Attendance" Style="{StaticResource MenuButtonStyle}" Click="NavAttendance_Click"/>
 
@@ -113,12 +118,11 @@
                     <RadioButton x:Name="btnNavSettings" Content="Settings" Style="{StaticResource MenuButtonStyle}" Click="NavSettings_Click"/>
                 </StackPanel>
 
-                <Button VerticalAlignment="Bottom" Margin="20,0,20,30" Background="Transparent" BorderThickness="0" Click="Logout_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="" FontFamily="Segoe UI Symbol" Foreground="#ff6b6b" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="LOG OUT" Foreground="#ff6b6b" FontWeight="Bold" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                <StackPanel VerticalAlignment="Bottom" Margin="10,0,10,30">
+                    <RadioButton Content="Log Out" 
+                                 Style="{StaticResource MenuButtonStyle}" 
+                                 Click="Logout_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
 

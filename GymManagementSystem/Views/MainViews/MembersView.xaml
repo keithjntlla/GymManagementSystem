@@ -13,19 +13,27 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="0,0,0,30">
-            <TextBlock Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+        <Grid Grid.Row="0" Margin="0,0,0,30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
 
             <TextBox x:Name="txtSearch" 
+                     Grid.Column="1"
                      Style="{StaticResource ModernTextBox}"
-                     Width="250" Margin="30,0,10,0" 
-                     HorizontalAlignment="Left"
+                     Width="250" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
                      Tag="Search Name or ID..." 
                      TextChanged="Filter_Changed"/>
 
             <ComboBox x:Name="cbStatusFilter" 
+                      Grid.Column="2"
                       Style="{StaticResource ModernComboBox}"
-                      Width="150" Height="40" 
+                      Width="150" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
                       SelectionChanged="Filter_Changed">
                 <ComboBoxItem Content="All Status" IsSelected="True"/>
                 <ComboBoxItem Content="Active"/>
@@ -33,7 +41,7 @@
                 <ComboBoxItem Content="Expired"/>
             </ComboBox>
 
-            <Button HorizontalAlignment="Right" Padding="20,10" Background="Transparent" BorderThickness="0" Click="AddMember_Click">
+            <Button Grid.Column="3" Padding="20,10" Background="Transparent" BorderThickness="0" Click="AddMember_Click" VerticalAlignment="Center">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border CornerRadius="10">
@@ -51,7 +59,7 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-        </DockPanel>
+        </Grid>
 
         <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgMembers" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
