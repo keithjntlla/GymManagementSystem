@@ -26,6 +26,7 @@ namespace GymManagementSystem.Views.Windows
             // Load the dashboard by default
             MainFrame.Content = new HomeView();
         }
+
         // In MainWindow.xaml.cs
         private void RefreshBranding()
         {
@@ -33,7 +34,7 @@ namespace GymManagementSystem.Views.Windows
 
             // Update Gym Name text
             string gymName = profile.GetValueOrDefault("GymName", "Gym");
-            txtSidebarGymName.Text = $"{gymName} Dashboard";
+            txtSidebarGymName.Text = $"{gymName}";
 
             // Update Sidebar Logo instantly
             string logoPath = profile.GetValueOrDefault("LogoPath", "");
