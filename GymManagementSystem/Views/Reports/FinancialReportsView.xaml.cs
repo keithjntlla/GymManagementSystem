@@ -134,10 +134,16 @@ public partial class FinancialReportsView : UserControl
                             Transactions.Add(record);
                             totalRevenue += record.AmountPaid;
 
-                            if (record.MembershipType == "Daily")
-                            { walkInRevenue += record.AmountPaid; walkInCount++; }
+                            if (string.Equals(record.MembershipType, "Daily", StringComparison.OrdinalIgnoreCase))
+                            {
+                                walkInRevenue += record.AmountPaid;
+                                walkInCount++;
+                            }
                             else
-                            { subscriptionRevenue += record.AmountPaid; subscriptionCount++; }
+                            {
+                                subscriptionRevenue += record.AmountPaid;
+                                subscriptionCount++;
+                            }
                         }
                     }
                 }

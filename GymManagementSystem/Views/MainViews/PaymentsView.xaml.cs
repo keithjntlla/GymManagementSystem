@@ -20,7 +20,7 @@ namespace GymManagementSystem.Views.MainViews
         public PaymentsView()
         {
             InitializeComponent();
-            lblTransactionDate.Text = DateTime.Now.ToString("M/d/yyyy");
+            lblTransactionDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
             LoadDynamicRates();
         }
 
@@ -92,7 +92,7 @@ namespace GymManagementSystem.Views.MainViews
             {
                 newExpiry = DateTime.Today.AddDays(selectedDurationDays);
             }
-            lblNewExpiryDate.Text = newExpiry.ToString("M/d/yyyy"); ;
+            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd"); ;
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)

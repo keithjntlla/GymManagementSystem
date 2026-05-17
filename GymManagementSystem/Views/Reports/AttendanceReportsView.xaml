@@ -17,38 +17,23 @@
         <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
-                    <Button x:Name="btnPrevDay" Content="‹" Style="{StaticResource NavButtonStyle}"
-                        Click="BtnPrevDay_Click" Margin="0,0,8,0"/>
-                    <DatePicker x:Name="dpAttendanceDate" Width="160"
-                            Style="{StaticResource ModernDatePicker}"
-                            SelectedDateChanged="DpAttendanceDate_SelectedDateChanged"/>
-                    <Button x:Name="btnNextDay" Content="›" Style="{StaticResource NavButtonStyle}"
-                        Click="BtnNextDay_Click" Margin="8,0,0,0"/>
+                    <Button x:Name="btnPrevDay" Content="‹" Style="{StaticResource NavButtonStyle}" Click="BtnPrevDay_Click" Margin="0,0,8,0"/>
+                    <DatePicker x:Name="dpAttendanceDate" Width="160" Style="{StaticResource ModernDatePicker}" SelectedDateChanged="DpAttendanceDate_SelectedDateChanged"/>
+                    <Button x:Name="btnNextDay" Content="›" Style="{StaticResource NavButtonStyle}" Click="BtnNextDay_Click" Margin="8,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1"
-                        CornerRadius="8" Padding="8,0" Width="280" Height="36" Margin="0,0,8,0">
+                    <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="8,0" Width="280" Height="36" Margin="0,0,8,0">
                         <DockPanel VerticalAlignment="Center">
-                            <TextBlock Text="🔍" FontSize="14" Foreground="Gray"
-                                   VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
-                            <TextBox x:Name="txtAttendanceSearch" Background="Transparent"
-                                 BorderThickness="0" Foreground="White" CaretBrush="White"
-                                 FontSize="13" VerticalAlignment="Center"
-                                 Tag="Search member name or type..."
-                                 TextChanged="TxtAttendanceSearch_TextChanged">
+                            <TextBlock Text="🔍" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
+                            <TextBox x:Name="txtAttendanceSearch" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" FontSize="13" VerticalAlignment="Center" Tag="Search member name or type..." TextChanged="TxtAttendanceSearch_TextChanged">
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="TextBox">
                                                     <Grid>
-                                                        <ScrollViewer x:Name="PART_ContentHost"
-                                                                  Background="Transparent"
-                                                                  VerticalAlignment="Center"/>
-                                                        <TextBlock Foreground="Gray" FontSize="13"
-                                                               VerticalAlignment="Center"
-                                                               IsHitTestVisible="False"
-                                                               Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
+                                                        <ScrollViewer x:Name="PART_ContentHost" Background="Transparent" VerticalAlignment="Center"/>
+                                                        <TextBlock Foreground="Gray" FontSize="13" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
                                                             <TextBlock.Style>
                                                                 <Style TargetType="TextBlock">
                                                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -69,10 +54,8 @@
                             </TextBox>
                         </DockPanel>
                     </Border>
-                    <Button x:Name="btnRefreshAttendance" Style="{StaticResource IconButtonStyle}"
-                        Click="BtnRefreshAttendance_Click" ToolTip="Refresh">
-                        <TextBlock Text="↺" FontSize="18" Foreground="White"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Button x:Name="btnRefreshAttendance" Style="{StaticResource IconButtonStyle}" Click="BtnRefreshAttendance_Click" ToolTip="Refresh">
+                        <TextBlock Text="↺" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
             </DockPanel>
@@ -83,11 +66,9 @@
                 <DockPanel VerticalAlignment="Center">
                     <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
                         <TextBlock Text="Total Visitors Today" Foreground="#8899bb" FontSize="13"/>
-                        <TextBlock x:Name="lblTotalVisitors" Text="0" Foreground="White"
-                               FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="lblTotalVisitors" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Width="48" Height="48" Background="#2a3a5a" CornerRadius="12"
-                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Border Width="48" Height="48" Background="#2a3a5a" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock Text="👥" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </DockPanel>
@@ -96,11 +77,9 @@
                 <DockPanel VerticalAlignment="Center">
                     <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
                         <TextBlock Text="Peak Hour" Foreground="#bb8866" FontSize="13"/>
-                        <TextBlock x:Name="lblPeakHour" Text="--" Foreground="White"
-                               FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="lblPeakHour" Text="--" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Width="48" Height="48" Background="#5a3010" CornerRadius="12"
-                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Border Width="48" Height="48" Background="#5a3010" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <TextBlock Text="📈" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </DockPanel>
@@ -117,9 +96,9 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Time of Entry" Binding="{Binding CheckInTime}"  Width="1.2*"/>
-                    <DataGridTextColumn Header="Time Out"      Binding="{Binding CheckOutTime}" Width="1.2*"/>
-                    <DataGridTextColumn Header="Member Name"   Binding="{Binding Name}"          Width="2*">
+                    <DataGridTextColumn Header="Time of Entry" Binding="{Binding CheckInTime}" Width="1.2*"/>
+                    <DataGridTextColumn Header="Time Out" Binding="{Binding CheckOutTime}" Width="1.2*"/>
+                    <DataGridTextColumn Header="Member Name" Binding="{Binding Name}" Width="2*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="FontWeight" Value="SemiBold"/>
@@ -129,37 +108,11 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Header="Membership Type" Width="1.5*">
+                    <DataGridTemplateColumn Header="Membership Plan" Width="1.5*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border x:Name="BadgeBorder" CornerRadius="6" Padding="10,4"
-                                        HorizontalAlignment="Left" VerticalAlignment="Center"
-                                        Background="#2a2a2c">
-                                    <TextBlock x:Name="BadgeText" Text="{Binding MembershipType}"
-                                               FontSize="12" FontWeight="SemiBold" Foreground="White"/>
-                                </Border>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding MembershipType}" Value="Daily">
-                                        <Setter TargetName="BadgeBorder" Property="Background" Value="#3a2200"/>
-                                        <Setter TargetName="BadgeText"   Property="Foreground" Value="#ff9940"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding MembershipType}" Value="Weekly">
-                                        <Setter TargetName="BadgeBorder" Property="Background" Value="#0a2a2a"/>
-                                        <Setter TargetName="BadgeText"   Property="Foreground" Value="#30c0b0"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding MembershipType}" Value="Half-Month">
-                                        <Setter TargetName="BadgeBorder" Property="Background" Value="#251a3a"/>
-                                        <Setter TargetName="BadgeText"   Property="Foreground" Value="#a070f0"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding MembershipType}" Value="Monthly">
-                                        <Setter TargetName="BadgeBorder" Property="Background" Value="#0a1a3a"/>
-                                        <Setter TargetName="BadgeText"   Property="Foreground" Value="#4090f0"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding MembershipType}" Value="Yearly">
-                                        <Setter TargetName="BadgeBorder" Property="Background" Value="#0a2a1a"/>
-                                        <Setter TargetName="BadgeText"   Property="Foreground" Value="#30c070"/>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
+                                <ContentControl Content="{Binding MembershipType}" 
+                                                Style="{StaticResource MembershipPlanBadge}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

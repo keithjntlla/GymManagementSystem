@@ -341,4 +341,50 @@
         <Setter Property="AutoGenerateColumns" Value="False"/>
     </Style>
 
+    <Style x:Key="MembershipPlanBadge" TargetType="ContentControl">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border x:Name="BadgeBorder" CornerRadius="6" Padding="10,4" Background="#2a2a2c">
+                        <TextBlock x:Name="BadgeText" 
+                                   Text="{TemplateBinding Content}" 
+                                   FontSize="12" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="White"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Content" Value="Daily">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="#3a2200"/>
+                            <Setter TargetName="BadgeText" Property="Foreground" Value="#ff9940"/>
+                        </Trigger>
+                        <Trigger Property="Content" Value="Weekly">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="#0a2a2a"/>
+                            <Setter TargetName="BadgeText" Property="Foreground" Value="#30c0b0"/>
+                        </Trigger>
+                        <Trigger Property="Content" Value="Half-Month">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="#251a3a"/>
+                            <Setter TargetName="BadgeText" Property="Foreground" Value="#a070f0"/>
+                        </Trigger>
+                        <Trigger Property="Content" Value="Monthly">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="#0a1a3a"/>
+                            <Setter TargetName="BadgeText" Property="Foreground" Value="#4090f0"/>
+                        </Trigger>
+                        <Trigger Property="Content" Value="Yearly">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="#0a2a1a"/>
+                            <Setter TargetName="BadgeText" Property="Foreground" Value="#30c070"/>
+                        </Trigger>
+
+                        <Trigger Property="Content" Value="3-Month Promo">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="#3a0a1a"/>
+                            <Setter TargetName="BadgeText" Property="Foreground" Value="#ff4466"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

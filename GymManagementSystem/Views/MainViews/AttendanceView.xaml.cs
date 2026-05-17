@@ -42,6 +42,7 @@ namespace GymManagementSystem.Views.MainViews
             _clockTimer.Start();
             UpdateLiveTime(); // Initial call to prevent delay
         }
+
         private void UpdateLiveTime()
         {
             lblLiveDate.Text = DateTime.Now.ToString("dddd, MMMM d, yyyy");
@@ -137,7 +138,7 @@ namespace GymManagementSystem.Views.MainViews
                 panelNoMemberAttendance.Visibility = Visibility.Collapsed;
 
                 // 2. Show the Status Indicator and Profile
-                brdStatusIndicator.Visibility = Visibility.Visible; 
+                brdStatusIndicator.Visibility = Visibility.Visible;
                 brdMemberProfile.Visibility = Visibility.Visible;
                 btnCheckIn.Visibility = Visibility.Visible;
 
@@ -359,15 +360,22 @@ namespace GymManagementSystem.Views.MainViews
             {
                 brdMemberProfile.Visibility = Visibility.Visible;
                 lblMemberName.Text = member.FullName;
-                lblMembershipType.Text = GetMembershipTypeFromPayments(member.MemberID);
+                lblMembershipType.Content = GetMembershipTypeFromPayments(member.MemberID);
 
                 if (DateTime.TryParse(member.ExpiryDate, out DateTime expiryDate))
                 {
-                    int daysRemaining = (int)(expiryDate - DateTime.Now).TotalDays;
+                    // FIXED: Evaluate strictly using calendar dates to stop fractional evaluation drops
+                    int daysRemaining = (expiryDate.Date - DateTime.Now.Date).Days;
+
                     if (daysRemaining < 0)
                     {
                         lblDaysRemaining.Text = "Expired";
                         lblDaysRemaining.Foreground = Brushes.Red;
+                    }
+                    else if (daysRemaining == 0)
+                    {
+                        lblDaysRemaining.Text = "Expires Today";
+                        lblDaysRemaining.Foreground = Brushes.Orange;
                     }
                     else
                     {
@@ -450,7 +458,7 @@ namespace GymManagementSystem.Views.MainViews
                                 string memberStatus = reader["Status"]?.ToString() ?? string.Empty;
                                 string expiryDateStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
 
-                                if (DateTime.TryParse(expiryDateStr, out DateTime expiryDate) && expiryDate < DateTime.Now)
+                                if (DateTime.TryParse(expiryDateStr, out DateTime expiryDate) && expiryDate.Date < DateTime.Now.Date)
                                     memberStatus = "Expired";
 
                                 TodayAttendance.Add(new AttendanceRecord
