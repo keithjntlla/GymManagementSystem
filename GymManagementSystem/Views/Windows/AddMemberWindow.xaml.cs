@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
@@ -18,6 +19,7 @@ namespace GymManagementSystem.Views.Windows
         public AddMemberWindow()
         {
             InitializeComponent();
+            LoadDiscountTiersDropdown();
             dpDateJoined.SelectedDate = DateTime.Now;
             dpDateJoined.IsEnabled = false;
             isEditMode = false;
@@ -26,6 +28,7 @@ namespace GymManagementSystem.Views.Windows
         public AddMemberWindow(Member memberToEdit)
         {
             InitializeComponent();
+            LoadDiscountTiersDropdown();
             isEditMode = true;
             editMemberId = memberToEdit.MemberID;
 
@@ -39,7 +42,9 @@ namespace GymManagementSystem.Views.Windows
             txtLastName.Text = memberToEdit.LastName;
             txtPhone.Text = memberToEdit.Phone;
             cmbGender.Text = memberToEdit.Gender;
-            cmbMemberType.Text = memberToEdit.MemberType.ToString();
+
+            // FIXED: Direct string configuration mapping assignment 
+            cmbMemberType.SelectedValue = memberToEdit.MemberType;
 
             if (memberToEdit.Birthday.HasValue)
             {
@@ -73,6 +78,38 @@ namespace GymManagementSystem.Views.Windows
             }
         }
 
+        // NEW METHOD: Populates the Tier ComboBox options dynamically via Database
+        private void LoadDiscountTiersDropdown()
+        {
+            var tiersList = new List<string> { "Regular" }; // Core dynamic baseline string option
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand("SELECT TargetType FROM Discounts", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string tierName = reader["TargetType"]?.ToString() ?? "";
+                            if (!string.IsNullOrWhiteSpace(tierName) && !tierName.Equals("Regular", StringComparison.OrdinalIgnoreCase))
+                            {
+                                tiersList.Add(tierName);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to pull lookups for matrix tiers: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            cmbMemberType.ItemsSource = tiersList;
+            cmbMemberType.SelectedIndex = 0; // Default fallback to "Regular"
+        }
+
         private void UploadPhoto_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog op = new OpenFileDialog();
@@ -89,7 +126,6 @@ namespace GymManagementSystem.Views.Windows
 
         private void Register_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Structural Format and Rule Checks
             var (isFirstValid, cleanedFirst, firstError) = InputValidator.ValidateName(txtFirstName.Text);
             if (!isFirstValid)
             {
@@ -114,7 +150,6 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // 1. Check if the field is empty or completely unselected
             if (string.IsNullOrWhiteSpace(dpBirthday.Text))
             {
                 MessageBox.Show("Birthday is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -122,8 +157,6 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // 2. Enforce strict format checking (Using DateTime.TryParseExact)
-            // This strictly enforces the specific pattern you gave in your Tag attribute: "MM/DD/YYYY"
             string typedDate = dpBirthday.Text.Trim();
             string strictFormat = "dd/MM/yyyy";
 
@@ -138,7 +171,6 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // 3. Prevent impossible birthdays (e.g., in the future or unreasonably old)
             if (parsedBirthday > DateTime.Today)
             {
                 MessageBox.Show("Birthday cannot be a date in the future.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -153,7 +185,6 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // 4. Clean formatting assignment for database serialization
             string birthdayStr = parsedBirthday.ToString("yyyy-MM-dd");
 
             var (isGenderValid, cleanedGender, genderError) = InputValidator.ValidateGender(cmbGender.Text);
@@ -164,7 +195,6 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // 2. Strict Unique Phone Number Database Check
             if (DatabaseHelper.IsPhoneNumberDuplicate(cleanedPhone, isEditMode ? editMemberId : ""))
             {
                 MessageBox.Show($"The phone number '{cleanedPhone}' is already assigned to an existing member. Please check your entries.",
@@ -175,7 +205,6 @@ namespace GymManagementSystem.Views.Windows
 
             string middleInitial = txtMiddleInitial.Text.Trim().ToUpper();
 
-            // 3. Soft Warning Prompt Name Check (Across 3 Fields)
             if (DatabaseHelper.IsNameCombinationDuplicate(cleanedFirst, middleInitial, cleanedLast, isEditMode ? editMemberId : ""))
             {
                 string checkMessage = string.IsNullOrWhiteSpace(middleInitial)
@@ -186,16 +215,12 @@ namespace GymManagementSystem.Views.Windows
                 if (promptResult != MessageBoxResult.Yes)
                 {
                     txtFirstName.Focus();
-                    return; // Aborts registration flow
+                    return;
                 }
             }
 
-            // Parse Membership Type Enum
-            string memberTypeText = (cmbMemberType.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Regular";
-            if (!Enum.TryParse(memberTypeText, out MembershipType selectedType))
-            {
-                selectedType = MembershipType.Regular;
-            }
+            // FIXED: Extracted as plain string selection criteria mapping directly to lookup matrix
+            string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
 
             string computedFullName = string.IsNullOrWhiteSpace(middleInitial)
                 ? $"{cleanedFirst} {cleanedLast}"
@@ -211,7 +236,7 @@ namespace GymManagementSystem.Views.Windows
             }
         }
 
-        private void AddNewMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, MembershipType memberType)
+        private void AddNewMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType)
         {
             string memberId = GenerateMemberID();
             string dateJoined = dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
@@ -247,7 +272,7 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
                         cmd.Parameters.AddWithValue("@bday", birthday);
-                        cmd.Parameters.AddWithValue("@type", memberType.ToString());
+                        cmd.Parameters.AddWithValue("@type", memberType); // Passed directly as raw string configuration value
                         cmd.Parameters.AddWithValue("@joined", dateJoined);
                         cmd.Parameters.AddWithValue("@expiry", expiryDate);
                         cmd.Parameters.AddWithValue("@status", status);
@@ -265,7 +290,7 @@ namespace GymManagementSystem.Views.Windows
             }
         }
 
-        private void UpdateMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, MembershipType memberType)
+        private void UpdateMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType)
         {
             try
             {
@@ -293,7 +318,7 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
                         cmd.Parameters.AddWithValue("@bday", birthday);
-                        cmd.Parameters.AddWithValue("@type", memberType.ToString());
+                        cmd.Parameters.AddWithValue("@type", memberType); // Passed directly as raw string configuration value
                         cmd.Parameters.AddWithValue("@joined", dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();

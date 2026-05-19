@@ -55,6 +55,7 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <RadioButton Content="General" Tag="⚙" IsChecked="True" Style="{StaticResource TabButtonStyle}" Click="TabGeneral_Click"/>
             <RadioButton Content="Rates &amp; Plans" Tag="₱" Style="{StaticResource TabButtonStyle}" Click="TabRates_Click"/>
+            <RadioButton Content="Discounts &amp; Promos" Tag="🏷️" Style="{StaticResource TabButtonStyle}" Click="TabDiscounts_Click"/>
             <RadioButton Content="User Accounts" Tag="👤" Style="{StaticResource TabButtonStyle}" Click="TabUsers_Click"/>
             <RadioButton Content="Backup" Tag="💾" Style="{StaticResource TabButtonStyle}" Click="TabBackup_Click"/>
         </StackPanel>

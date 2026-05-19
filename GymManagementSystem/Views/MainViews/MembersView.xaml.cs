@@ -78,8 +78,9 @@ namespace GymManagementSystem.Views.MainViews
                                 if (reader["Birthday"] != DBNull.Value && DateTime.TryParse(reader["Birthday"].ToString(), out DateTime bDay))
                                     member.Birthday = bDay;
 
-                                if (reader["MemberType"] != DBNull.Value && Enum.TryParse(reader["MemberType"].ToString(), out MembershipType type))
-                                    member.MemberType = type;
+                                member.MemberType = reader["MemberType"] != DBNull.Value
+                                    ? reader["MemberType"].ToString() ?? "Regular"
+                                    : "Regular";
 
                                 MembersList.Add(member);
                             }

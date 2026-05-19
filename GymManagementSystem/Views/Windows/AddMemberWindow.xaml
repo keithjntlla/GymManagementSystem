@@ -69,7 +69,7 @@
                             <DatePicker x:Name="dpBirthday" 
                                         Style="{StaticResource ModernDatePicker}" 
                                         Tag="DD/MM/YYYY" 
-                                        ToolTip="You can type the date directly using the MM/DD/YYYY format." 
+                                        ToolTip="You can type the date directly using the MM/DD/YYYY format."
                                         Padding="10"/>
                         </StackPanel>
 
@@ -87,14 +87,10 @@
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                        <TextBlock Text="Member Type" Foreground="White"/>
+                        <TextBlock Text="Member Type Tier" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15">
-                        <ComboBoxItem Content="Regular" IsSelected="True"/>
-                        <ComboBoxItem Content="Student"/>
-                        <ComboBoxItem Content="Senior"/>
-                    </ComboBox>
+                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15"/>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                         <TextBlock Text="Date Joined" Foreground="White"/>
@@ -123,20 +119,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="btnRegister" Content="Register" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Register_Click">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="8"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
-                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="8"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                <Button x:Name="btnRegister" Content="Register" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Register_Click"/>
+                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click"/>
             </Grid>
         </Grid>
     </Border>

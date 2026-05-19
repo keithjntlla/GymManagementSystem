@@ -18,6 +18,8 @@ namespace GymManagementSystem.Views.MainViews
         private string selectedMembershipType = "";
         private int selectedDurationDays = 0;
         private int durationMultiplier = 1; // Default multiplier
+        private double activeDiscountPercentage = 0; // Cumulative reduction tracked percentage
+        private double totalDiscountDeduction = 0;   // Net currency deduction amount
 
         public PaymentsView()
         {
@@ -100,8 +102,52 @@ namespace GymManagementSystem.Views.MainViews
 
         private void RecalculateFinancialsAndDates()
         {
-            totalAmount = basePlanPrice * durationMultiplier;
+            double subtotal = basePlanPrice * durationMultiplier;
+            activeDiscountPercentage = 0;
+
+            if (selectedMember != null && !string.IsNullOrEmpty(selectedMembershipType))
+            {
+                // 1. Fetch Auto-applied configurations for Student / Senior
+                var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
+
+                if (fixedPct > 0)
+                {
+                    // Verify structural comma rules
+                    if (fixedScope.Equals("All", StringComparison.OrdinalIgnoreCase) ||
+                        fixedScope.ToLower().Contains(selectedMembershipType.ToLower()))
+                    {
+                        activeDiscountPercentage += fixedPct;
+                    }
+                }
+            }
+
+            // Compute net fractions 
+            totalDiscountDeduction = subtotal * (activeDiscountPercentage / 100.0);
+            totalAmount = subtotal - totalDiscountDeduction;
+
+            // Output adjustments back into the screen view labels
             lblTotalAmount.Text = $"₱{totalAmount:N2}";
+
+            // NEW: Dynamic UI UI state feedback indicators
+            if (activeDiscountPercentage > 0)
+            {
+                // Turn indicators visible
+                brdDiscountBadge.Visibility = Visibility.Visible;
+                lblOriginalSubtotal.Visibility = Visibility.Visible;
+                lblDiscountDeductionDisplay.Visibility = Visibility.Visible;
+
+                // Set layout text values
+                lblDiscountBadgeText.Text = $"{activeDiscountPercentage}% OFF";
+                lblOriginalSubtotal.Text = $"₱{subtotal:N2}";
+                lblDiscountDeductionDisplay.Text = $"-₱{totalDiscountDeduction:N2} discount applied";
+            }
+            else
+            {
+                // Reset and collapse if member has no special discount privileges
+                brdDiscountBadge.Visibility = Visibility.Collapsed;
+                lblOriginalSubtotal.Visibility = Visibility.Collapsed;
+                lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
+            }
 
             CalculateChange();
             CalculateNewExpiry();
@@ -183,10 +229,9 @@ namespace GymManagementSystem.Views.MainViews
                                     m.Birthday = bDay;
                                 }
 
-                                if (reader["MemberType"] != DBNull.Value && Enum.TryParse(reader["MemberType"].ToString(), out MembershipType type))
-                                {
-                                    m.MemberType = type;
-                                }
+                                m.MemberType = reader["MemberType"] != DBNull.Value
+                                    ? reader["MemberType"].ToString() ?? "Regular"
+                                    : "Regular";
 
                                 results.Add(m);
                             }
@@ -356,6 +401,7 @@ namespace GymManagementSystem.Views.MainViews
                             cmd.Parameters.AddWithValue("@paid", paid);
                             cmd.Parameters.AddWithValue("@total", totalAmount);
                             cmd.Parameters.AddWithValue("@change", paid - totalAmount);
+                            cmd.Parameters.AddWithValue("@discountAmount", totalDiscountDeduction);
                             cmd.Parameters.AddWithValue("@mode", paymentMode);
                             cmd.Parameters.AddWithValue("@type", formattedPlanDescription); // Stores text descriptive variants inside SQLite log history
                             cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
@@ -402,6 +448,10 @@ namespace GymManagementSystem.Views.MainViews
             panelNoMember.Visibility = Visibility.Visible;
             btnProcessPayment.IsEnabled = true;
             btnProcessPayment.Opacity = 1.0;
+
+            brdDiscountBadge.Visibility = Visibility.Collapsed;
+            lblOriginalSubtotal.Visibility = Visibility.Collapsed;
+            lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
         }
     }
 }

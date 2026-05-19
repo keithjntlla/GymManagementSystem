@@ -1,0 +1,69 @@
+﻿<Window x:Class="GymManagementSystem.Views.Windows.EditDiscountWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding WindowTitle}" Height="500" Width="400"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+
+    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="270" Opacity="0.5" ShadowDepth="2"/>
+        </Border.Effect>
+        <Grid Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <DockPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="{Binding WindowTitle}" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
+            </DockPanel>
+
+            <StackPanel Grid.Row="1">
+                <TextBlock Text="Tier Type Name (e.g., Student, Senior)" Foreground="White" Margin="0,0,0,5"/>
+                <TextBox x:Name="txtTargetType" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Padding="10" Margin="0,0,0,15"/>
+
+                <TextBlock Text="Discount Value (%)" Foreground="White" Margin="0,0,0,5"/>
+                <TextBox x:Name="txtPercentage" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Padding="10" Margin="0,0,0,15"/>
+
+                <CheckBox x:Name="chkAllRates" Content="Apply to all membership rates" Foreground="White" IsChecked="True" Checked="ChkAllRates_Changed" Unchecked="ChkAllRates_Changed" Margin="0,5,0,10"/>
+
+                <TextBlock Text="Select Applicable Rates:" Foreground="White" Margin="0,5,0,5"/>
+                <Border Background="#1a1a1a" BorderBrush="#333" BorderThickness="1" Height="120" CornerRadius="5">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="icMembershipRates" Margin="5">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding PlanName}" Tag="{Binding PlanName}" Foreground="LightGray" Margin="5,3" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </StackPanel>
+
+            <Grid Grid.Row="2" Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="btnSave" Content="{Binding SaveButtonText}" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Save_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

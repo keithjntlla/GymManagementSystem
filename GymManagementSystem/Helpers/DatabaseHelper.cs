@@ -20,18 +20,17 @@ namespace GymManagementSystem
             {
                 conn.Open();
 
+                // 1. Users Table
                 string usersTable = @"CREATE TABLE IF NOT EXISTS Users (
-                    UserID TEXT PRIMARY KEY,
-                    Username TEXT UNIQUE NOT NULL,
-                    Password TEXT NOT NULL,
-                    Role TEXT,
-                    Status TEXT DEFAULT 'Active',
-                    CreatedDate TEXT,
-                    MustChangePassword INTEGER NOT NULL DEFAULT 0
-                );";
-
-                using (var cmd = new SQLiteCommand(usersTable, conn))
-                    cmd.ExecuteNonQuery();
+            UserID TEXT PRIMARY KEY,
+            Username TEXT UNIQUE NOT NULL,
+            Password TEXT NOT NULL,
+            Role TEXT,
+            Status TEXT DEFAULT 'Active',
+            CreatedDate TEXT,
+            MustChangePassword INTEGER NOT NULL DEFAULT 0
+        );";
+                using (var cmd = new SQLiteCommand(usersTable, conn)) cmd.ExecuteNonQuery();
 
                 string checkUsersSql = "SELECT COUNT(*) FROM Users";
                 using (var cmd = new SQLiteCommand(checkUsersSql, conn))
@@ -40,7 +39,7 @@ namespace GymManagementSystem
                     if (userCount == 0)
                     {
                         string insertUsersSql = @"INSERT INTO Users (UserID, Username, Password, Role, Status, CreatedDate, MustChangePassword) 
-                            VALUES ('USR001', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Administrator', 'Active', @date, 1)";
+                    VALUES ('USR001', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Administrator', 'Active', @date, 1)";
                         using (var insertCmd = new SQLiteCommand(insertUsersSql, conn))
                         {
                             insertCmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -49,16 +48,15 @@ namespace GymManagementSystem
                     }
                 }
 
+                // 2. Rates Table
                 string ratesTable = @"CREATE TABLE IF NOT EXISTS Rates (
-                        RateID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        PlanName TEXT UNIQUE NOT NULL,
-                        Price REAL NOT NULL,
-                        DurationDays INTEGER NOT NULL,
-                        IsArchived INTEGER NOT NULL DEFAULT 0
-                    );";
-
-                using (var cmd = new SQLiteCommand(ratesTable, conn))
-                    cmd.ExecuteNonQuery();
+                RateID INTEGER PRIMARY KEY AUTOINCREMENT,
+                PlanName TEXT UNIQUE NOT NULL,
+                Price REAL NOT NULL,
+                DurationDays INTEGER NOT NULL,
+                IsArchived INTEGER NOT NULL DEFAULT 0
+            );";
+                using (var cmd = new SQLiteCommand(ratesTable, conn)) cmd.ExecuteNonQuery();
 
                 string checkRatesSql = "SELECT COUNT(*) FROM Rates";
                 using (var cmd = new SQLiteCommand(checkRatesSql, conn))
@@ -67,82 +65,187 @@ namespace GymManagementSystem
                     if (rateCount == 0)
                     {
                         string insertRatesSql = @"INSERT INTO Rates (PlanName, Price, DurationDays) VALUES 
-                                ('Daily', 90.0, 1),
-                                ('Weekly', 320.0, 7),
-                                ('Half-Month', 550.0, 15),
-                                ('Monthly', 900.0, 30),
-                                ('Yearly', 9600.0, 365)";
-                        using (var insertCmd = new SQLiteCommand(insertRatesSql, conn))
-                        {
-                            insertCmd.ExecuteNonQuery();
-                        }
+                        ('Daily', 90.0, 1),
+                        ('Weekly', 320.0, 7),
+                        ('Half-Month', 550.0, 15),
+                        ('Monthly', 900.0, 30),
+                        ('Yearly', 9600.0, 365)";
+                        using (var insertCmd = new SQLiteCommand(insertRatesSql, conn)) insertCmd.ExecuteNonQuery();
                     }
                 }
 
-                // FIXED: The fresh table schema now contains all your new field properties natively!
+                // 3. Fixed / Member Type Discounts Table (Student & Senior Tiers)
+                string fixedDiscountsTable = @"CREATE TABLE IF NOT EXISTS Discounts (
+            DiscountID TEXT PRIMARY KEY,
+            TargetType TEXT UNIQUE NOT NULL, -- 'Student' or 'Senior'
+            Percentage REAL NOT NULL DEFAULT 0,
+            ApplicableRates TEXT NOT NULL DEFAULT 'All' -- Comma-separated or 'All'
+        );";
+                using (var cmd = new SQLiteCommand(fixedDiscountsTable, conn)) cmd.ExecuteNonQuery();
+
+                // Seed default fixed discounts if empty
+                string checkDiscounts = "SELECT COUNT(*) FROM Discounts";
+                using (var cmd = new SQLiteCommand(checkDiscounts, conn))
+                {
+                    if (Convert.ToInt32(cmd.ExecuteScalar() ?? 0) == 0)
+                    {
+                        string seedDiscounts = @"INSERT INTO Discounts (DiscountID, TargetType, Percentage, ApplicableRates) VALUES 
+                    ('DSC001', 'Student', 10.0, 'All'),
+                    ('DSC002', 'Senior', 20.0, 'All')";
+                        using (var seedCmd = new SQLiteCommand(seedDiscounts, conn)) seedCmd.ExecuteNonQuery();
+                    }
+                }
+
+                // 4. Promotional Discounts Table
+                string promosTable = @"CREATE TABLE IF NOT EXISTS Promos (
+            PromoID INTEGER PRIMARY KEY AUTOINCREMENT,
+            PromoCode TEXT UNIQUE NOT NULL,
+            PromoName TEXT NOT NULL,
+            Percentage REAL NOT NULL DEFAULT 0,
+            StartDate TEXT NOT NULL,
+            EndDate TEXT NOT NULL,
+            ApplicableRates TEXT NOT NULL DEFAULT 'All'
+        );";
+                using (var cmd = new SQLiteCommand(promosTable, conn)) cmd.ExecuteNonQuery();
+
+                // 5. Members Table
                 string memberTable = @"CREATE TABLE IF NOT EXISTS Members (
-                    MemberID TEXT PRIMARY KEY,
-                    FirstName TEXT,
-                    MiddleInitial TEXT,
-                    LastName TEXT,
-                    FullName TEXT,
-                    Phone TEXT,
-                    Gender TEXT,
-                    Birthday TEXT,
-                    MemberType TEXT,
-                    DateJoined TEXT,
-                    ExpiryDate TEXT,
-                    Status TEXT,
-                    PhotoPath TEXT
-                );";
+            MemberID TEXT PRIMARY KEY,
+            FirstName TEXT,
+            MiddleInitial TEXT,
+            LastName TEXT,
+            FullName TEXT,
+            Phone TEXT,
+            Gender TEXT,
+            Birthday TEXT,
+            MemberType TEXT,
+            DateJoined TEXT,
+            ExpiryDate TEXT,
+            Status TEXT,
+            PhotoPath TEXT
+        );";
+                using (var cmd = new SQLiteCommand(memberTable, conn)) cmd.ExecuteNonQuery();
 
+                // 6. Payments Table (UPDATED: Added DiscountAmount column text log entry)
                 string paymentTable = @"CREATE TABLE IF NOT EXISTS Payments (
-                    PaymentID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    MemberID TEXT,
-                    MemberName TEXT,
-                    AmountPaid REAL,
-                    TotalAmount REAL,
-                    Change REAL,
-                    PaymentMode TEXT,
-                    MembershipType TEXT,
-                    DateOfTransaction TEXT,
-                    NewExpiryDate TEXT,
-                    FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
-                );";
+            PaymentID INTEGER PRIMARY KEY AUTOINCREMENT,
+            MemberID TEXT,
+            MemberName TEXT,
+            AmountPaid REAL,
+            TotalAmount REAL,
+            DiscountAmount REAL DEFAULT 0,
+            Change REAL,
+            PaymentMode TEXT,
+            MembershipType TEXT,
+            DateOfTransaction TEXT,
+            NewExpiryDate TEXT,
+            FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
+        );";
+                using (var cmd = new SQLiteCommand(paymentTable, conn)) cmd.ExecuteNonQuery();
 
-                using (var cmd = new SQLiteCommand(memberTable, conn))
-                    cmd.ExecuteNonQuery();
-
-                using (var cmd = new SQLiteCommand(paymentTable, conn))
-                    cmd.ExecuteNonQuery();
-
+                // 7. Attendance Table
                 string attendanceTable = @"CREATE TABLE IF NOT EXISTS Attendance (
-                    AttendanceID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    MemberID TEXT,
-                    CheckInTime TEXT,
-                    CheckInDate TEXT,
-                    CheckOutTime TEXT,
-                    FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
-                );";
+            AttendanceID INTEGER PRIMARY KEY AUTOINCREMENT,
+            MemberID TEXT,
+            CheckInTime TEXT,
+            CheckInDate TEXT,
+            CheckOutTime TEXT,
+            FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
+        );";
+                using (var cmd = new SQLiteCommand(attendanceTable, conn)) cmd.ExecuteNonQuery();
 
-                using (var cmd = new SQLiteCommand(attendanceTable, conn))
-                    cmd.ExecuteNonQuery();
-
+                // 8. GymProfile Table
                 string gymProfileTable = @"CREATE TABLE IF NOT EXISTS GymProfile (
-                    ID INTEGER PRIMARY KEY CHECK (ID = 1),
-                    GymName TEXT,
-                    Address TEXT,
-                    ContactNumber TEXT,
-                    Email TEXT,
-                    LogoPath TEXT
-                );";
-
-                using (var cmd = new SQLiteCommand(gymProfileTable, conn))
-                    cmd.ExecuteNonQuery();
+            ID INTEGER PRIMARY KEY CHECK (ID = 1),
+            GymName TEXT,
+            Address TEXT,
+            ContactNumber TEXT,
+            Email TEXT,
+            LogoPath TEXT
+        );";
+                using (var cmd = new SQLiteCommand(gymProfileTable, conn)) cmd.ExecuteNonQuery();
             }
 
             MigrateUsersTable();
+            MigratePaymentsTableForDiscounts();
         }
+
+        // FIXED CS8619: Enforced clear non-nullable string parsing rules
+        public static (double percentage, string allowedRates) GetFixedDiscountConfig(string memberType)
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = "SELECT Percentage, ApplicableRates FROM Discounts WHERE LOWER(TargetType) = LOWER(@type)";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@type", memberType);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            double percentage = Convert.ToDouble(reader["Percentage"]);
+                            string allowedRates = reader["ApplicableRates"]?.ToString() ?? "All";
+                            return (percentage, allowedRates);
+                        }
+                    }
+                }
+            }
+            return (0, "All");
+        }
+
+        public static (double percentage, string allowedRates) GetPromoConfig(string code)
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"SELECT Percentage, ApplicableRates FROM Promos 
+                       WHERE UPPER(PromoCode) = UPPER(@code) 
+                       AND Date('now') BETWEEN Date(StartDate) AND Date(EndDate)";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@code", code);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            double percentage = Convert.ToDouble(reader["Percentage"]);
+                            string allowedRates = reader["ApplicableRates"]?.ToString() ?? "All";
+                            return (percentage, allowedRates);
+                        }
+                    }
+                }
+            }
+            return (0, string.Empty);
+        }
+
+        private static void MigratePaymentsTableForDiscounts()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasDiscountCol = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Payments)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"]?.ToString() == "DiscountAmount")
+                        {
+                            hasDiscountCol = true;
+                            break;
+                        }
+                    }
+                }
+                if (!hasDiscountCol)
+                {
+                    string alter = "ALTER TABLE Payments ADD COLUMN DiscountAmount REAL DEFAULT 0";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+
 
         public static void MigrateUsersTable()
         {
@@ -249,6 +352,33 @@ namespace GymManagementSystem
                 if (!hasArchived)
                 {
                     string alter = "ALTER TABLE Rates ADD COLUMN IsArchived INTEGER NOT NULL DEFAULT 0";
+                    using (var cmd = new SQLiteCommand(alter, conn))
+                        cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static void MigrateDiscountsTable()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasArchived = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Discounts)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"]?.ToString() == "IsArchived")
+                        {
+                            hasArchived = true;
+                            break;
+                        }
+                    }
+                }
+                if (!hasArchived)
+                {
+                    string alter = "ALTER TABLE Discounts ADD COLUMN IsArchived INTEGER NOT NULL DEFAULT 0";
                     using (var cmd = new SQLiteCommand(alter, conn))
                         cmd.ExecuteNonQuery();
                 }

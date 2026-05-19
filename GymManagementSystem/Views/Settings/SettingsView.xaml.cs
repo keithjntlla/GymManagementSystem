@@ -32,6 +32,11 @@ namespace GymManagementSystem.Views.Settings
             SettingsFrame.Content = new RateSettingsView();
         }
 
+        private void TabDiscounts_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsFrame.Content = new DiscountSettingsView();
+        }
+
         private void TabGeneral_Click(object sender, RoutedEventArgs e)
         {
             // Placeholder for General Settings

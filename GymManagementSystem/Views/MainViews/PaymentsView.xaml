@@ -178,26 +178,39 @@
 
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1.2*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
+
                         <Border Grid.Column="0" Background="#1e2a4a" CornerRadius="10" Padding="15" Margin="0,0,10,0">
                             <StackPanel>
-                                <TextBlock Text="Total Amount" Foreground="Gray" FontSize="12"/>
-                                <TextBlock x:Name="lblTotalAmount" Text="₱0.00" Foreground="#4a90e2" FontSize="24" FontWeight="Bold"/>
+                                <Grid>
+                                    <TextBlock Text="Total Amount" Foreground="Gray" FontSize="12" VerticalAlignment="Center"/>
+                                    <Border x:Name="brdDiscountBadge" Background="#f44336" CornerRadius="4" Padding="6,2" HorizontalAlignment="Right" Visibility="Collapsed">
+                                        <TextBlock x:Name="lblDiscountBadgeText" Text="SAVED 10%" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                    </Border>
+                                </Grid>
+
+                                <StackPanel Margin="0,5,0,0">
+                                    <TextBlock x:Name="lblOriginalSubtotal" Text="₱0.00" Foreground="Gray" FontSize="14" TextDecorations="Strikethrough" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="lblTotalAmount" Text="₱0.00" Foreground="#4a90e2" FontSize="26" FontWeight="Bold"/>
+                                    <TextBlock x:Name="lblDiscountDeductionDisplay" Text="-₱0.00 discount" Foreground="#ff6b00" FontSize="12" FontWeight="SemiBold" Visibility="Collapsed" Margin="0,2,0,0"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
+
                         <Border Grid.Column="1" Background="#1e3a2a" CornerRadius="10" Padding="15" Margin="5,0,5,0">
                             <StackPanel>
                                 <TextBlock Text="Amount Paid" Foreground="Gray" FontSize="12"/>
-                                <TextBlock x:Name="lblAmountPaidDisplay" Text="₱0.00" Foreground="#2ecc71" FontSize="24" FontWeight="Bold"/>
+                                <TextBlock x:Name="lblAmountPaidDisplay" Text="₱0.00" Foreground="#2ecc71" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
+
                         <Border Grid.Column="2" Background="#3a1e4a" CornerRadius="10" Padding="15" Margin="10,0,0,0">
                             <StackPanel>
                                 <TextBlock Text="Change" Foreground="Gray" FontSize="12"/>
-                                <TextBlock x:Name="lblChange" Text="₱0.00" Foreground="#9b59b6" FontSize="24" FontWeight="Bold"/>
+                                <TextBlock x:Name="lblChange" Text="₱0.00" Foreground="#9b59b6" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>

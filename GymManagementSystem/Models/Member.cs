@@ -26,7 +26,7 @@ namespace GymManagementSystem.Models
         public DateTime? Birthday { get; set; } // New field (Nullable to prevent default min-value errors)
 
         // Membership Details
-        public MembershipType MemberType { get; set; } = MembershipType.Regular;
+        public string MemberType { get; set; } = "Regular";
         public string DateJoined { get; set; } = string.Empty;
         public string ExpiryDate { get; set; } = string.Empty;
         public string MembershipPlan { get; set; } = string.Empty;
