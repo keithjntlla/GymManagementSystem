@@ -74,14 +74,14 @@
                     <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="*"/>
                     <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="135"/>
                     <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="100"/>
-                    <DataGridTextColumn Header="Date Joined" Binding="{Binding DateJoined}" Width="120"/>
-                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" Width="120"/>
+
+                    <DataGridTextColumn Header="Date Joined" Binding="{Binding DateJoined, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
+                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
 
                     <DataGridTemplateColumn Header="Plan" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ContentControl Content="{Binding MembershipPlan}" 
-                                                Style="{StaticResource MembershipPlanBadge}"/>
+                                <ContentControl Content="{Binding MembershipPlan}" Style="{StaticResource MembershipPlanBadge}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

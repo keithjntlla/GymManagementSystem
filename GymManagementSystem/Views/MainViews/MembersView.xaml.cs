@@ -16,6 +16,7 @@ namespace GymManagementSystem.Views.MainViews
     {
         public ObservableCollection<Member> MembersList { get; set; } = new ObservableCollection<Member>();
         private ICollectionView? _membersView;
+
         public MembersView()
         {
             InitializeComponent();
@@ -30,7 +31,6 @@ namespace GymManagementSystem.Views.MainViews
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    // We join with Payments to get the latest membership type for each member
                     string sql = @"
                         SELECT M.*, 
                         COALESCE((SELECT P.MembershipType FROM Payments P WHERE P.MemberID = M.MemberID ORDER BY P.PaymentID DESC LIMIT 1), '-') as PlanName
@@ -43,18 +43,45 @@ namespace GymManagementSystem.Views.MainViews
                         {
                             while (reader.Read())
                             {
-                                MembersList.Add(new Member
+                                var member = new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? "",
-                                    FullName = reader["FullName"]?.ToString() ?? "",
+                                    FirstName = reader["FirstName"]?.ToString() ?? "",
+                                    MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                    LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? "",
                                     Gender = reader["Gender"]?.ToString() ?? "",
-                                    DateJoined = reader["DateJoined"]?.ToString() ?? "",
-                                    ExpiryDate = reader["ExpiryDate"]?.ToString() ?? "",
                                     MembershipPlan = reader["PlanName"]?.ToString() ?? "-",
                                     Status = reader["Status"]?.ToString() ?? "",
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? ""
-                                });
+                                };
+
+                                // Parse C# DateTime from database text strings
+                                if (reader["DateJoined"] != DBNull.Value && DateTime.TryParse(reader["DateJoined"].ToString(), out DateTime joinDate))
+                                {
+                                    member.DateJoined = joinDate.ToString("yyyy-MM-dd");
+                                }
+                                else
+                                {
+                                    member.DateJoined = DateTime.Now.ToString("yyyy-MM-dd");
+                                }
+
+                                if (reader["ExpiryDate"] != DBNull.Value && DateTime.TryParse(reader["ExpiryDate"].ToString(), out DateTime expiryDate))
+                                {
+                                    member.ExpiryDate = expiryDate.ToString("yyyy-MM-dd");
+                                }
+                                else
+                                {
+                                    member.ExpiryDate = "-";
+                                }
+
+                                if (reader["Birthday"] != DBNull.Value && DateTime.TryParse(reader["Birthday"].ToString(), out DateTime bDay))
+                                    member.Birthday = bDay;
+
+                                if (reader["MemberType"] != DBNull.Value && Enum.TryParse(reader["MemberType"].ToString(), out MembershipType type))
+                                    member.MemberType = type;
+
+                                MembersList.Add(member);
                             }
                         }
                     }
@@ -71,7 +98,6 @@ namespace GymManagementSystem.Views.MainViews
 
         private void Filter_Changed(object sender, EventArgs e)
         {
-            // Refresh the table whenever user types OR changes the dropdown
             _membersView?.Refresh();
         }
 
@@ -79,17 +105,15 @@ namespace GymManagementSystem.Views.MainViews
         {
             if (obj is Member member)
             {
-                // 1. Text Search Logic
                 string searchText = txtSearch.Text.Trim().ToLower();
                 bool matchesText = string.IsNullOrEmpty(searchText) ||
                                    member.FullName.ToLower().Contains(searchText) ||
                                    member.MemberID.ToLower().Contains(searchText); 
 
-        // 2. Status Dropdown Logic
-        string selectedStatus = (cbStatusFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Status";
+                string selectedStatus = (cbStatusFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Status";
                 bool matchesStatus = selectedStatus == "All Status" || member.Status == selectedStatus; 
 
-        return matchesText && matchesStatus;
+                return matchesText && matchesStatus;
             }
             return false;
         }
@@ -101,11 +125,9 @@ namespace GymManagementSystem.Views.MainViews
 
             if (member != null)
             {
-                // Access the MainWindow and its MainFrame to change the content
                 var mainWindow = Window.GetWindow(this) as MainWindow;
                 if (mainWindow != null)
                 {
-                    // Pass the member object to the PaymentsView constructor
                     mainWindow.MainFrame.Content = new PaymentsView(member);
                     mainWindow.btnNavPayments.IsChecked = true;
                 }
@@ -169,7 +191,6 @@ namespace GymManagementSystem.Views.MainViews
 
             if (memberToCheck == null) return;
 
-            // 1. Handle Active Members
             if (memberToCheck.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show("Cannot delete active members",
@@ -177,7 +198,6 @@ namespace GymManagementSystem.Views.MainViews
                 return;
             }
 
-            // 2. Handle Expired Members (Immediate Block Message)
             if (memberToCheck.Status.Equals("Expired", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show($"Cannot delete member {memberId} because they have existing history in the system.\n\n" +
@@ -186,7 +206,6 @@ namespace GymManagementSystem.Views.MainViews
                 return;
             }
 
-            // 3. Handle Pending Members (Only these get the "Are you sure" confirmation)
             if (memberToCheck.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
             {
                 if (MessageBox.Show($"Are you sure you want to delete member {memberId}?\n\nThis will permanently remove their profile.",
@@ -205,7 +224,6 @@ namespace GymManagementSystem.Views.MainViews
                             }
                         }
 
-                        // Cleanup photo if database delete was successful
                         if (!string.IsNullOrEmpty(memberToCheck.PhotoPath) && System.IO.File.Exists(memberToCheck.PhotoPath))
                         {
                             try { System.IO.File.Delete(memberToCheck.PhotoPath); } catch { }

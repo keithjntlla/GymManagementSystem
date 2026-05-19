@@ -135,7 +135,9 @@ namespace GymManagementSystem.Views.MainViews
                                 results.Add(new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? "",
-                                    FullName = reader["FullName"]?.ToString() ?? "",
+                                    FirstName = reader["FirstName"]?.ToString() ?? "",
+                                    MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                    LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? "",
                                     Gender = reader["Gender"]?.ToString() ?? "",
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? "",

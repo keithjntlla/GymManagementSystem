@@ -5,6 +5,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Data.SQLite;
 using GymManagementSystem.Models;
+using System.Windows.Controls;
 
 namespace GymManagementSystem.Views.Windows
 {
@@ -33,9 +34,21 @@ namespace GymManagementSystem.Views.Windows
             lblTitle.Text = "Edit Member";
             btnRegister.Content = "Update";
 
-            txtFullName.Text = memberToEdit.FullName;
+            txtFirstName.Text = memberToEdit.FirstName;
+            txtMiddleInitial.Text = memberToEdit.MiddleInitial;
+            txtLastName.Text = memberToEdit.LastName;
             txtPhone.Text = memberToEdit.Phone;
             cmbGender.Text = memberToEdit.Gender;
+            cmbMemberType.Text = memberToEdit.MemberType.ToString();
+
+            if (memberToEdit.Birthday.HasValue)
+            {
+                dpBirthday.SelectedDate = memberToEdit.Birthday.Value;
+            }
+            else
+            {
+                dpBirthday.SelectedDate = null;
+            }
 
             if (DateTime.TryParse(memberToEdit.DateJoined, out DateTime joinDate))
             {
@@ -76,16 +89,23 @@ namespace GymManagementSystem.Views.Windows
 
         private void Register_Click(object sender, RoutedEventArgs e)
         {
-            // Validate Full Name
-            var (isNameValid, cleanedName, nameError) = InputValidator.ValidateName(txtFullName.Text);
-            if (!isNameValid)
+            // 1. Structural Format and Rule Checks
+            var (isFirstValid, cleanedFirst, firstError) = InputValidator.ValidateName(txtFirstName.Text);
+            if (!isFirstValid)
             {
-                MessageBox.Show(nameError, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtFullName.Focus();
+                MessageBox.Show($"First Name Error: {firstError}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtFirstName.Focus();
                 return;
             }
 
-            // Validate Phone Number
+            var (isLastValid, cleanedLast, lastError) = InputValidator.ValidateName(txtLastName.Text);
+            if (!isLastValid)
+            {
+                MessageBox.Show($"Last Name Error: {lastError}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtLastName.Focus();
+                return;
+            }
+
             var (isPhoneValid, cleanedPhone, phoneError) = InputValidator.ValidatePhoneNumber(txtPhone.Text);
             if (!isPhoneValid)
             {
@@ -94,7 +114,13 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // Validate Gender
+            if (dpBirthday.SelectedDate == null)
+            {
+                MessageBox.Show("Birthday is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                dpBirthday.Focus();
+                return;
+            }
+
             var (isGenderValid, cleanedGender, genderError) = InputValidator.ValidateGender(cmbGender.Text);
             if (!isGenderValid)
             {
@@ -103,29 +129,56 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            // Validate Date Joined (only for add mode)
-            if (!isEditMode)
+            // 2. Strict Unique Phone Number Database Check
+            if (DatabaseHelper.IsPhoneNumberDuplicate(cleanedPhone, isEditMode ? editMemberId : ""))
             {
-                var (isDateValid, cleanedDate, dateError) = InputValidator.ValidateDateJoined(dpDateJoined.SelectedDate);
-                if (!isDateValid)
+                MessageBox.Show($"The phone number '{cleanedPhone}' is already assigned to an existing member. Please check your entries.",
+                                "Duplicate Entry Blocked", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtPhone.Focus();
+                return;
+            }
+
+            string middleInitial = txtMiddleInitial.Text.Trim().ToUpper();
+
+            // 3. Soft Warning Prompt Name Check (Across 3 Fields)
+            if (DatabaseHelper.IsNameCombinationDuplicate(cleanedFirst, middleInitial, cleanedLast, isEditMode ? editMemberId : ""))
+            {
+                string checkMessage = string.IsNullOrWhiteSpace(middleInitial)
+                    ? $"A member named '{cleanedFirst} {cleanedLast}' is already registered.\n\nAre you sure you want to add a namesake entry?"
+                    : $"A member named '{cleanedFirst} {middleInitial}. {cleanedLast}' is already registered.\n\nAre you sure you want to add a namesake entry?";
+
+                var promptResult = MessageBox.Show(checkMessage, "Potential Duplicate Detected", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (promptResult != MessageBoxResult.Yes)
                 {
-                    MessageBox.Show(dateError, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    dpDateJoined.Focus();
-                    return;
+                    txtFirstName.Focus();
+                    return; // Aborts registration flow
                 }
             }
 
+            // Parse Membership Type Enum
+            string memberTypeText = (cmbMemberType.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Regular";
+            if (!Enum.TryParse(memberTypeText, out MembershipType selectedType))
+            {
+                selectedType = MembershipType.Regular;
+            }
+
+            string birthdayStr = dpBirthday.SelectedDate.Value.ToString("yyyy-MM-dd");
+
+            string computedFullName = string.IsNullOrWhiteSpace(middleInitial)
+                ? $"{cleanedFirst} {cleanedLast}"
+                : $"{cleanedFirst} {middleInitial}. {cleanedLast}";
+
             if (isEditMode)
             {
-                UpdateMember(cleanedName, cleanedPhone, cleanedGender);
+                UpdateMember(cleanedFirst, middleInitial, cleanedLast, computedFullName, cleanedPhone, cleanedGender, birthdayStr, selectedType);
             }
             else
             {
-                AddNewMember(cleanedName, cleanedPhone, cleanedGender);
+                AddNewMember(cleanedFirst, middleInitial, cleanedLast, computedFullName, cleanedPhone, cleanedGender, birthdayStr, selectedType);
             }
         }
 
-        private void AddNewMember(string fullName, string phone, string gender)
+        private void AddNewMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, MembershipType memberType)
         {
             string memberId = GenerateMemberID();
             string dateJoined = dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
@@ -137,9 +190,9 @@ namespace GymManagementSystem.Views.Windows
             {
                 string photoDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MemberPhotos");
                 if (!Directory.Exists(photoDir)) Directory.CreateDirectory(photoDir);
-                
+
                 savedPhotoPath = Path.Combine(photoDir, memberId + Path.GetExtension(selectedPhotoPath));
-                File.Copy(selectedPhotoPath, savedPhotoPath, true);
+                try { File.Copy(selectedPhotoPath, savedPhotoPath, true); } catch { }
             }
 
             try
@@ -147,13 +200,21 @@ namespace GymManagementSystem.Views.Windows
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    string sql = "INSERT INTO Members (MemberID, FullName, Phone, Gender, DateJoined, ExpiryDate, Status, PhotoPath) VALUES (@id, @name, @phone, @gender, @joined, @expiry, @status, @photo)";
+                    string sql = @"INSERT INTO Members 
+                        (MemberID, FirstName, MiddleInitial, LastName, FullName, Phone, Gender, Birthday, MemberType, DateJoined, ExpiryDate, Status, PhotoPath) 
+                        VALUES (@id, @fName, @mi, @lName, @fullName, @phone, @gender, @bday, @type, @joined, @expiry, @status, @photo)";
+
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@id", memberId);
-                        cmd.Parameters.AddWithValue("@name", fullName);
+                        cmd.Parameters.AddWithValue("@fName", firstName);
+                        cmd.Parameters.AddWithValue("@mi", mi);
+                        cmd.Parameters.AddWithValue("@lName", lastName);
+                        cmd.Parameters.AddWithValue("@fullName", fullName);
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
+                        cmd.Parameters.AddWithValue("@bday", birthday);
+                        cmd.Parameters.AddWithValue("@type", memberType.ToString());
                         cmd.Parameters.AddWithValue("@joined", dateJoined);
                         cmd.Parameters.AddWithValue("@expiry", expiryDate);
                         cmd.Parameters.AddWithValue("@status", status);
@@ -171,27 +232,35 @@ namespace GymManagementSystem.Views.Windows
             }
         }
 
-        private void UpdateMember(string fullName, string phone, string gender)
+        private void UpdateMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, MembershipType memberType)
         {
             try
             {
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    // Added DateJoined to the SET clause
                     string sql = @"UPDATE Members 
-                           SET FullName = @name, 
+                           SET FirstName = @fName,
+                               MiddleInitial = @mi,
+                               LastName = @lName,
+                               FullName = @fullName, 
                                Phone = @phone, 
                                Gender = @gender, 
+                               Birthday = @bday,
+                               MemberType = @type,
                                DateJoined = @joined 
                            WHERE MemberID = @id";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("@name", fullName);
+                        cmd.Parameters.AddWithValue("@fName", firstName);
+                        cmd.Parameters.AddWithValue("@mi", mi);
+                        cmd.Parameters.AddWithValue("@lName", lastName);
+                        cmd.Parameters.AddWithValue("@fullName", fullName);
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
-                        // Fetch the date from the DatePicker
+                        cmd.Parameters.AddWithValue("@bday", birthday);
+                        cmd.Parameters.AddWithValue("@type", memberType.ToString());
                         cmd.Parameters.AddWithValue("@joined", dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();
@@ -221,8 +290,6 @@ namespace GymManagementSystem.Views.Windows
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    // We get the numeric part of the ID, find the MAX, and add 1
-                    // This works even if middle records were deleted
                     string sql = "SELECT MAX(CAST(SUBSTR(MemberID, 4) AS INTEGER)) FROM Members";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {

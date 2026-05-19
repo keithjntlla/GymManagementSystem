@@ -110,7 +110,9 @@ namespace GymManagementSystem.Views.MainViews
                                 _searchResults.Add(new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
-                                    FullName = reader["FullName"]?.ToString() ?? string.Empty,
+                                    FirstName = reader["FirstName"]?.ToString() ?? "",
+                                    MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                    LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? string.Empty,
                                     Gender = reader["Gender"]?.ToString() ?? string.Empty,
                                     ExpiryDate = reader["ExpiryDate"]?.ToString() ?? string.Empty,
@@ -334,7 +336,9 @@ namespace GymManagementSystem.Views.MainViews
                                 member = new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
-                                    FullName = reader["FullName"]?.ToString() ?? string.Empty,
+                                    FirstName = reader["FirstName"]?.ToString() ?? "",
+                                    MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                    LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? string.Empty,
                                     Gender = reader["Gender"]?.ToString() ?? string.Empty,
                                     DateJoined = reader["DateJoined"]?.ToString() ?? string.Empty,

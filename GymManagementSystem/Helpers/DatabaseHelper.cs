@@ -79,11 +79,17 @@ namespace GymManagementSystem
                     }
                 }
 
+                // FIXED: The fresh table schema now contains all your new field properties natively!
                 string memberTable = @"CREATE TABLE IF NOT EXISTS Members (
                     MemberID TEXT PRIMARY KEY,
+                    FirstName TEXT,
+                    MiddleInitial TEXT,
+                    LastName TEXT,
                     FullName TEXT,
                     Phone TEXT,
                     Gender TEXT,
+                    Birthday TEXT,
+                    MemberType TEXT,
                     DateJoined TEXT,
                     ExpiryDate TEXT,
                     Status TEXT,
@@ -296,13 +302,47 @@ namespace GymManagementSystem
             }
         }
 
+        public static bool IsPhoneNumberDuplicate(string phone, string excludeMemberId = "")
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = "SELECT COUNT(*) FROM Members WHERE Phone = @phone AND MemberID != @excludeId";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@phone", phone);
+                    cmd.Parameters.AddWithValue("@excludeId", excludeMemberId);
+                    return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                }
+            }
+        }
+
+        public static bool IsNameCombinationDuplicate(string firstName, string mi, string lastName, string excludeMemberId = "")
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"SELECT COUNT(*) FROM Members 
+                       WHERE LOWER(FirstName) = LOWER(@fName) 
+                       AND LOWER(MiddleInitial) = LOWER(@mi) 
+                       AND LOWER(LastName) = LOWER(@lName) 
+                       AND MemberID != @excludeId";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@fName", firstName);
+                    cmd.Parameters.AddWithValue("@mi", mi);
+                    cmd.Parameters.AddWithValue("@lName", lastName);
+                    cmd.Parameters.AddWithValue("@excludeId", excludeMemberId);
+                    return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                }
+            }
+        }
+
         public static void RefreshMemberStatuses()
         {
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                // Logic Fix: ExpiryDate is today. This query only expires if Date(ExpiryDate) < today. 
-                // This keeps daily members active for the duration of the current calendar date.
                 string updateSql = "UPDATE Members SET Status = 'Expired' WHERE ExpiryDate != '-' AND ExpiryDate != '' AND Date(ExpiryDate) < Date('now') AND Status = 'Active'";
                 using (var cmd = new SQLiteCommand(updateSql, conn))
                     cmd.ExecuteNonQuery();
