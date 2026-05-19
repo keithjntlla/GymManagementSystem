@@ -15,14 +15,16 @@ namespace GymManagementSystem.Views.Windows
         private string selectedPhotoPath = "";
         private bool isEditMode = false;
         private string editMemberId = "";
+        // Permanent backup variable to safely carry historical join dates during profile modifications
+        private string historicalJoinDate = "";
 
         public AddMemberWindow()
         {
             InitializeComponent();
             LoadDiscountTiersDropdown();
-            dpDateJoined.SelectedDate = DateTime.Now;
-            dpDateJoined.IsEnabled = false;
             isEditMode = false;
+            // Automatically capture today's timestamp as the clean default standard baseline
+            historicalJoinDate = DateTime.Now.ToString("yyyy-MM-dd");
         }
 
         public AddMemberWindow(Member memberToEdit)
@@ -31,8 +33,6 @@ namespace GymManagementSystem.Views.Windows
             LoadDiscountTiersDropdown();
             isEditMode = true;
             editMemberId = memberToEdit.MemberID;
-
-            dpDateJoined.DisplayDateEnd = DateTime.Now;
 
             lblTitle.Text = "Edit Member";
             btnRegister.Content = "Update";
@@ -43,7 +43,7 @@ namespace GymManagementSystem.Views.Windows
             txtPhone.Text = memberToEdit.Phone;
             cmbGender.Text = memberToEdit.Gender;
 
-            // FIXED: Direct string configuration mapping assignment 
+            // Direct string configuration mapping assignment 
             cmbMemberType.SelectedValue = memberToEdit.MemberType;
 
             if (memberToEdit.Birthday.HasValue)
@@ -55,17 +55,15 @@ namespace GymManagementSystem.Views.Windows
                 dpBirthday.SelectedDate = null;
             }
 
+            // ── FIXED: RECOVERY TO Programmatic Backup Storage Variable ──
             if (DateTime.TryParse(memberToEdit.DateJoined, out DateTime joinDate))
             {
-                dpDateJoined.SelectedDate = joinDate;
+                historicalJoinDate = joinDate.ToString("yyyy-MM-dd");
             }
             else
             {
-                dpDateJoined.SelectedDate = DateTime.Now;
+                historicalJoinDate = DateTime.Now.ToString("yyyy-MM-dd");
             }
-
-            dpDateJoined.IsEnabled = false;
-            dpDateJoined.ToolTip = "Joining date is a permanent system record.";
 
             if (!string.IsNullOrEmpty(memberToEdit.PhotoPath) && File.Exists(memberToEdit.PhotoPath))
             {
@@ -78,10 +76,9 @@ namespace GymManagementSystem.Views.Windows
             }
         }
 
-        // NEW METHOD: Populates the Tier ComboBox options dynamically via Database
         private void LoadDiscountTiersDropdown()
         {
-            var tiersList = new List<string> { "Regular" }; // Core dynamic baseline string option
+            var tiersList = new List<string> { "Regular" };
             try
             {
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
@@ -107,7 +104,7 @@ namespace GymManagementSystem.Views.Windows
             }
 
             cmbMemberType.ItemsSource = tiersList;
-            cmbMemberType.SelectedIndex = 0; // Default fallback to "Regular"
+            cmbMemberType.SelectedIndex = 0;
         }
 
         private void UploadPhoto_Click(object sender, RoutedEventArgs e)
@@ -219,7 +216,6 @@ namespace GymManagementSystem.Views.Windows
                 }
             }
 
-            // FIXED: Extracted as plain string selection criteria mapping directly to lookup matrix
             string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
 
             string computedFullName = string.IsNullOrWhiteSpace(middleInitial)
@@ -239,7 +235,8 @@ namespace GymManagementSystem.Views.Windows
         private void AddNewMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType)
         {
             string memberId = GenerateMemberID();
-            string dateJoined = dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
+            // FIXED: Fully localized fallback generation logic
+            string dateJoined = historicalJoinDate;
             string expiryDate = "-";
             string status = "Pending";
 
@@ -272,7 +269,7 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
                         cmd.Parameters.AddWithValue("@bday", birthday);
-                        cmd.Parameters.AddWithValue("@type", memberType); // Passed directly as raw string configuration value
+                        cmd.Parameters.AddWithValue("@type", memberType);
                         cmd.Parameters.AddWithValue("@joined", dateJoined);
                         cmd.Parameters.AddWithValue("@expiry", expiryDate);
                         cmd.Parameters.AddWithValue("@status", status);
@@ -318,8 +315,9 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@phone", phone);
                         cmd.Parameters.AddWithValue("@gender", gender);
                         cmd.Parameters.AddWithValue("@bday", birthday);
-                        cmd.Parameters.AddWithValue("@type", memberType); // Passed directly as raw string configuration value
-                        cmd.Parameters.AddWithValue("@joined", dpDateJoined.SelectedDate?.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@type", memberType);
+                        // FIXED: Re-maps the untouched background timestamp parameters safely 
+                        cmd.Parameters.AddWithValue("@joined", historicalJoinDate);
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();
                     }

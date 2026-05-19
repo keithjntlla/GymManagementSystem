@@ -77,9 +77,14 @@
                                         <TextBlock x:Name="lblMemberPhone" Text="-" Foreground="White" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
 
-                                    <StackPanel>
+                                    <StackPanel Margin="0,0,0,12">
                                         <TextBlock Text="Birthday" Foreground="Gray" FontSize="12"/>
                                         <TextBlock x:Name="lblMemberBirthday" Text="-" Foreground="White" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="Current Plan" Foreground="Gray" FontSize="12"/>
+                                        <TextBlock x:Name="lblMemberPlan" Text="-" Foreground="White" Margin="0,2,0,0" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -89,9 +94,14 @@
                                         <TextBlock x:Name="lblMemberGender" Text="-" Foreground="White" Margin="0,2,0,0"/>
                                     </StackPanel>
 
-                                    <StackPanel>
+                                    <StackPanel Margin="0,0,0,12">
                                         <TextBlock Text="Type" Foreground="Gray" FontSize="12"/>
                                         <TextBlock x:Name="lblMemberType" Text="-" Foreground="White" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="Current Expiry" Foreground="Gray" FontSize="12"/>
+                                        <TextBlock x:Name="lblCurrentExpiry" Text="-" Foreground="White" Margin="0,2,0,0" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Grid>
@@ -227,7 +237,7 @@
                             </Border>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock Text="New Expiry Date" Foreground="Gray" Margin="0,0,0,5"/>
+                            <TextBlock x:Name="lblExpiryTitle" Text="New Expiry Date" Foreground="Gray" Margin="0,0,0,5"/>
                             <Border Background="#141416" BorderBrush="#333" BorderThickness="1" Padding="10">
                                 <TextBlock x:Name="lblNewExpiryDate" Text="-" Foreground="White"/>
                             </Border>

@@ -92,18 +92,6 @@
                     </StackPanel>
                     <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15"/>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                        <TextBlock Text="Date Joined" Foreground="White"/>
-                        <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
-                    </StackPanel>
-                    <DatePicker x:Name="dpDateJoined" Style="{StaticResource ModernDatePicker}" Margin="0,0,0,15" Padding="10" IsHitTestVisible="False" Focusable="False" Background="#1a1a1a">
-                        <DatePicker.Resources>
-                            <Style TargetType="Button">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Style>
-                        </DatePicker.Resources>
-                    </DatePicker>
-
                     <TextBlock Text="Photo" Foreground="White" Margin="0,0,0,5"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <Border Width="80" Height="80" Background="#1a1a1a" CornerRadius="10" BorderBrush="#333" BorderThickness="1">

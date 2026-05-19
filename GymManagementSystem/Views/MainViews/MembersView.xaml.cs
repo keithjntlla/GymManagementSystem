@@ -31,11 +31,40 @@ namespace GymManagementSystem.Views.MainViews
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
+
+                    // ── FIXED SQL: SEPARATES INDIVIDUAL PLANS BY COMMA, AND INTERNAL DATA BY PIPE ──
                     string sql = @"
-                        SELECT M.*, 
-                        COALESCE((SELECT P.MembershipType FROM Payments P WHERE P.MemberID = M.MemberID ORDER BY P.PaymentID DESC LIMIT 1), '-') as PlanName
-                        FROM Members M 
-                        ORDER BY M.MemberID DESC";
+                SELECT M.*, 
+                COALESCE(
+                    (
+                        SELECT GROUP_CONCAT(CleanPlan, ',')
+                        FROM (
+                            SELECT DISTINCT 
+                                CASE 
+                                    WHEN INSTR(P.MembershipType, ' (') > 0 
+                                    THEN SUBSTR(P.MembershipType, 1, INSTR(P.MembershipType, ' (') - 1)
+                                    WHEN INSTR(P.MembershipType, '[Advance Renewal] ') > 0
+                                    THEN SUBSTR(P.MembershipType, 19)
+                                    WHEN INSTR(P.MembershipType, '[Advanced] ') > 0
+                                    THEN SUBSTR(P.MembershipType, 12)
+                                    WHEN INSTR(P.MembershipType, '[Queued] ') > 0
+                                    THEN SUBSTR(P.MembershipType, 10)
+                                    ELSE P.MembershipType 
+                                END || '|' ||
+                                CASE 
+                                    WHEN INSTR(P.MembershipType, ' (') > 0 
+                                    THEN 'x' || SUBSTR(P.MembershipType, INSTR(P.MembershipType, ' (') + 2, INSTR(P.MembershipType, ')') - INSTR(P.MembershipType, ' (') - 2)
+                                    ELSE '' 
+                                END as CleanPlan
+                            FROM Payments P
+                            WHERE P.MemberID = M.MemberID
+                              AND Date(P.NewExpiryDate) >= Date('now')
+                            ORDER BY P.PaymentID ASC
+                        )
+                    ), '-'
+                ) as ActivePlans
+                FROM Members M 
+                ORDER BY M.MemberID DESC";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
@@ -51,12 +80,14 @@ namespace GymManagementSystem.Views.MainViews
                                     LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? "",
                                     Gender = reader["Gender"]?.ToString() ?? "",
-                                    MembershipPlan = reader["PlanName"]?.ToString() ?? "-",
+
+                                    // String formats output like: "Daily|x2,Weekly|"
+                                    MembershipPlan = reader["ActivePlans"]?.ToString() ?? "-",
+
                                     Status = reader["Status"]?.ToString() ?? "",
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? ""
                                 };
 
-                                // Parse C# DateTime from database text strings
                                 if (reader["DateJoined"] != DBNull.Value && DateTime.TryParse(reader["DateJoined"].ToString(), out DateTime joinDate))
                                 {
                                     member.DateJoined = joinDate.ToString("yyyy-MM-dd");
@@ -109,10 +140,10 @@ namespace GymManagementSystem.Views.MainViews
                 string searchText = txtSearch.Text.Trim().ToLower();
                 bool matchesText = string.IsNullOrEmpty(searchText) ||
                                    member.FullName.ToLower().Contains(searchText) ||
-                                   member.MemberID.ToLower().Contains(searchText); 
+                                   member.MemberID.ToLower().Contains(searchText);
 
                 string selectedStatus = (cbStatusFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Status";
-                bool matchesStatus = selectedStatus == "All Status" || member.Status == selectedStatus; 
+                bool matchesStatus = selectedStatus == "All Status" || member.Status == selectedStatus;
 
                 return matchesText && matchesStatus;
             }
@@ -164,7 +195,32 @@ namespace GymManagementSystem.Views.MainViews
 
             if (memberToEdit != null)
             {
-                AddMemberWindow editWin = new AddMemberWindow(memberToEdit);
+                var safeMemberCopy = new Member
+                {
+                    MemberID = memberToEdit.MemberID,
+                    FirstName = memberToEdit.FirstName,
+                    MiddleInitial = memberToEdit.MiddleInitial,
+                    LastName = memberToEdit.LastName,
+                    Phone = memberToEdit.Phone,
+                    Gender = memberToEdit.Gender,
+                    Birthday = memberToEdit.Birthday,
+                    MemberType = memberToEdit.MemberType,
+                    DateJoined = memberToEdit.DateJoined,
+                    ExpiryDate = memberToEdit.ExpiryDate,
+                    Status = memberToEdit.Status,
+                    PhotoPath = memberToEdit.PhotoPath,
+                    MembershipPlan = memberToEdit.MembershipPlan.Contains(",")
+                        ? memberToEdit.MembershipPlan.Split(',')[0]
+                        : memberToEdit.MembershipPlan
+                };
+
+                // Strip the pipe out from the single base plan before editing
+                if (safeMemberCopy.MembershipPlan.Contains("|"))
+                {
+                    safeMemberCopy.MembershipPlan = safeMemberCopy.MembershipPlan.Split('|')[0];
+                }
+
+                AddMemberWindow editWin = new AddMemberWindow(safeMemberCopy);
                 editWin.Owner = Window.GetWindow(this);
                 if (editWin.ShowDialog() == true)
                 {

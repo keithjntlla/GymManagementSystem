@@ -13,13 +13,14 @@ namespace GymManagementSystem.Views.MainViews
     public partial class PaymentsView : UserControl
     {
         private Member? selectedMember;
-        private double basePlanPrice = 0; // Tracks the single item rate cost
-        private double totalAmount = 0;   // basePlanPrice * durationMultiplier
+        private double basePlanPrice = 0;
+        private double totalAmount = 0;
         private string selectedMembershipType = "";
         private int selectedDurationDays = 0;
-        private int durationMultiplier = 1; // Default multiplier
-        private double activeDiscountPercentage = 0; // Cumulative reduction tracked percentage
-        private double totalDiscountDeduction = 0;   // Net currency deduction amount
+        private int durationMultiplier = 1;
+        private double activeDiscountPercentage = 0;
+        private double totalDiscountDeduction = 0;
+        private bool isAdvancePaymentMode = false;
 
         public PaymentsView()
         {
@@ -75,7 +76,6 @@ namespace GymManagementSystem.Views.MainViews
                 selectedMembershipType = plan.PlanName;
                 selectedDurationDays = plan.DurationDays;
 
-                // Reset multiplier back to 1 on plan selection switch
                 durationMultiplier = 1;
                 lblMultiplierValue.Text = durationMultiplier.ToString();
 
@@ -83,10 +83,9 @@ namespace GymManagementSystem.Views.MainViews
             }
         }
 
-        // NEW: Spinbox/Spinner Button Event Subroutines
         private void BtnMultiplier_Increment_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedMembershipType)) return; // Don't scale if no rate selected
+            if (string.IsNullOrEmpty(selectedMembershipType)) return;
             durationMultiplier++;
             lblMultiplierValue.Text = durationMultiplier.ToString();
             RecalculateFinancialsAndDates();
@@ -94,7 +93,7 @@ namespace GymManagementSystem.Views.MainViews
 
         private void BtnMultiplier_Decrement_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedMembershipType) || durationMultiplier <= 1) return; // Prevent falling below 1
+            if (string.IsNullOrEmpty(selectedMembershipType) || durationMultiplier <= 1) return;
             durationMultiplier--;
             lblMultiplierValue.Text = durationMultiplier.ToString();
             RecalculateFinancialsAndDates();
@@ -107,12 +106,10 @@ namespace GymManagementSystem.Views.MainViews
 
             if (selectedMember != null && !string.IsNullOrEmpty(selectedMembershipType))
             {
-                // 1. Fetch Auto-applied configurations for Student / Senior
                 var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
 
                 if (fixedPct > 0)
                 {
-                    // Verify structural comma rules
                     if (fixedScope.Equals("All", StringComparison.OrdinalIgnoreCase) ||
                         fixedScope.ToLower().Contains(selectedMembershipType.ToLower()))
                     {
@@ -121,29 +118,23 @@ namespace GymManagementSystem.Views.MainViews
                 }
             }
 
-            // Compute net fractions 
             totalDiscountDeduction = subtotal * (activeDiscountPercentage / 100.0);
             totalAmount = subtotal - totalDiscountDeduction;
 
-            // Output adjustments back into the screen view labels
             lblTotalAmount.Text = $"₱{totalAmount:N2}";
 
-            // NEW: Dynamic UI UI state feedback indicators
             if (activeDiscountPercentage > 0)
             {
-                // Turn indicators visible
                 brdDiscountBadge.Visibility = Visibility.Visible;
                 lblOriginalSubtotal.Visibility = Visibility.Visible;
                 lblDiscountDeductionDisplay.Visibility = Visibility.Visible;
 
-                // Set layout text values
                 lblDiscountBadgeText.Text = $"{activeDiscountPercentage}% OFF";
                 lblOriginalSubtotal.Text = $"₱{subtotal:N2}";
                 lblDiscountDeductionDisplay.Text = $"-₱{totalDiscountDeduction:N2} discount applied";
             }
             else
             {
-                // Reset and collapse if member has no special discount privileges
                 brdDiscountBadge.Visibility = Visibility.Collapsed;
                 lblOriginalSubtotal.Visibility = Visibility.Collapsed;
                 lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
@@ -157,18 +148,30 @@ namespace GymManagementSystem.Views.MainViews
         {
             if (selectedDurationDays == 0) return;
 
+            DateTime baseDate = DateTime.Today;
+
+            if (isAdvancePaymentMode && selectedMember != null &&
+                !string.IsNullOrEmpty(selectedMember.ExpiryDate) && selectedMember.ExpiryDate != "-")
+            {
+                if (DateTime.TryParse(selectedMember.ExpiryDate, out DateTime parsedActiveExpiry))
+                {
+                    baseDate = parsedActiveExpiry;
+                }
+            }
+
             DateTime newExpiry;
-            // Evaluates total scaled days to add accurately (selectedDurationDays * multiplier)
             int totalDaysToAdd = selectedDurationDays * durationMultiplier;
 
             if (selectedMembershipType.Equals("Daily", StringComparison.OrdinalIgnoreCase))
             {
-                // If Daily is multiplied (e.g., multiplier of 3 days), adjust scale calculations cleanly
-                newExpiry = DateTime.Today.AddDays(totalDaysToAdd - 1);
+                if (isAdvancePaymentMode)
+                    newExpiry = baseDate.AddDays(totalDaysToAdd);
+                else
+                    newExpiry = baseDate.AddDays(totalDaysToAdd - 1);
             }
             else
             {
-                newExpiry = DateTime.Today.AddDays(totalDaysToAdd);
+                newExpiry = baseDate.AddDays(totalDaysToAdd);
             }
             lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd");
         }
@@ -202,7 +205,41 @@ namespace GymManagementSystem.Views.MainViews
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    string sql = "SELECT * FROM Members WHERE FullName LIKE @query OR MemberID LIKE @query";
+
+                    // ── FIXED SQL QUERY: PULLED DYNAMIC PLANNAME AND MULTIPLIER TEXT FOR SEARCH BAR AS WELL ──
+                    string sql = @"
+                        SELECT M.*, 
+                        COALESCE(
+                            (
+                                SELECT CASE 
+                                    WHEN INSTR(P.MembershipType, ' (') > 0 
+                                    THEN SUBSTR(P.MembershipType, 1, INSTR(P.MembershipType, ' (') - 1)
+                                    WHEN INSTR(P.MembershipType, '[Advanced] ') > 0
+                                    THEN SUBSTR(P.MembershipType, 19)
+                                    ELSE P.MembershipType 
+                                END
+                                FROM Payments P 
+                                WHERE P.MemberID = M.MemberID 
+                                ORDER BY P.PaymentID DESC 
+                                LIMIT 1
+                            ), '-'
+                        ) as PlanName,
+                        COALESCE(
+                            (
+                                SELECT CASE 
+                                    WHEN INSTR(P.MembershipType, ' (') > 0 
+                                    THEN 'x' || SUBSTR(P.MembershipType, INSTR(P.MembershipType, ' (') + 2, INSTR(P.MembershipType, ')') - INSTR(P.MembershipType, ' (') - 2)
+                                    ELSE '' 
+                                END
+                                FROM Payments P 
+                                WHERE P.MemberID = M.MemberID 
+                                ORDER BY P.PaymentID DESC 
+                                LIMIT 1
+                            ), ''
+                        ) as MultiplierText
+                        FROM Members M 
+                        WHERE M.FullName LIKE @query OR M.MemberID LIKE @query";
+
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@query", "%" + query + "%");
@@ -223,7 +260,19 @@ namespace GymManagementSystem.Views.MainViews
                                     ExpiryDate = reader["ExpiryDate"]?.ToString() ?? ""
                                 };
 
-                                // ADD THESE BLOCKS TO FIX THE DROPDOWN SELECTION BUG
+                                // ── PACK THE SEARCH RESULT STRINGS INTO THE PIPED FIELD FOR THE LOADER ENGINE ──
+                                string basePlan = reader["PlanName"]?.ToString() ?? "-";
+                                string multiplier = reader["MultiplierText"]?.ToString() ?? "";
+
+                                if (!string.IsNullOrEmpty(multiplier) && basePlan != "-")
+                                {
+                                    m.MembershipPlan = $"{basePlan}|{multiplier}";
+                                }
+                                else
+                                {
+                                    m.MembershipPlan = basePlan;
+                                }
+
                                 if (reader["Birthday"] != DBNull.Value && DateTime.TryParse(reader["Birthday"].ToString(), out DateTime bDay))
                                 {
                                     m.Birthday = bDay;
@@ -263,17 +312,37 @@ namespace GymManagementSystem.Views.MainViews
         {
             if (member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
             {
-                MessageBox.Show($"Member {member.FullName} is still Active. You cannot process a new payment until their current membership expires.",
-                                "Member Still Active", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var result = MessageBox.Show(
+                    $"Member {member.FullName} is still Active (Expires: {member.ExpiryDate}).\n\n" +
+                    "Would you like to process an Advance Payment? This will extend their current plan without losing remaining days.",
+                    "Active Membership Detected",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-                btnProcessPayment.IsEnabled = false;
-                btnProcessPayment.Opacity = 0.5;
+                if (result == MessageBoxResult.Yes)
+                {
+                    isAdvancePaymentMode = true;
+                    lblExpiryTitle.Text = "Extended Expiry Date";
+                    btnProcessPayment.IsEnabled = true;
+                    btnProcessPayment.Opacity = 1.0;
+                }
+                else
+                {
+                    isAdvancePaymentMode = false;
+                    lblExpiryTitle.Text = "New Expiry Date";
+                    btnProcessPayment.IsEnabled = false;
+                    btnProcessPayment.Opacity = 0.5;
+                }
             }
             else
             {
+                isAdvancePaymentMode = false;
+                lblExpiryTitle.Text = "New Expiry Date";
                 btnProcessPayment.IsEnabled = true;
                 btnProcessPayment.Opacity = 1.0;
             }
+
+            RecalculateFinancialsAndDates();
         }
 
         private void DisplayMemberInfo(Member member)
@@ -286,7 +355,6 @@ namespace GymManagementSystem.Views.MainViews
             lblMemberPhone.Text = member.Phone;
             lblMemberGender.Text = member.Gender;
 
-            // NEW: Assign Birthday formatted cleanly to yyyy-MM-dd
             if (member.Birthday.HasValue)
             {
                 lblMemberBirthday.Text = member.Birthday.Value.ToString("yyyy-MM-dd");
@@ -296,8 +364,40 @@ namespace GymManagementSystem.Views.MainViews
                 lblMemberBirthday.Text = "N/A";
             }
 
-            // NEW: Assign Membership Type Enum value
             lblMemberType.Text = member.MemberType.ToString();
+
+            // ── FIXED: EXTRACT BASE PLAN AND MULTIPLIER SEPARATELY FOR DISPLAY ──
+            if (!string.IsNullOrWhiteSpace(member.MembershipPlan) && member.MembershipPlan != "-")
+            {
+                // Check if the plan data contains our custom layout pipe character
+                if (member.MembershipPlan.Contains("|"))
+                {
+                    string[] parts = member.MembershipPlan.Split('|');
+                    string basePlan = parts[0];
+                    string multiplier = parts[1];
+
+                    // Render both beautifully together (e.g., "Daily (x3)")
+                    lblMemberPlan.Text = $"{basePlan} ({multiplier})";
+                }
+                else
+                {
+                    lblMemberPlan.Text = member.MembershipPlan;
+                }
+            }
+            else
+            {
+                lblMemberPlan.Text = "-";
+            }
+
+            // Bind current active timeline expiry milestone parameter
+            if (!string.IsNullOrWhiteSpace(member.ExpiryDate) && member.ExpiryDate != "-")
+            {
+                lblCurrentExpiry.Text = member.ExpiryDate;
+            }
+            else
+            {
+                lblCurrentExpiry.Text = "-";
+            }
 
             if (!string.IsNullOrEmpty(member.PhotoPath) && File.Exists(member.PhotoPath))
             {
@@ -365,14 +465,15 @@ namespace GymManagementSystem.Views.MainViews
             string paymentMode = rbCash.IsChecked == true ? "Cash" : "GCash";
             double change = paid - totalAmount;
 
-            // Format dynamic descriptions depending on multiplier additions (e.g., "Monthly (x3)")
             string formattedPlanDescription = durationMultiplier > 1
                 ? $"{selectedMembershipType} ({durationMultiplier})"
                 : selectedMembershipType;
 
+            string paymentPrefix = isAdvancePaymentMode ? "[Advanced] " : "";
+
             string summary = $"Please confirm the following payment:\n\n" +
                              $"  Member: {selectedMember.FullName}\n" +
-                             $"  Plan: {formattedPlanDescription}\n" +
+                             $"  Plan: {paymentPrefix}{formattedPlanDescription}\n" +
                              $"  Total: ₱{totalAmount:N2}\n" +
                              $"  Amount Paid: ₱{paid:N2}\n" +
                              $"  Change: ₱{change:N2}\n" +
@@ -392,18 +493,18 @@ namespace GymManagementSystem.Views.MainViews
                     conn.Open();
                     using (var trans = conn.BeginTransaction())
                     {
-                        string paySql = @"INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate) 
-                                VALUES (@mid, @mname, @paid, @total, @change, @mode, @type, @date, @expiry)";
+                        string paySql = @"INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate, DiscountAmount) 
+                                VALUES (@id, @mname, @paid, @total, @change, @mode, @type, @date, @expiry, @discountAmount)";
                         using (var cmd = new SQLiteCommand(paySql, conn))
                         {
-                            cmd.Parameters.AddWithValue("@mid", selectedMember.MemberID);
+                            cmd.Parameters.AddWithValue("@id", selectedMember.MemberID);
                             cmd.Parameters.AddWithValue("@mname", selectedMember.FullName);
                             cmd.Parameters.AddWithValue("@paid", paid);
                             cmd.Parameters.AddWithValue("@total", totalAmount);
-                            cmd.Parameters.AddWithValue("@change", paid - totalAmount);
+                            cmd.Parameters.AddWithValue("@change", change);
                             cmd.Parameters.AddWithValue("@discountAmount", totalDiscountDeduction);
                             cmd.Parameters.AddWithValue("@mode", paymentMode);
-                            cmd.Parameters.AddWithValue("@type", formattedPlanDescription); // Stores text descriptive variants inside SQLite log history
+                            cmd.Parameters.AddWithValue("@type", paymentPrefix + formattedPlanDescription);
                             cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
                             cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
                             cmd.ExecuteNonQuery();
@@ -436,7 +537,12 @@ namespace GymManagementSystem.Views.MainViews
             selectedMembershipType = "";
             selectedDurationDays = 0;
             durationMultiplier = 1;
+            isAdvancePaymentMode = false;
 
+            lblMemberPlan.Text = "-";
+            lblCurrentExpiry.Text = "-";
+
+            lblExpiryTitle.Text = "New Expiry Date";
             lblMultiplierValue.Text = "1";
             txtSearch.Clear();
             txtAmountPaid.Clear();

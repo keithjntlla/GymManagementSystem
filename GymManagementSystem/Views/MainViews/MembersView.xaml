@@ -57,7 +57,10 @@
 
         <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgMembers" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
+
                 <DataGrid.Resources>
+                    <local:StringToCollectionConverter x:Key="StringToCollectionConverter"/>
+
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
@@ -70,21 +73,50 @@
                 </DataGrid.Resources>
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Member ID" Binding="{Binding MemberID}" Width="120"/>
+                    <DataGridTextColumn Header="Member ID" Binding="{Binding MemberID}" Width="100"/>
                     <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="*"/>
-                    <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="135"/>
-                    <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="100"/>
+                    <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="120"/>
 
-                    <DataGridTextColumn Header="Date Joined" Binding="{Binding DateJoined, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
-                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
+                    <DataGridTextColumn Header="Member Type" Binding="{Binding MemberType}" Width="120"/>
 
-                    <DataGridTemplateColumn Header="Plan" Width="130">
+                    <DataGridTemplateColumn Header="Current Plan" Width="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ContentControl Content="{Binding MembershipPlan}" Style="{StaticResource MembershipPlanBadge}"/>
+                                <DataTemplate.Resources>
+                                    <local:PlanNameSplitterConverter x:Key="PlanSplitter"/>
+                                </DataTemplate.Resources>
+
+                                <ItemsControl ItemsSource="{Binding MembershipPlan, Converter={StaticResource StringToCollectionConverter}}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+
+                                                <ContentControl Content="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=0}" 
+                                            Style="{StaticResource MembershipPlanBadge}" 
+                                            VerticalAlignment="Center"/>
+
+                                                <TextBlock Text="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=1}" 
+                                                   Foreground="#ff9940" 
+                                                   FontWeight="Bold" 
+                                                   FontSize="14" 
+                                                   VerticalAlignment="Center" 
+                                                   Margin="6,0,0,0"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
 
                     <DataGridTemplateColumn Header="Status" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
@@ -136,11 +168,6 @@
                                             <Style TargetType="Button">
                                                 <Setter Property="Foreground" Value="#4a90e2"/>
                                                 <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
-                                                        <Setter Property="Visibility" Value="Hidden"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
                                             </Style>
                                         </Button.Style>
                                     </Button>

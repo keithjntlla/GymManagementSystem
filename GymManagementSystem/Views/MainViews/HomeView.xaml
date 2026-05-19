@@ -113,7 +113,7 @@
                 <Border Background="#141416" CornerRadius="14" Padding="5">
                     <DataGrid x:Name="dgRecentTransactions" Style="{StaticResource ModernDataGrid}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Member" Binding="{Binding MemberName}" Width="2*"/>
+                            <DataGridTextColumn Header="Member" Binding="{Binding MemberName}" Width="1.3*"/>
 
                             <DataGridTemplateColumn Header="Plan" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>
