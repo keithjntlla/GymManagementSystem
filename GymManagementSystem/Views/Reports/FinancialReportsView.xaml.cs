@@ -101,11 +101,12 @@ public partial class FinancialReportsView : UserControl
             {
                 conn.Open();
 
+                // Explicitly selecting all columns from the Payments database tracking schema
                 var sb = new StringBuilder(
                     "SELECT * FROM Payments WHERE DateOfTransaction BETWEEN @start AND @end");
 
                 if (planFilter != "All Plans")
-                    sb.Append(" AND MembershipType = @plan");
+                    sb.Append(" AND MembershipType LIKE @plan"); // Uses LIKE to safely match dynamic text logs like "Monthly (x2)"
 
                 sb.Append(" ORDER BY DateOfTransaction DESC");
 
@@ -114,7 +115,7 @@ public partial class FinancialReportsView : UserControl
                     cmd.Parameters.AddWithValue("@start", startDate);
                     cmd.Parameters.AddWithValue("@end", endDate);
                     if (planFilter != "All Plans")
-                        cmd.Parameters.AddWithValue("@plan", planFilter);
+                        cmd.Parameters.AddWithValue("@plan", "%" + planFilter + "%");
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -126,22 +127,30 @@ public partial class FinancialReportsView : UserControl
                                 MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
                                 MemberName = reader["MemberName"]?.ToString() ?? string.Empty,
                                 AmountPaid = Convert.ToDouble(reader["AmountPaid"]),
+
+                                // ── FIXED: EXTRACT NET VALUE FROM THE TRANSACTION ────────
+                                TotalAmount = reader["TotalAmount"] != DBNull.Value
+                                    ? Convert.ToDouble(reader["TotalAmount"])
+                                    : Convert.ToDouble(reader["AmountPaid"]), // Fallback calculation protection for legacy logs
+
                                 PaymentMode = reader["PaymentMode"]?.ToString() ?? string.Empty,
                                 MembershipType = reader["MembershipType"]?.ToString() ?? string.Empty,
-                                DateOfTransaction = reader["DateOfTransaction"]?.ToString() ?? string.Empty
+                                DateOfTransaction = reader["DateOfTransaction"]?.ToString() ?? string.Empty,
                             };
 
                             Transactions.Add(record);
-                            totalRevenue += record.AmountPaid;
 
-                            if (string.Equals(record.MembershipType, "Daily", StringComparison.OrdinalIgnoreCase))
+                            // ── FIXED: ACCUMULATE THE TRUE RATE VALUE (LESS THE CHANGE) ────
+                            totalRevenue += record.TotalAmount;
+
+                            if (record.MembershipType.StartsWith("Daily", StringComparison.OrdinalIgnoreCase))
                             {
-                                walkInRevenue += record.AmountPaid;
+                                walkInRevenue += record.TotalAmount;
                                 walkInCount++;
                             }
                             else
                             {
-                                subscriptionRevenue += record.AmountPaid;
+                                subscriptionRevenue += record.TotalAmount;
                                 subscriptionCount++;
                             }
                         }
@@ -149,10 +158,10 @@ public partial class FinancialReportsView : UserControl
                 }
             }
 
-            lblTotalRevenue.Text = $"₱{totalRevenue:N0}";
-            lblWalkIns.Text = $"₱{walkInRevenue:N0}";
+            lblTotalRevenue.Text = $"₱{totalRevenue:N2}"; // Switched to N2 to accurately present cents decimals if discounts apply
+            lblWalkIns.Text = $"₱{walkInRevenue:N2}";
             lblWalkInsCount.Text = $"{walkInCount} transactions";
-            lblSubscriptions.Text = $"₱{subscriptionRevenue:N0}";
+            lblSubscriptions.Text = $"₱{subscriptionRevenue:N2}";
             lblSubscriptionsCount.Text = $"{subscriptionCount} transactions";
         }
         catch (Exception ex)

@@ -100,7 +100,11 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="Amount"         Binding="{Binding AmountPaid, StringFormat=₱\{0:N0\}}" Width="*" Foreground="#4caf50" FontWeight="SemiBold"/>
+                    <DataGridTextColumn Header="Amount" 
+                                        Binding="{Binding TotalAmount, StringFormat=₱\{0:N0\}}" 
+                                        Width="*" 
+                                        Foreground="#4caf50" 
+                                        FontWeight="SemiBold"/>
 
                     <DataGridTemplateColumn Header="Mode" Width="*">
                         <DataGridTemplateColumn.CellTemplate>

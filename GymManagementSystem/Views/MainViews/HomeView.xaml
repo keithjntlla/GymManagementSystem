@@ -118,8 +118,7 @@
                             <DataGridTemplateColumn Header="Plan" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ContentControl Content="{Binding MembershipType}" 
-                            Style="{StaticResource MembershipPlanBadge}"/>
+                                        <ContentControl Content="{Binding MembershipType}" Style="{StaticResource MembershipPlanBadge}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -127,12 +126,12 @@
                             <DataGridTemplateColumn Header="Amount" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding AmountPaid}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="1.2*"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding DateOfTransaction}" Width="1.2*"/>
 
                             <DataGridTemplateColumn Header="Mode" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>

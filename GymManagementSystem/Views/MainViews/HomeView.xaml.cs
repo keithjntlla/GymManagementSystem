@@ -2,9 +2,11 @@ using GymManagementSystem.Views.MainViews;
 using GymManagementSystem.Views.Windows;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
+using GymManagementSystem.Models; // Reusing the global data model library path
 
 namespace GymManagementSystem.Views.MainViews
 {
@@ -16,17 +18,12 @@ namespace GymManagementSystem.Views.MainViews
         public string DaysLeft { get; set; } = "";
     }
 
-    public class RecentTransaction
-    {
-        public string MemberName { get; set; } = "";
-        public string MembershipType { get; set; } = "";
-        public string AmountPaid { get; set; } = "";
-        public string Date { get; set; } = "";
-        public string PaymentMode { get; set; } = "";
-    }
-
     public partial class HomeView : UserControl
     {
+        // REUSED MODEL: Swapped collection target array item type to use PaymentRecord
+        public ObservableCollection<PaymentRecord> RecentTransactionsList { get; set; }
+            = new ObservableCollection<PaymentRecord>();
+
         public HomeView()
         {
             InitializeComponent();
@@ -43,6 +40,7 @@ namespace GymManagementSystem.Views.MainViews
 
         private void LoadDashboardData()
         {
+            RecentTransactionsList.Clear();
             try
             {
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
@@ -73,9 +71,9 @@ namespace GymManagementSystem.Views.MainViews
                         lblCurrentlyIn.Text = Convert.ToInt32(cmd.ExecuteScalar() ?? 0).ToString();
                     }
 
-                    // Today's revenue
+                    // Today's revenue (TotalAmount)
                     using (var cmd = new SQLiteCommand(
-                        "SELECT SUM(AmountPaid) FROM Payments WHERE DateOfTransaction = @today", conn))
+                        "SELECT SUM(TotalAmount) FROM Payments WHERE DateOfTransaction = @today", conn))
                     {
                         cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
                         object result = cmd.ExecuteScalar();
@@ -83,9 +81,9 @@ namespace GymManagementSystem.Views.MainViews
                         lblTodayRevenue.Text = $"₱{revenue:N2}";
                     }
 
-                    // Monthly revenue
+                    // Monthly revenue (TotalAmount)
                     using (var cmd = new SQLiteCommand(
-                        "SELECT SUM(AmountPaid) FROM Payments WHERE strftime('%Y-%m', DateOfTransaction) = @month", conn))
+                        "SELECT SUM(TotalAmount) FROM Payments WHERE strftime('%Y-%m', DateOfTransaction) = @month", conn))
                     {
                         cmd.Parameters.AddWithValue("@month", DateTime.Now.ToString("yyyy-MM"));
                         object result = cmd.ExecuteScalar();
@@ -132,24 +130,28 @@ namespace GymManagementSystem.Views.MainViews
                     ExpiringSoonSection.Visibility = Visibility.Visible;
 
                     // Recent transactions (last 5)
-                    var transactions = new List<RecentTransaction>();
-                    using (var cmd = new SQLiteCommand(@"SELECT MemberName, MembershipType, AmountPaid, DateOfTransaction, PaymentMode
+                    using (var cmd = new SQLiteCommand(@"SELECT MemberName, MembershipType, TotalAmount, AmountPaid, DateOfTransaction, PaymentMode
                         FROM Payments ORDER BY PaymentID DESC LIMIT 5", conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            transactions.Add(new RecentTransaction
+                            // Map fallback calculations to safely handle older database rows
+                            double netCost = reader["TotalAmount"] != DBNull.Value
+                                ? Convert.ToDouble(reader["TotalAmount"])
+                                : Convert.ToDouble(reader["AmountPaid"] ?? 0);
+
+                            RecentTransactionsList.Add(new PaymentRecord
                             {
                                 MemberName = reader["MemberName"]?.ToString() ?? "",
                                 MembershipType = reader["MembershipType"]?.ToString() ?? "",
-                                AmountPaid = $"₱{Convert.ToDouble(reader["AmountPaid"]):N2}",
-                                Date = reader["DateOfTransaction"]?.ToString() ?? "",
+                                TotalAmount = netCost,
+                                DateOfTransaction = reader["DateOfTransaction"]?.ToString() ?? "",
                                 PaymentMode = reader["PaymentMode"]?.ToString() ?? ""
                             });
                         }
                     }
-                    dgRecentTransactions.ItemsSource = transactions;
+                    dgRecentTransactions.ItemsSource = RecentTransactionsList;
                 }
             }
             catch (Exception ex)
