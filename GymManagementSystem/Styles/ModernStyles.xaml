@@ -85,8 +85,9 @@
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderBrush" Value="#333"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Padding" Value="10,5"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DatePicker">
@@ -101,25 +102,51 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <DatePickerTextBox x:Name="PART_TextBox" 
-                                           Grid.Column="0" 
-                                           HorizontalContentAlignment="Stretch" 
-                                           VerticalContentAlignment="Center" 
-                                           Foreground="White"
-                                           Background="Transparent"
-                                           BorderThickness="0">
-                                <DatePickerTextBox.Style>
-                                    <Style TargetType="DatePickerTextBox">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="DatePickerTextBox">
-                                                    <ScrollViewer x:Name="PART_ContentHost" Background="Transparent" />
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </DatePickerTextBox.Style>
-                            </DatePickerTextBox>
+                            <Grid Grid.Column="0" VerticalAlignment="Center">
+                                <DatePickerTextBox x:Name="PART_TextBox" 
+                                               HorizontalContentAlignment="Stretch" 
+                                               VerticalContentAlignment="Center" 
+                                               Foreground="{TemplateBinding Foreground}"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               FontSize="{TemplateBinding FontSize}">
+                                    <DatePickerTextBox.Style>
+                                        <Style TargetType="DatePickerTextBox">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DatePickerTextBox">
+                                                        <Grid>
+                                                            <ScrollViewer x:Name="PART_ContentHost" 
+                                                                      Background="Transparent" 
+                                                                      Focusable="False" 
+                                                                      HorizontalScrollBarVisibility="Hidden" 
+                                                                      VerticalScrollBarVisibility="Hidden"/>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DatePickerTextBox.Style>
+                                </DatePickerTextBox>
+
+                                <TextBlock Text="{TemplateBinding Tag}"
+                                       Foreground="Gray"
+                                       FontSize="{TemplateBinding FontSize}"
+                                       VerticalAlignment="Center"
+                                       Margin="2,0,0,0"
+                                       IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=PART_TextBox, Path=Text}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
 
                             <Button x:Name="PART_Button" 
                                 Grid.Column="1" 
@@ -129,7 +156,8 @@
                                 Foreground="White" 
                                 BorderThickness="0" 
                                 VerticalAlignment="Center"
-                                Cursor="Hand"/>
+                                Cursor="Hand"
+                                Focusable="False"/>
 
                             <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom" StaysOpen="False"/>
                         </Grid>
@@ -140,6 +168,17 @@
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="LargeRadioButton" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="LayoutTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1.3" ScaleY="1.3"/>
             </Setter.Value>
         </Setter>
     </Style>

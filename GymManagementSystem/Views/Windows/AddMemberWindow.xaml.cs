@@ -114,12 +114,47 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
-            if (dpBirthday.SelectedDate == null)
+            // 1. Check if the field is empty or completely unselected
+            if (string.IsNullOrWhiteSpace(dpBirthday.Text))
             {
                 MessageBox.Show("Birthday is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 dpBirthday.Focus();
                 return;
             }
+
+            // 2. Enforce strict format checking (Using DateTime.TryParseExact)
+            // This strictly enforces the specific pattern you gave in your Tag attribute: "MM/DD/YYYY"
+            string typedDate = dpBirthday.Text.Trim();
+            string strictFormat = "dd/MM/yyyy";
+
+            if (!DateTime.TryParseExact(typedDate, strictFormat,
+                                        System.Globalization.CultureInfo.InvariantCulture,
+                                        System.Globalization.DateTimeStyles.None,
+                                        out DateTime parsedBirthday))
+            {
+                MessageBox.Show($"Invalid date entry. Please follow the required format precisely: {strictFormat.ToUpper()}.",
+                                "Format Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                dpBirthday.Focus();
+                return;
+            }
+
+            // 3. Prevent impossible birthdays (e.g., in the future or unreasonably old)
+            if (parsedBirthday > DateTime.Today)
+            {
+                MessageBox.Show("Birthday cannot be a date in the future.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                dpBirthday.Focus();
+                return;
+            }
+
+            if (parsedBirthday < DateTime.Today.AddYears(-120))
+            {
+                MessageBox.Show("Please check the birth year. Entry appears incorrect.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                dpBirthday.Focus();
+                return;
+            }
+
+            // 4. Clean formatting assignment for database serialization
+            string birthdayStr = parsedBirthday.ToString("yyyy-MM-dd");
 
             var (isGenderValid, cleanedGender, genderError) = InputValidator.ValidateGender(cmbGender.Text);
             if (!isGenderValid)
@@ -161,8 +196,6 @@ namespace GymManagementSystem.Views.Windows
             {
                 selectedType = MembershipType.Regular;
             }
-
-            string birthdayStr = dpBirthday.SelectedDate.Value.ToString("yyyy-MM-dd");
 
             string computedFullName = string.IsNullOrWhiteSpace(middleInitial)
                 ? $"{cleanedFirst} {cleanedLast}"

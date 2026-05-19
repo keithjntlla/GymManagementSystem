@@ -66,7 +66,11 @@
                                 <TextBlock Text="Birthday" Foreground="White"/>
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
-                            <DatePicker x:Name="dpBirthday" Style="{StaticResource ModernDatePicker}" Tag ="MM/DD/YYYY" Padding="10"/>
+                            <DatePicker x:Name="dpBirthday" 
+                                        Style="{StaticResource ModernDatePicker}" 
+                                        Tag="DD/MM/YYYY" 
+                                        ToolTip="You can type the date directly using the MM/DD/YYYY format." 
+                                        Padding="10"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">

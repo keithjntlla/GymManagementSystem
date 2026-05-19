@@ -13,9 +13,11 @@ namespace GymManagementSystem.Views.MainViews
     public partial class PaymentsView : UserControl
     {
         private Member? selectedMember;
-        private double totalAmount = 0;
+        private double basePlanPrice = 0; // Tracks the single item rate cost
+        private double totalAmount = 0;   // basePlanPrice * durationMultiplier
         private string selectedMembershipType = "";
         private int selectedDurationDays = 0;
+        private int durationMultiplier = 1; // Default multiplier
 
         public PaymentsView()
         {
@@ -67,14 +69,42 @@ namespace GymManagementSystem.Views.MainViews
         {
             if (sender is Button btn && btn.Tag is GymPlan plan)
             {
-                totalAmount = plan.Price;
+                basePlanPrice = plan.Price;
                 selectedMembershipType = plan.PlanName;
                 selectedDurationDays = plan.DurationDays;
 
-                lblTotalAmount.Text = $"₱{totalAmount:N2}";
-                CalculateChange();
-                CalculateNewExpiry();
+                // Reset multiplier back to 1 on plan selection switch
+                durationMultiplier = 1;
+                lblMultiplierValue.Text = durationMultiplier.ToString();
+
+                RecalculateFinancialsAndDates();
             }
+        }
+
+        // NEW: Spinbox/Spinner Button Event Subroutines
+        private void BtnMultiplier_Increment_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(selectedMembershipType)) return; // Don't scale if no rate selected
+            durationMultiplier++;
+            lblMultiplierValue.Text = durationMultiplier.ToString();
+            RecalculateFinancialsAndDates();
+        }
+
+        private void BtnMultiplier_Decrement_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(selectedMembershipType) || durationMultiplier <= 1) return; // Prevent falling below 1
+            durationMultiplier--;
+            lblMultiplierValue.Text = durationMultiplier.ToString();
+            RecalculateFinancialsAndDates();
+        }
+
+        private void RecalculateFinancialsAndDates()
+        {
+            totalAmount = basePlanPrice * durationMultiplier;
+            lblTotalAmount.Text = $"₱{totalAmount:N2}";
+
+            CalculateChange();
+            CalculateNewExpiry();
         }
 
         private void CalculateNewExpiry()
@@ -82,17 +112,19 @@ namespace GymManagementSystem.Views.MainViews
             if (selectedDurationDays == 0) return;
 
             DateTime newExpiry;
-            // Logic Fix: For 'Daily' memberships, the expiry is the same calendar day.
-            // Using DateTime.Today ensures no timestamp issues and alignment with SQL Date() functions.
+            // Evaluates total scaled days to add accurately (selectedDurationDays * multiplier)
+            int totalDaysToAdd = selectedDurationDays * durationMultiplier;
+
             if (selectedMembershipType.Equals("Daily", StringComparison.OrdinalIgnoreCase))
             {
-                newExpiry = DateTime.Today;
+                // If Daily is multiplied (e.g., multiplier of 3 days), adjust scale calculations cleanly
+                newExpiry = DateTime.Today.AddDays(totalDaysToAdd - 1);
             }
             else
             {
-                newExpiry = DateTime.Today.AddDays(selectedDurationDays);
+                newExpiry = DateTime.Today.AddDays(totalDaysToAdd);
             }
-            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd"); ;
+            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd");
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -132,7 +164,7 @@ namespace GymManagementSystem.Views.MainViews
                         {
                             while (reader.Read())
                             {
-                                results.Add(new Member
+                                var m = new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? "",
                                     FirstName = reader["FirstName"]?.ToString() ?? "",
@@ -143,7 +175,20 @@ namespace GymManagementSystem.Views.MainViews
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? "",
                                     Status = reader["Status"]?.ToString() ?? "",
                                     ExpiryDate = reader["ExpiryDate"]?.ToString() ?? ""
-                                });
+                                };
+
+                                // ADD THESE BLOCKS TO FIX THE DROPDOWN SELECTION BUG
+                                if (reader["Birthday"] != DBNull.Value && DateTime.TryParse(reader["Birthday"].ToString(), out DateTime bDay))
+                                {
+                                    m.Birthday = bDay;
+                                }
+
+                                if (reader["MemberType"] != DBNull.Value && Enum.TryParse(reader["MemberType"].ToString(), out MembershipType type))
+                                {
+                                    m.MemberType = type;
+                                }
+
+                                results.Add(m);
                             }
                         }
                     }
@@ -195,6 +240,19 @@ namespace GymManagementSystem.Views.MainViews
             lblMemberID.Text = member.MemberID;
             lblMemberPhone.Text = member.Phone;
             lblMemberGender.Text = member.Gender;
+
+            // NEW: Assign Birthday formatted cleanly to yyyy-MM-dd
+            if (member.Birthday.HasValue)
+            {
+                lblMemberBirthday.Text = member.Birthday.Value.ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                lblMemberBirthday.Text = "N/A";
+            }
+
+            // NEW: Assign Membership Type Enum value
+            lblMemberType.Text = member.MemberType.ToString();
 
             if (!string.IsNullOrEmpty(member.PhotoPath) && File.Exists(member.PhotoPath))
             {
@@ -261,9 +319,15 @@ namespace GymManagementSystem.Views.MainViews
 
             string paymentMode = rbCash.IsChecked == true ? "Cash" : "GCash";
             double change = paid - totalAmount;
+
+            // Format dynamic descriptions depending on multiplier additions (e.g., "Monthly (x3)")
+            string formattedPlanDescription = durationMultiplier > 1
+                ? $"{selectedMembershipType} ({durationMultiplier})"
+                : selectedMembershipType;
+
             string summary = $"Please confirm the following payment:\n\n" +
                              $"  Member: {selectedMember.FullName}\n" +
-                             $"  Plan: {selectedMembershipType}\n" +
+                             $"  Plan: {formattedPlanDescription}\n" +
                              $"  Total: ₱{totalAmount:N2}\n" +
                              $"  Amount Paid: ₱{paid:N2}\n" +
                              $"  Change: ₱{change:N2}\n" +
@@ -293,7 +357,7 @@ namespace GymManagementSystem.Views.MainViews
                             cmd.Parameters.AddWithValue("@total", totalAmount);
                             cmd.Parameters.AddWithValue("@change", paid - totalAmount);
                             cmd.Parameters.AddWithValue("@mode", paymentMode);
-                            cmd.Parameters.AddWithValue("@type", selectedMembershipType);
+                            cmd.Parameters.AddWithValue("@type", formattedPlanDescription); // Stores text descriptive variants inside SQLite log history
                             cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
                             cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
                             cmd.ExecuteNonQuery();
@@ -321,9 +385,13 @@ namespace GymManagementSystem.Views.MainViews
         private void ResetForm()
         {
             selectedMember = null;
+            basePlanPrice = 0;
             totalAmount = 0;
             selectedMembershipType = "";
             selectedDurationDays = 0;
+            durationMultiplier = 1;
+
+            lblMultiplierValue.Text = "1";
             txtSearch.Clear();
             txtAmountPaid.Clear();
             lblTotalAmount.Text = "₱0.00";
