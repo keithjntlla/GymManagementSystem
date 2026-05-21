@@ -310,7 +310,47 @@ namespace GymManagementSystem.Views.MainViews
 
         private void CheckIfMemberIsActive(Member member)
         {
-            if (member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+            if (member == null) return;
+
+            // Check how many future/active plans this member currently has in the database
+            int existingCount = 0;
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string countSql = "SELECT COUNT(*) FROM Payments WHERE MemberID = @mid AND Date(NewExpiryDate) >= Date('now')";
+                    using (var cmd = new SQLiteCommand(countSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@mid", member.MemberID);
+                        existingCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error checking pipeline status: " + ex.Message);
+            }
+
+            // STRICTOR SAFETY CAP EXFORCEMENT
+            // If existingCount >= 2, they already have 1 Active Plan AND 1 Queued Advanced Plan.
+            if (existingCount >= 2)
+            {
+                MessageBox.Show(
+                    $"Action Denied: {member.FullName} already has an advanced plan waiting in the pipeline.\n\n" +
+                    "You cannot add more than 1 advance payment at a time.",
+                    "Queue Limit Reached", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                isAdvancePaymentMode = false;
+                lblExpiryTitle.Text = "New Expiry Date";
+                btnProcessPayment.IsEnabled = false;
+                btnProcessPayment.Opacity = 0.5;
+                RecalculateFinancialsAndDates();
+                return;
+            }
+
+            // If they have exactly 1 plan (Active), ask if they want to extend it into the 1 available advance slot
+            if (member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase) || existingCount == 1)
             {
                 var result = MessageBox.Show(
                     $"Member {member.FullName} is still Active (Expires: {member.ExpiryDate}).\n\n" +
@@ -465,15 +505,16 @@ namespace GymManagementSystem.Views.MainViews
             string paymentMode = rbCash.IsChecked == true ? "Cash" : "GCash";
             double change = paid - totalAmount;
 
+            // 1. Keep this declaration exactly as it is here
             string formattedPlanDescription = durationMultiplier > 1
                 ? $"{selectedMembershipType} ({durationMultiplier})"
                 : selectedMembershipType;
 
-            string paymentPrefix = isAdvancePaymentMode ? "[Advanced] " : "";
-
+            // 2. We removed the old paymentPrefix string completely here. 
+            // The summary text now drops the prefix and uses the clean plan description.
             string summary = $"Please confirm the following payment:\n\n" +
                              $"  Member: {selectedMember.FullName}\n" +
-                             $"  Plan: {paymentPrefix}{formattedPlanDescription}\n" +
+                             $"  Plan: {formattedPlanDescription}\n" + // Changed from paymentPrefix + formattedPlanDescription
                              $"  Total: ₱{totalAmount:N2}\n" +
                              $"  Amount Paid: ₱{paid:N2}\n" +
                              $"  Change: ₱{change:N2}\n" +
@@ -494,7 +535,7 @@ namespace GymManagementSystem.Views.MainViews
                     using (var trans = conn.BeginTransaction())
                     {
                         string paySql = @"INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate, DiscountAmount) 
-                                VALUES (@id, @mname, @paid, @total, @change, @mode, @type, @date, @expiry, @discountAmount)";
+                    VALUES (@id, @mname, @paid, @total, @change, @mode, @type, @date, @expiry, @discountAmount)";
                         using (var cmd = new SQLiteCommand(paySql, conn))
                         {
                             cmd.Parameters.AddWithValue("@id", selectedMember.MemberID);
@@ -504,7 +545,10 @@ namespace GymManagementSystem.Views.MainViews
                             cmd.Parameters.AddWithValue("@change", change);
                             cmd.Parameters.AddWithValue("@discountAmount", totalDiscountDeduction);
                             cmd.Parameters.AddWithValue("@mode", paymentMode);
-                            cmd.Parameters.AddWithValue("@type", paymentPrefix + formattedPlanDescription);
+
+                            // 3. Pass formattedPlanDescription directly here without any prefix variables
+                            cmd.Parameters.AddWithValue("@type", formattedPlanDescription);
+
                             cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
                             cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
                             cmd.ExecuteNonQuery();
