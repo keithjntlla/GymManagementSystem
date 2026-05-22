@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using GymManagementSystem.Views.Reports;
+using Microsoft.Win32;
 
 namespace GymManagementSystem.Views.Reports
 {
@@ -96,6 +98,10 @@ namespace GymManagementSystem.Views.Reports
                                     (SELECT P.MembershipType
                                      FROM   Payments P
                                      WHERE  P.MemberID = M.MemberID
+                                       AND   IFNULL(P.PaymentMode, '') <> 'Refund'
+                                       AND   IFNULL(P.PaymentMode, '') <> 'Refunded'
+                                       AND   IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
+                                       AND   IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
                                      ORDER BY P.PaymentID DESC
                                      LIMIT 1),
                                     'Unknown'
@@ -164,6 +170,59 @@ namespace GymManagementSystem.Views.Reports
             if (DateTime.TryParse(raw, out DateTime dt))
                 return dt.ToString("hh:mm tt").ToUpper();
             return raw;
+        }
+
+        private void ExportCsv_Click(object sender, RoutedEventArgs e)
+        {
+            if (FilteredAttendanceRecords.Count == 0)
+            {
+                MessageBox.Show("There are no attendance records to export.",
+                    "Export CSV", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var selectedDate = (dpAttendanceDate.SelectedDate ?? DateTime.Now).ToString("yyyyMMdd");
+            var dialog = new SaveFileDialog
+            {
+                Title = "Export Attendance Report",
+                Filter = "CSV files (*.csv)|*.csv",
+                FileName = $"attendance-report-{selectedDate}.csv"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                using (var writer = new StreamWriter(dialog.FileName))
+                {
+                    writer.WriteLine("Date,Member ID,Member Name,Check In,Check Out,Membership Plan,Status");
+                    foreach (var record in FilteredAttendanceRecords)
+                    {
+                        writer.WriteLine(string.Join(",",
+                            Csv((dpAttendanceDate.SelectedDate ?? DateTime.Now).ToString("yyyy-MM-dd")),
+                            Csv(record.MemberID),
+                            Csv(record.Name),
+                            Csv(record.CheckInTime),
+                            Csv(record.CheckOutTime),
+                            Csv(record.MembershipType),
+                            Csv(record.Status)));
+                    }
+                }
+
+                MessageBox.Show("Attendance report exported successfully.",
+                    "Export CSV", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error exporting attendance report: " + ex.Message,
+                    "Export CSV", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private static string Csv(string value)
+        {
+            string safeValue = value.Replace("\"", "\"\"");
+            return $"\"{safeValue}\"";
         }
     }
 }

@@ -33,7 +33,7 @@ namespace GymManagementSystem.Views.Windows
             var profile = DatabaseHelper.GetGymProfile();
 
             // Update Gym Name text
-            string gymName = profile.GetValueOrDefault("GymName", "Gym");
+            string gymName = profile.GetValueOrDefault("GymName", "Gym Name");
             txtSidebarGymName.Text = $"{gymName}";
 
             // Update Sidebar Logo instantly

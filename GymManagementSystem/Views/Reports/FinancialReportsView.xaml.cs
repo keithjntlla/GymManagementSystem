@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Transactions;
 using System.Windows;
@@ -15,6 +17,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using GymManagementSystem.Models;
 using GymManagementSystem.Views.Reports;
+using Microsoft.Win32;
 
 namespace GymManagementSystem.Views.Reports;
 
@@ -103,7 +106,12 @@ public partial class FinancialReportsView : UserControl
 
                 // Explicitly selecting all columns from the Payments database tracking schema
                 var sb = new StringBuilder(
-                    "SELECT * FROM Payments WHERE DateOfTransaction BETWEEN @start AND @end");
+                    @"SELECT * FROM Payments
+                      WHERE DateOfTransaction BETWEEN @start AND @end
+                        AND IFNULL(PaymentMode, '') <> 'Refund'
+                        AND IFNULL(PaymentMode, '') <> 'Refunded'
+                        AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
+                        AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'");
 
                 if (planFilter != "All Plans")
                     sb.Append(" AND MembershipType LIKE @plan"); // Uses LIKE to safely match dynamic text logs like "Monthly (x2)"
@@ -168,5 +176,57 @@ public partial class FinancialReportsView : UserControl
         {
             MessageBox.Show("Error loading financial data: " + ex.Message);
         }
+    }
+
+    private void ExportCsv_Click(object sender, RoutedEventArgs e)
+    {
+        if (Transactions.Count == 0)
+        {
+            MessageBox.Show("There are no financial transactions to export.",
+                "Export CSV", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export Financial Report",
+            Filter = "CSV files (*.csv)|*.csv",
+            FileName = $"financial-report-{DateTime.Now:yyyyMMdd}.csv"
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            using (var writer = new StreamWriter(dialog.FileName))
+            {
+                writer.WriteLine("Date,Member ID,Member Name,Plan,Amount Paid,Total Amount,Payment Mode");
+                foreach (var transaction in Transactions)
+                {
+                    writer.WriteLine(string.Join(",",
+                        Csv(transaction.DateOfTransaction),
+                        Csv(transaction.MemberID),
+                        Csv(transaction.MemberName),
+                        Csv(transaction.MembershipType),
+                        transaction.AmountPaid.ToString("F2", CultureInfo.InvariantCulture),
+                        transaction.TotalAmount.ToString("F2", CultureInfo.InvariantCulture),
+                        Csv(transaction.PaymentMode)));
+                }
+            }
+
+            MessageBox.Show("Financial report exported successfully.",
+                "Export CSV", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error exporting financial report: " + ex.Message,
+                "Export CSV", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private static string Csv(string value)
+    {
+        string safeValue = value.Replace("\"", "\"\"");
+        return $"\"{safeValue}\"";
     }
 }

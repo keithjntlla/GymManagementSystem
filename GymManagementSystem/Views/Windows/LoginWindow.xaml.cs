@@ -14,10 +14,36 @@ namespace GymManagementSystem.Views.Windows
     {
         public static User? CurrentUser { get; private set; }
 
+        private ValidationHelper _validationHelper = null!;
+
         public LoginWindow()
         {
             InitializeComponent();
             LoadBranding();
+            InitializeValidation();
+        }
+
+        private void InitializeValidation()
+        {
+            _validationHelper = new ValidationHelper();
+
+            _validationHelper.RegisterTextBox(txtUsername, lblUsernameError, input =>
+            {
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    return (false, "", "Username cannot be empty.");
+                }
+                return (true, input.Trim(), "");
+            });
+
+            _validationHelper.RegisterPasswordBox(txtPassword, lblPasswordError, input =>
+            {
+                if (string.IsNullOrEmpty(input))
+                {
+                    return (false, "", "Password cannot be empty.");
+                }
+                return (true, input, "");
+            });
         }
 
         /// <summary>
@@ -57,14 +83,13 @@ namespace GymManagementSystem.Views.Windows
 
         private void btnSignIn_Click(object sender, RoutedEventArgs e)
         {
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Password;
-
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (!_validationHelper.ValidateAll())
             {
-                MessageBox.Show("Please enter both username and password.", "Input Required");
                 return;
             }
+
+            string username = txtUsername.Text.Trim();
+            string password = txtPassword.Password;
 
             if (AuthenticateUser(username, password))
             {

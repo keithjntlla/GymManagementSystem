@@ -23,6 +23,20 @@ namespace GymManagementSystem.Views.MainViews
             LoadMembers();
         }
 
+        public void SetStatusFilter(string status)
+        {
+            foreach (ComboBoxItem item in cbStatusFilter.Items)
+            {
+                if ((item.Content?.ToString() ?? string.Empty).Equals(status, StringComparison.OrdinalIgnoreCase))
+                {
+                    cbStatusFilter.SelectedItem = item;
+                    break;
+                }
+            }
+
+            _membersView?.Refresh();
+        }
+
         public void LoadMembers()
         {
             MembersList.Clear();
@@ -32,39 +46,51 @@ namespace GymManagementSystem.Views.MainViews
                 {
                     conn.Open();
 
-                    // ── FIXED SQL: SEPARATES INDIVIDUAL PLANS BY COMMA, AND INTERNAL DATA BY PIPE ──
                     string sql = @"
-                SELECT M.*, 
-                COALESCE(
-                    (
-                        SELECT GROUP_CONCAT(CleanPlan, ',')
-                        FROM (
-                            SELECT DISTINCT 
-                                CASE 
-                                    WHEN INSTR(P.MembershipType, ' (') > 0 
-                                    THEN SUBSTR(P.MembershipType, 1, INSTR(P.MembershipType, ' (') - 1)
-                                    WHEN INSTR(P.MembershipType, '[Advance Renewal] ') > 0
-                                    THEN SUBSTR(P.MembershipType, 19)
-                                    WHEN INSTR(P.MembershipType, '[Advanced] ') > 0
-                                    THEN SUBSTR(P.MembershipType, 12)
-                                    WHEN INSTR(P.MembershipType, '[Queued] ') > 0
-                                    THEN SUBSTR(P.MembershipType, 10)
-                                    ELSE P.MembershipType 
-                                END || '|' ||
-                                CASE 
-                                    WHEN INSTR(P.MembershipType, ' (') > 0 
-                                    THEN 'x' || SUBSTR(P.MembershipType, INSTR(P.MembershipType, ' (') + 2, INSTR(P.MembershipType, ')') - INSTR(P.MembershipType, ' (') - 2)
-                                    ELSE '' 
-                                END as CleanPlan
-                            FROM Payments P
-                            WHERE P.MemberID = M.MemberID
-                              AND Date(P.NewExpiryDate) >= Date('now')
-                            ORDER BY P.PaymentID ASC
-                        )
-                    ), '-'
-                ) as ActivePlans
-                FROM Members M 
-                ORDER BY M.MemberID DESC";
+                                SELECT M.*, 
+                                COALESCE(
+                                    (
+                                        SELECT 
+                                            (SELECT P1.MembershipType FROM Payments P1
+                                             WHERE P1.MemberID = M.MemberID
+                                               AND Date(P1.NewExpiryDate) >= Date('now')
+                                               AND IFNULL(P1.PaymentMode, '') <> 'Refund'
+                                               AND IFNULL(P1.PaymentMode, '') <> 'Refunded'
+                                               AND IFNULL(P1.MembershipType, '') NOT LIKE '[REFUND]%'
+                                               AND IFNULL(P1.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                             ORDER BY P1.PaymentID ASC LIMIT 1)
+                                            || '|' ||
+                                            CASE 
+                                                WHEN COUNT(P.PaymentID) > 1 THEN '+' || (COUNT(P.PaymentID) - 1)
+                                                ELSE '' 
+                                            END
+                                        FROM Payments P
+                                        WHERE P.MemberID = M.MemberID
+                                          AND Date(P.NewExpiryDate) >= Date('now')
+                                          AND IFNULL(P.PaymentMode, '') <> 'Refund'
+                                          AND IFNULL(P.PaymentMode, '') <> 'Refunded'
+                                          AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
+                                          AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                    ), '-'
+                                ) as ActivePlans,
+
+                                COALESCE(
+                                    (
+                                        SELECT Date(P2.NewExpiryDate)
+                                        FROM Payments P2
+                                        WHERE P2.MemberID = M.MemberID 
+                                          AND Date(P2.NewExpiryDate) >= Date('now')
+                                          AND IFNULL(P2.PaymentMode, '') <> 'Refunded'
+                                          AND IFNULL(P2.PaymentMode, '') <> 'Refund'
+                                          AND IFNULL(P2.MembershipType, '') NOT LIKE '[REFUND]%'
+                                          AND IFNULL(P2.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                        ORDER BY P2.PaymentID ASC
+                                        LIMIT 1
+                                    ), '-'
+                                ) as CurrentPlanExpiry
+
+                                FROM Members M 
+                                ORDER BY M.MemberID DESC";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
@@ -72,6 +98,9 @@ namespace GymManagementSystem.Views.MainViews
                         {
                             while (reader.Read())
                             {
+                                // 1. Read the static database status text string
+                                string dbStatus = reader["Status"]?.ToString() ?? "Pending";
+
                                 var member = new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? "",
@@ -80,11 +109,7 @@ namespace GymManagementSystem.Views.MainViews
                                     LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? "",
                                     Gender = reader["Gender"]?.ToString() ?? "",
-
-                                    // String formats output like: "Daily|x2,Weekly|"
                                     MembershipPlan = reader["ActivePlans"]?.ToString() ?? "-",
-
-                                    Status = reader["Status"]?.ToString() ?? "",
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? ""
                                 };
 
@@ -97,14 +122,35 @@ namespace GymManagementSystem.Views.MainViews
                                     member.DateJoined = DateTime.Now.ToString("yyyy-MM-dd");
                                 }
 
-                                if (reader["ExpiryDate"] != DBNull.Value && DateTime.TryParse(reader["ExpiryDate"].ToString(), out DateTime expiryDate))
+                                // 2. Extract and handle the target plan boundary date
+                                string dynamicExpiry = reader["CurrentPlanExpiry"]?.ToString() ?? "-";
+                                if (dynamicExpiry != "-" && DateTime.TryParse(dynamicExpiry, out DateTime expiryDate))
                                 {
                                     member.ExpiryDate = expiryDate.ToString("yyyy-MM-dd");
+
+                                    // ── NEW FIX: RE-EVALUATE STATUS BASED ON NEW DEVICE DATE ──
+                                    // Since gym logic tracking runs until the calendar day turns over,
+                                    // we mark it expired if the device date is strictly greater than the expiry threshold.
+                                    if (DateTime.Today > expiryDate.Date)
+                                    {
+                                        dbStatus = "Expired";
+                                    }
                                 }
                                 else
                                 {
                                     member.ExpiryDate = "-";
+                                    // If they have no valid active plans left in their pipeline string, 
+                                    // fallback to expired tracking automatically if it was previously active
+                                    if (dbStatus == "Active")
+                                    {
+                                        dbStatus = "Expired";
+                                    }
                                 }
+
+                                member.Status = dbStatus;
+
+                                if (member.Status == "Expired")
+                                    member.MembershipPlan = "-";
 
                                 if (reader["Birthday"] != DBNull.Value && DateTime.TryParse(reader["Birthday"].ToString(), out DateTime bDay))
                                     member.Birthday = bDay;
@@ -118,7 +164,7 @@ namespace GymManagementSystem.Views.MainViews
                         }
                     }
                 }
-                _membersView = CollectionViewSource.GetDefaultView(MembersList);
+                _membersView = System.Windows.Data.CollectionViewSource.GetDefaultView(MembersList);
                 _membersView.Filter = MemberFilterLogic;
                 dgMembers.ItemsSource = MembersList;
             }
@@ -152,18 +198,8 @@ namespace GymManagementSystem.Views.MainViews
 
         private void PayMember_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            var member = button?.CommandParameter as Member;
-
-            if (member != null)
-            {
-                var mainWindow = Window.GetWindow(this) as MainWindow;
-                if (mainWindow != null)
-                {
-                    mainWindow.MainFrame.Content = new PaymentsView(member);
-                    mainWindow.btnNavPayments.IsChecked = true;
-                }
-            }
+            if ((sender as Button)?.CommandParameter is Member member)
+                PaymentNavigationHelper.TryNavigateToPayment(this, member.MemberID);
         }
 
         private void AddMember_Click(object sender, RoutedEventArgs e)
@@ -293,6 +329,24 @@ namespace GymManagementSystem.Views.MainViews
                         MessageBox.Show("Error deleting member: " + ex.Message);
                     }
                 }
+            }
+        }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            LoadMembers();
+        }
+
+        private void QueueBadge_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.CommandParameter is Member memberObj)
+            {
+                // Intercept profile checks to handle placeholder values gracefully
+                if (string.IsNullOrEmpty(memberObj.MemberID) || memberObj.MembershipPlan == "-") return;
+
+                SubscriptionPipelineWindow pipelineWin = new SubscriptionPipelineWindow(memberObj, this);
+                pipelineWin.Owner = Window.GetWindow(this);
+                pipelineWin.ShowDialog();
             }
         }
     }

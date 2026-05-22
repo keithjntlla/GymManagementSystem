@@ -168,6 +168,24 @@ namespace GymManagementSystem
 
             MigrateUsersTable();
             MigratePaymentsTableForDiscounts();
+            MigratePaymentsTableForRefundProcessing();
+            MigrateMemberNotificationsTable();
+        }
+
+        private static void MigrateMemberNotificationsTable()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string table = @"CREATE TABLE IF NOT EXISTS MemberNotifications (
+            NotificationID INTEGER PRIMARY KEY AUTOINCREMENT,
+            MemberID TEXT NOT NULL,
+            NotifiedDate TEXT NOT NULL,
+            FOREIGN KEY(MemberID) REFERENCES Members(MemberID)
+        );";
+                using (var cmd = new SQLiteCommand(table, conn))
+                    cmd.ExecuteNonQuery();
+            }
         }
 
         // FIXED CS8619: Enforced clear non-nullable string parsing rules
@@ -240,6 +258,33 @@ namespace GymManagementSystem
                 if (!hasDiscountCol)
                 {
                     string alter = "ALTER TABLE Payments ADD COLUMN DiscountAmount REAL DEFAULT 0";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void MigratePaymentsTableForRefundProcessing()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasProcessedByCol = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Payments)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"]?.ToString() == "ProcessedBy")
+                        {
+                            hasProcessedByCol = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!hasProcessedByCol)
+                {
+                    string alter = "ALTER TABLE Payments ADD COLUMN ProcessedBy TEXT DEFAULT 'System'";
                     using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
                 }
             }
@@ -470,12 +515,19 @@ namespace GymManagementSystem
 
         public static void RefreshMemberStatuses()
         {
+            string today = DateTime.Today.ToString("yyyy-MM-dd");
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                string updateSql = "UPDATE Members SET Status = 'Expired' WHERE ExpiryDate != '-' AND ExpiryDate != '' AND Date(ExpiryDate) < Date('now') AND Status = 'Active'";
+                string updateSql = @"UPDATE Members SET Status = 'Expired'
+                                     WHERE ExpiryDate != '-' AND ExpiryDate != ''
+                                     AND Date(ExpiryDate) < Date(@today)
+                                     AND Status = 'Active'";
                 using (var cmd = new SQLiteCommand(updateSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@today", today);
                     cmd.ExecuteNonQuery();
+                }
             }
         }
     }

@@ -319,6 +319,35 @@
         </Setter>
     </Style>
 
+    <Style x:Key="SummaryCardIconButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="48"/>
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="IconPlate"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="12"
+                            Width="48" Height="48">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="IconPlate" Property="BorderBrush" Value="#ff6b00"/>
+                            <Setter TargetName="IconPlate" Property="BorderThickness" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="IconPlate" Property="Opacity" Value="0.75"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="IconButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="#1a1a1c"/>
         <Setter Property="Foreground" Value="White"/>

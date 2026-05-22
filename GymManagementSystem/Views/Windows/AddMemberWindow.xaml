@@ -26,18 +26,19 @@
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="2*"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel Grid.Column="0" Margin="0,0,5,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                                 <TextBlock Text="First Name" Foreground="White"/>
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
                             <TextBox x:Name="txtFirstName" Style="{StaticResource ModernTextBox}"/>
+                            <TextBlock x:Name="lblFirstNameError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
                             <TextBlock Text="M.I." Foreground="White" Margin="0,0,0,5"/>
-                            <TextBox x:Name="txtMiddleInitial" Style="{StaticResource ModernTextBox}" MaxLength="2" HorizontalContentAlignment="Center"/>
+                            <TextBox x:Name="txtMiddleInitial" Style="{StaticResource ModernTextBox}" MaxLength="1" HorizontalContentAlignment="Center"/>
+                            <TextBlock x:Name="lblMiddleInitialError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Margin="5,0,0,0">
@@ -46,6 +47,7 @@
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
                             <TextBox x:Name="txtLastName" Style="{StaticResource ModernTextBox}"/>
+                            <TextBlock x:Name="lblLastNameError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Grid>
 
@@ -53,7 +55,8 @@
                         <TextBlock Text="Phone Number" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" Margin="0,0,0,15"/>
+                    <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="lblPhoneError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
@@ -69,8 +72,9 @@
                             <DatePicker x:Name="dpBirthday" 
                                         Style="{StaticResource ModernDatePicker}" 
                                         Tag="DD/MM/YYYY" 
-                                        ToolTip="You can type the date directly using the MM/DD/YYYY format."
+                                        ToolTip="You can type the date directly using the DD/MM/YYYY format."
                                         Padding="10"/>
+                            <TextBlock x:Name="lblBirthdayError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
@@ -83,6 +87,7 @@
                                 <ComboBoxItem Content="Female"/>
                                 <ComboBoxItem Content="Other"/>
                             </ComboBox>
+                            <TextBlock x:Name="lblGenderError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Grid>
 
@@ -90,14 +95,18 @@
                         <TextBlock Text="Member Type Tier" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15"/>
+                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="lblMemberTypeError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                     <TextBlock Text="Photo" Foreground="White" Margin="0,0,0,5"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <Border Width="80" Height="80" Background="#1a1a1a" CornerRadius="10" BorderBrush="#333" BorderThickness="1">
                             <Image x:Name="imgPhoto" Stretch="UniformToFill"/>
                         </Border>
-                        <Button Content="↑ Upload Photo" Margin="15,0,0,0" Padding="15,8" Background="#1a1a1a" Foreground="White" BorderBrush="#333" VerticalAlignment="Center" Click="UploadPhoto_Click"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <Button Content="↑ Upload Photo" Margin="15,0,0,0" Padding="15,8" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="UploadPhoto_Click"/>
+                            <TextBlock x:Name="lblPhotoError" Foreground="#FF4444" FontSize="11" Margin="15,5,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

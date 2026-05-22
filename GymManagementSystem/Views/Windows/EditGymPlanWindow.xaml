@@ -1,7 +1,7 @@
-﻿<Window x:Class="GymManagementSystem.Views.Windows.EditGymPlanWindow"
+<Window x:Class="GymManagementSystem.Views.Windows.EditGymPlanWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding WindowTitle}" Height="450" Width="380"
+        Title="{Binding WindowTitle}" Height="500" Width="380"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
@@ -23,13 +23,16 @@
 
             <StackPanel Grid.Row="1">
                 <TextBlock Text="Plan Name" Foreground="White" Margin="0,0,0,5"/>
-                <TextBox x:Name="txtPlanName" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Padding="10" Margin="0,0,0,15"/>
+                <TextBox x:Name="txtPlanName" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="lblPlanNameError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                 <TextBlock Text="Price (₱)" Foreground="White" Margin="0,0,0,5"/>
-                <TextBox x:Name="txtPrice" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Padding="10" Margin="0,0,0,15"/>
+                <TextBox x:Name="txtPrice" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="lblPriceError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                 <TextBlock Text="Duration (Days)" Foreground="White" Margin="0,0,0,5"/>
-                <TextBox x:Name="txtDuration" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Padding="10" Margin="0,0,0,15"/>
+                <TextBox x:Name="txtDuration" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="lblDurationError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                 <TextBlock Text="Note: Changes affect future payments only." Foreground="#888" FontSize="11" FontStyle="Italic" TextWrapping="Wrap"/>
             </StackPanel>

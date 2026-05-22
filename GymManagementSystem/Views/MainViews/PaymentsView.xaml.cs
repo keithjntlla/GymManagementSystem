@@ -21,25 +21,227 @@ namespace GymManagementSystem.Views.MainViews
         private double activeDiscountPercentage = 0;
         private double totalDiscountDeduction = 0;
         private bool isAdvancePaymentMode = false;
+        private bool isSelectingMemberFromCode = false;
+        private List<GymPlan> _ratePlans = new List<GymPlan>();
+
+        private ValidationHelper _validationHelper = null!;
 
         public PaymentsView()
         {
             InitializeComponent();
             lblTransactionDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
             LoadDynamicRates();
+            InitializeValidation();
         }
 
-        public PaymentsView(Member member) : this()
+        public PaymentsView(Member member, bool? advancePaymentConfirmed = null) : this()
         {
+            SelectMemberForPayment(member.MemberID, advancePaymentConfirmed);
+        }
+
+        private void InitializeValidation()
+        {
+            _validationHelper = new ValidationHelper();
+
+            _validationHelper.RegisterTextBox(txtSearch, lblSearchError, input =>
+            {
+                if (selectedMember == null)
+                {
+                    return (false, input, "Please select a member from the search results.");
+                }
+                return (true, input, "");
+            });
+
+            _validationHelper.RegisterTextBox(txtAmountPaid, lblAmountPaidError, input =>
+            {
+                if (selectedMember == null)
+                {
+                    return (false, input, "Please select a member first.");
+                }
+                if (totalAmount <= 0)
+                {
+                    return (false, input, "Please select a membership rate.");
+                }
+                return InputValidator.ValidateAmountPaid(input, totalAmount);
+            });
+        }
+
+        private void SelectMemberForPayment(string memberId, bool? advancePaymentConfirmed = null)
+        {
+            Member? member = LoadPaymentMemberProfile(memberId);
+            if (member == null)
+            {
+                MessageBox.Show("Unable to load selected member details.", "Member Not Found",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             selectedMember = member;
+            _validationHelper.ClearErrors();
+
+            isSelectingMemberFromCode = true;
             txtSearch.Text = member.FullName;
+            isSelectingMemberFromCode = false;
+
+            popSearch.IsOpen = false;
             DisplayMemberInfo(member);
-            CheckIfMemberIsActive(member);
+            RefreshRateDiscountBadges();
+
+            if (advancePaymentConfirmed.HasValue)
+                ApplyPaymentMode(advancePaymentConfirmed.Value);
+            else
+                CheckIfMemberIsActive(member);
+        }
+
+        private void ApplyPaymentMode(bool advancePayment)
+        {
+            if (advancePayment)
+            {
+                isAdvancePaymentMode = true;
+                lblExpiryTitle.Text = "Extended Expiry Date";
+                btnProcessPayment.IsEnabled = true;
+                btnProcessPayment.Opacity = 1.0;
+            }
+            else
+            {
+                isAdvancePaymentMode = false;
+                lblExpiryTitle.Text = "New Expiry Date";
+                btnProcessPayment.IsEnabled = true;
+                btnProcessPayment.Opacity = 1.0;
+            }
+
+            RecalculateFinancialsAndDates();
+        }
+
+        private Member? LoadPaymentMemberProfile(string memberId)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"
+                        SELECT M.*, 
+                        COALESCE(
+                            (
+                                SELECT 
+                                    (SELECT P1.MembershipType FROM Payments P1
+                                     WHERE P1.MemberID = M.MemberID
+                                       AND Date(P1.NewExpiryDate) >= Date('now')
+                                       AND IFNULL(P1.PaymentMode, '') <> 'Refund'
+                                       AND IFNULL(P1.PaymentMode, '') <> 'Refunded'
+                                       AND IFNULL(P1.MembershipType, '') NOT LIKE '[REFUND]%'
+                                       AND IFNULL(P1.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                     ORDER BY P1.PaymentID ASC LIMIT 1)
+                                    || '|' ||
+                                    CASE 
+                                        WHEN COUNT(P.PaymentID) > 1 THEN '+' || (COUNT(P.PaymentID) - 1)
+                                        ELSE '' 
+                                    END
+                                FROM Payments P
+                                WHERE P.MemberID = M.MemberID
+                                  AND Date(P.NewExpiryDate) >= Date('now')
+                                  AND IFNULL(P.PaymentMode, '') <> 'Refund'
+                                  AND IFNULL(P.PaymentMode, '') <> 'Refunded'
+                                  AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
+                                  AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                            ), '-'
+                        ) as ActivePlans,
+
+                        COALESCE(
+                            (
+                                SELECT Date(P2.NewExpiryDate)
+                                FROM Payments P2
+                                WHERE P2.MemberID = M.MemberID 
+                                  AND Date(P2.NewExpiryDate) >= Date('now')
+                                  AND IFNULL(P2.PaymentMode, '') <> 'Refund'
+                                  AND IFNULL(P2.PaymentMode, '') <> 'Refunded'
+                                  AND IFNULL(P2.MembershipType, '') NOT LIKE '[REFUND]%'
+                                  AND IFNULL(P2.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                ORDER BY P2.PaymentID ASC
+                                LIMIT 1
+                            ), '-'
+                        ) as CurrentPlanExpiry
+                        FROM Members M
+                        WHERE M.MemberID = @mid
+                        LIMIT 1";
+
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@mid", memberId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (!reader.Read()) return null;
+
+                            string dbStatus = reader["Status"]?.ToString() ?? "Pending";
+                            string dynamicExpiry = reader["CurrentPlanExpiry"]?.ToString() ?? "-";
+
+                            var member = new Member
+                            {
+                                MemberID = reader["MemberID"]?.ToString() ?? "",
+                                FirstName = reader["FirstName"]?.ToString() ?? "",
+                                MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                LastName = reader["LastName"]?.ToString() ?? "",
+                                Phone = reader["Phone"]?.ToString() ?? "",
+                                Gender = reader["Gender"]?.ToString() ?? "",
+                                MembershipPlan = NormalizePlanDisplay(reader["ActivePlans"]?.ToString() ?? "-"),
+                                PhotoPath = reader["PhotoPath"]?.ToString() ?? "",
+                                MemberType = reader["MemberType"] != DBNull.Value
+                                    ? reader["MemberType"].ToString() ?? "Regular"
+                                    : "Regular"
+                            };
+
+                            if (reader["Birthday"] != DBNull.Value &&
+                                DateTime.TryParse(reader["Birthday"].ToString(), out DateTime bDay))
+                            {
+                                member.Birthday = bDay;
+                            }
+
+                            if (reader["DateJoined"] != DBNull.Value &&
+                                DateTime.TryParse(reader["DateJoined"].ToString(), out DateTime joinDate))
+                            {
+                                member.DateJoined = joinDate.ToString("yyyy-MM-dd");
+                            }
+
+                            if (dynamicExpiry != "-" && DateTime.TryParse(dynamicExpiry, out DateTime expiryDate))
+                            {
+                                member.ExpiryDate = expiryDate.ToString("yyyy-MM-dd");
+                                if (DateTime.Today > expiryDate.Date)
+                                {
+                                    dbStatus = "Expired";
+                                }
+                            }
+                            else
+                            {
+                                member.ExpiryDate = "-";
+                                if (dbStatus == "Active")
+                                {
+                                    dbStatus = "Expired";
+                                }
+                            }
+
+                            member.Status = dbStatus;
+                            return member;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading member payment profile: " + ex.Message);
+                return null;
+            }
+        }
+
+        private static string NormalizePlanDisplay(string plan)
+        {
+            if (string.IsNullOrWhiteSpace(plan) || plan == "-") return "-";
+            return plan.EndsWith("|", StringComparison.Ordinal) ? plan.TrimEnd('|') : plan;
         }
 
         private void LoadDynamicRates()
         {
-            List<GymPlan> plans = new List<GymPlan>();
+            _ratePlans.Clear();
             try
             {
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
@@ -51,7 +253,7 @@ namespace GymManagementSystem.Views.MainViews
                     {
                         while (reader.Read())
                         {
-                            plans.Add(new GymPlan
+                            _ratePlans.Add(new GymPlan
                             {
                                 PlanName = reader["PlanName"].ToString() ?? "",
                                 Price = Convert.ToDouble(reader["Price"]),
@@ -60,12 +262,56 @@ namespace GymManagementSystem.Views.MainViews
                         }
                     }
                 }
-                icRates.ItemsSource = plans;
+                RefreshRateDiscountBadges();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading rates: " + ex.Message);
             }
+        }
+
+        private static bool IsPlanEligibleForDiscount(string planName, double discountPct, string allowedScope)
+        {
+            if (discountPct <= 0 || string.IsNullOrWhiteSpace(planName))
+                return false;
+
+            if (allowedScope.Equals("All", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            foreach (string scopePart in allowedScope.Split(','))
+            {
+                string trimmed = scopePart.Trim();
+                if (trimmed.Length == 0)
+                    continue;
+
+                if (trimmed.Equals(planName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return allowedScope.Contains(planName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void RefreshRateDiscountBadges()
+        {
+            double discountPct = 0;
+            string allowedScope = "All";
+
+            if (selectedMember != null)
+            {
+                var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
+                discountPct = fixedPct;
+                allowedScope = fixedScope;
+            }
+
+            foreach (GymPlan plan in _ratePlans)
+            {
+                plan.ApplicableDiscountPercentage = IsPlanEligibleForDiscount(plan.PlanName, discountPct, allowedScope)
+                    ? discountPct
+                    : 0;
+            }
+
+            icRates.ItemsSource = null;
+            icRates.ItemsSource = _ratePlans;
         }
 
         private void Rate_Click(object sender, RoutedEventArgs e)
@@ -108,14 +354,8 @@ namespace GymManagementSystem.Views.MainViews
             {
                 var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
 
-                if (fixedPct > 0)
-                {
-                    if (fixedScope.Equals("All", StringComparison.OrdinalIgnoreCase) ||
-                        fixedScope.ToLower().Contains(selectedMembershipType.ToLower()))
-                    {
-                        activeDiscountPercentage += fixedPct;
-                    }
-                }
+                if (IsPlanEligibleForDiscount(selectedMembershipType, fixedPct, fixedScope))
+                    activeDiscountPercentage += fixedPct;
             }
 
             totalDiscountDeduction = subtotal * (activeDiscountPercentage / 100.0);
@@ -125,17 +365,13 @@ namespace GymManagementSystem.Views.MainViews
 
             if (activeDiscountPercentage > 0)
             {
-                brdDiscountBadge.Visibility = Visibility.Visible;
                 lblOriginalSubtotal.Visibility = Visibility.Visible;
                 lblDiscountDeductionDisplay.Visibility = Visibility.Visible;
-
-                lblDiscountBadgeText.Text = $"{activeDiscountPercentage}% OFF";
                 lblOriginalSubtotal.Text = $"₱{subtotal:N2}";
                 lblDiscountDeductionDisplay.Text = $"-₱{totalDiscountDeduction:N2} discount applied";
             }
             else
             {
-                brdDiscountBadge.Visibility = Visibility.Collapsed;
                 lblOriginalSubtotal.Visibility = Visibility.Collapsed;
                 lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
             }
@@ -178,6 +414,8 @@ namespace GymManagementSystem.Views.MainViews
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (isSelectingMemberFromCode) return;
+
             string query = txtSearch.Text.Trim();
             if (query.Length >= 1)
             {
@@ -219,7 +457,11 @@ namespace GymManagementSystem.Views.MainViews
                                     ELSE P.MembershipType 
                                 END
                                 FROM Payments P 
-                                WHERE P.MemberID = M.MemberID 
+                                WHERE P.MemberID = M.MemberID
+                                  AND IFNULL(P.PaymentMode, '') <> 'Refund'
+                                  AND IFNULL(P.PaymentMode, '') <> 'Refunded'
+                                  AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
+                                  AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
                                 ORDER BY P.PaymentID DESC 
                                 LIMIT 1
                             ), '-'
@@ -232,7 +474,11 @@ namespace GymManagementSystem.Views.MainViews
                                     ELSE '' 
                                 END
                                 FROM Payments P 
-                                WHERE P.MemberID = M.MemberID 
+                                WHERE P.MemberID = M.MemberID
+                                  AND IFNULL(P.PaymentMode, '') <> 'Refund'
+                                  AND IFNULL(P.PaymentMode, '') <> 'Refunded'
+                                  AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
+                                  AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
                                 ORDER BY P.PaymentID DESC 
                                 LIMIT 1
                             ), ''
@@ -300,17 +546,62 @@ namespace GymManagementSystem.Views.MainViews
         {
             if (lstSearchResults.SelectedItem is Member member)
             {
-                selectedMember = member;
-                DisplayMemberInfo(member);
-                popSearch.IsOpen = false;
-                txtSearch.Text = member.FullName;
-                CheckIfMemberIsActive(member);
+                SelectMemberForPayment(member.MemberID);
+                lstSearchResults.SelectedItem = null;
             }
         }
 
         private void CheckIfMemberIsActive(Member member)
         {
-            if (member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+            if (member == null) return;
+
+            // Check how many future/active plans this member currently has in the database
+            int existingCount = 0;
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string countSql = @"
+                        SELECT COUNT(*)
+                        FROM Payments
+                        WHERE MemberID = @mid
+                          AND Date(NewExpiryDate) >= Date('now')
+                          AND IFNULL(PaymentMode, '') <> 'Refund'
+                          AND IFNULL(PaymentMode, '') <> 'Refunded'
+                          AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
+                          AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'";
+                    using (var cmd = new SQLiteCommand(countSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@mid", member.MemberID);
+                        existingCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error checking pipeline status: " + ex.Message);
+            }
+
+            // STRICTOR SAFETY CAP EXFORCEMENT
+            // If existingCount >= 2, they already have 1 Active Plan AND 1 Queued Advanced Plan.
+            if (existingCount >= 2)
+            {
+                MessageBox.Show(
+                    $"Action Denied: {member.FullName} already has an advanced plan waiting in the pipeline.\n\n" +
+                    "You cannot add more than 1 advance payment at a time.",
+                    "Queue Limit Reached", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                isAdvancePaymentMode = false;
+                lblExpiryTitle.Text = "New Expiry Date";
+                btnProcessPayment.IsEnabled = false;
+                btnProcessPayment.Opacity = 0.5;
+                RecalculateFinancialsAndDates();
+                return;
+            }
+
+            // If they have exactly 1 plan (Active), ask if they want to extend it into the 1 available advance slot
+            if (member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase) || existingCount == 1)
             {
                 var result = MessageBox.Show(
                     $"Member {member.FullName} is still Active (Expires: {member.ExpiryDate}).\n\n" +
@@ -429,51 +720,25 @@ namespace GymManagementSystem.Views.MainViews
 
         private void ProcessPayment_Click(object sender, RoutedEventArgs e)
         {
-            if (selectedMember == null)
+            if (!_validationHelper.ValidateAll())
             {
-                MessageBox.Show("Please select a member first.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            if (totalAmount <= 0)
-            {
-                MessageBox.Show("Please select a membership rate.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (!double.TryParse(txtAmountPaid.Text, out double paid))
-            {
-                MessageBox.Show("Please enter a valid amount.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (paid < totalAmount)
-            {
-                double lacking = totalAmount - paid;
-
-                MessageBox.Show($"Insufficient amount.\n\n" +
-                                $"Total: ₱{totalAmount:N2}\n" +
-                                $"Paid: ₱{paid:N2}\n" +
-                                $"Lacking: ₱{lacking:N2}",
-                                "Insufficient Amount", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
+            double paid = double.Parse(txtAmountPaid.Text);
             string paymentMode = rbCash.IsChecked == true ? "Cash" : "GCash";
             double change = paid - totalAmount;
 
+            // 1. Keep this declaration exactly as it is here
             string formattedPlanDescription = durationMultiplier > 1
                 ? $"{selectedMembershipType} ({durationMultiplier})"
                 : selectedMembershipType;
 
-            string paymentPrefix = isAdvancePaymentMode ? "[Advanced] " : "";
-
+            // 2. We removed the old paymentPrefix string completely here. 
+            // The summary text now drops the prefix and uses the clean plan description.
             string summary = $"Please confirm the following payment:\n\n" +
-                             $"  Member: {selectedMember.FullName}\n" +
-                             $"  Plan: {paymentPrefix}{formattedPlanDescription}\n" +
+                             $"  Member: {selectedMember!.FullName}\n" +
+                             $"  Plan: {formattedPlanDescription}\n" + // Changed from paymentPrefix + formattedPlanDescription
                              $"  Total: ₱{totalAmount:N2}\n" +
                              $"  Amount Paid: ₱{paid:N2}\n" +
                              $"  Change: ₱{change:N2}\n" +
@@ -494,17 +759,20 @@ namespace GymManagementSystem.Views.MainViews
                     using (var trans = conn.BeginTransaction())
                     {
                         string paySql = @"INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate, DiscountAmount) 
-                                VALUES (@id, @mname, @paid, @total, @change, @mode, @type, @date, @expiry, @discountAmount)";
+                    VALUES (@id, @mname, @paid, @total, @change, @mode, @type, @date, @expiry, @discountAmount)";
                         using (var cmd = new SQLiteCommand(paySql, conn))
                         {
-                            cmd.Parameters.AddWithValue("@id", selectedMember.MemberID);
-                            cmd.Parameters.AddWithValue("@mname", selectedMember.FullName);
+                            cmd.Parameters.AddWithValue("@id", selectedMember!.MemberID);
+                            cmd.Parameters.AddWithValue("@mname", selectedMember!.FullName);
                             cmd.Parameters.AddWithValue("@paid", paid);
                             cmd.Parameters.AddWithValue("@total", totalAmount);
                             cmd.Parameters.AddWithValue("@change", change);
                             cmd.Parameters.AddWithValue("@discountAmount", totalDiscountDeduction);
                             cmd.Parameters.AddWithValue("@mode", paymentMode);
-                            cmd.Parameters.AddWithValue("@type", paymentPrefix + formattedPlanDescription);
+
+                            // 3. Pass formattedPlanDescription directly here without any prefix variables
+                            cmd.Parameters.AddWithValue("@type", formattedPlanDescription);
+
                             cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
                             cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
                             cmd.ExecuteNonQuery();
@@ -514,7 +782,7 @@ namespace GymManagementSystem.Views.MainViews
                         using (var cmd = new SQLiteCommand(memberSql, conn))
                         {
                             cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
-                            cmd.Parameters.AddWithValue("@mid", selectedMember.MemberID);
+                            cmd.Parameters.AddWithValue("@mid", selectedMember!.MemberID);
                             cmd.ExecuteNonQuery();
                         }
                         trans.Commit();
@@ -555,9 +823,10 @@ namespace GymManagementSystem.Views.MainViews
             btnProcessPayment.IsEnabled = true;
             btnProcessPayment.Opacity = 1.0;
 
-            brdDiscountBadge.Visibility = Visibility.Collapsed;
             lblOriginalSubtotal.Visibility = Visibility.Collapsed;
             lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
+            RefreshRateDiscountBadges();
+            _validationHelper?.ClearErrors();
         }
     }
 }

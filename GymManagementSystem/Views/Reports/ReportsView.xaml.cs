@@ -32,4 +32,15 @@ public partial class ReportsView : UserControl
     {
         ReportsFrame.Content = new ExpirationReportsView();
     }
+
+    public void ShowExpirationsTab()
+    {
+        rbTabExpirations.IsChecked = true;
+        ReportsFrame.Content = new ExpirationReportsView();
+    }
+
+    private void TabRefunds_Click(object sender, RoutedEventArgs e)
+    {
+        ReportsFrame.Content = new RefundReportsView();
+    }
 }

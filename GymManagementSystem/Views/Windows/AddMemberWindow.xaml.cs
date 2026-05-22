@@ -18,6 +18,8 @@ namespace GymManagementSystem.Views.Windows
         // Permanent backup variable to safely carry historical join dates during profile modifications
         private string historicalJoinDate = "";
 
+        private ValidationHelper _validationHelper = null!;
+
         public AddMemberWindow()
         {
             InitializeComponent();
@@ -25,6 +27,7 @@ namespace GymManagementSystem.Views.Windows
             isEditMode = false;
             // Automatically capture today's timestamp as the clean default standard baseline
             historicalJoinDate = DateTime.Now.ToString("yyyy-MM-dd");
+            InitializeValidation();
         }
 
         public AddMemberWindow(Member memberToEdit)
@@ -74,6 +77,33 @@ namespace GymManagementSystem.Views.Windows
                 }
                 catch { }
             }
+
+            InitializeValidation();
+        }
+
+        private void InitializeValidation()
+        {
+            _validationHelper = new ValidationHelper();
+
+            _validationHelper.RegisterTextBox(txtFirstName, lblFirstNameError, input => InputValidator.ValidateName(input, "First name"));
+            _validationHelper.RegisterTextBox(txtMiddleInitial, lblMiddleInitialError, InputValidator.ValidateMiddleInitial);
+            _validationHelper.RegisterTextBox(txtLastName, lblLastNameError, input => InputValidator.ValidateName(input, "Last name"));
+
+            _validationHelper.RegisterTextBox(txtPhone, lblPhoneError, input =>
+            {
+                var (isValid, cleaned, error) = InputValidator.ValidatePhoneNumber(input, "Phone number");
+                if (!isValid) return (false, cleaned, error);
+
+                if (DatabaseHelper.IsPhoneNumberDuplicate(cleaned, isEditMode ? editMemberId : ""))
+                {
+                    return (false, cleaned, "Phone number is already assigned to an existing member.");
+                }
+                return (true, cleaned, "");
+            });
+
+            _validationHelper.RegisterDatePicker(dpBirthday, lblBirthdayError, InputValidator.ValidateBirthday);
+            _validationHelper.RegisterComboBox(cmbGender, lblGenderError, InputValidator.ValidateGender);
+            _validationHelper.RegisterComboBox(cmbMemberType, lblMemberTypeError, InputValidator.ValidateMemberType);
         }
 
         private void LoadDiscountTiersDropdown()
@@ -116,91 +146,46 @@ namespace GymManagementSystem.Views.Windows
               "Portable Network Graphic (*.png)|*.png";
             if (op.ShowDialog() == true)
             {
-                selectedPhotoPath = op.FileName;
-                imgPhoto.Source = new BitmapImage(new Uri(selectedPhotoPath));
+                var (isValid, cleaned, error) = InputValidator.ValidatePhoto(op.FileName);
+                if (isValid)
+                {
+                    selectedPhotoPath = op.FileName;
+                    try
+                    {
+                        imgPhoto.Source = new BitmapImage(new Uri(selectedPhotoPath));
+                        lblPhotoError.Visibility = Visibility.Collapsed;
+                        lblPhotoError.Text = "";
+                    }
+                    catch (Exception ex)
+                    {
+                        lblPhotoError.Visibility = Visibility.Visible;
+                        lblPhotoError.Text = "Failed to load image: " + ex.Message;
+                    }
+                }
+                else
+                {
+                    lblPhotoError.Visibility = Visibility.Visible;
+                    lblPhotoError.Text = error;
+                }
             }
         }
 
         private void Register_Click(object sender, RoutedEventArgs e)
         {
-            var (isFirstValid, cleanedFirst, firstError) = InputValidator.ValidateName(txtFirstName.Text);
-            if (!isFirstValid)
+            if (!_validationHelper.ValidateAll())
             {
-                MessageBox.Show($"First Name Error: {firstError}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtFirstName.Focus();
                 return;
             }
 
-            var (isLastValid, cleanedLast, lastError) = InputValidator.ValidateName(txtLastName.Text);
-            if (!isLastValid)
-            {
-                MessageBox.Show($"Last Name Error: {lastError}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtLastName.Focus();
-                return;
-            }
+            string cleanedFirst = txtFirstName.Text;
+            string middleInitial = txtMiddleInitial.Text;
+            string cleanedLast = txtLastName.Text;
+            string cleanedPhone = txtPhone.Text;
+            string cleanedGender = cmbGender.Text;
+            string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
 
-            var (isPhoneValid, cleanedPhone, phoneError) = InputValidator.ValidatePhoneNumber(txtPhone.Text);
-            if (!isPhoneValid)
-            {
-                MessageBox.Show(phoneError, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtPhone.Focus();
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(dpBirthday.Text))
-            {
-                MessageBox.Show("Birthday is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                dpBirthday.Focus();
-                return;
-            }
-
-            string typedDate = dpBirthday.Text.Trim();
-            string strictFormat = "dd/MM/yyyy";
-
-            if (!DateTime.TryParseExact(typedDate, strictFormat,
-                                        System.Globalization.CultureInfo.InvariantCulture,
-                                        System.Globalization.DateTimeStyles.None,
-                                        out DateTime parsedBirthday))
-            {
-                MessageBox.Show($"Invalid date entry. Please follow the required format precisely: {strictFormat.ToUpper()}.",
-                                "Format Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                dpBirthday.Focus();
-                return;
-            }
-
-            if (parsedBirthday > DateTime.Today)
-            {
-                MessageBox.Show("Birthday cannot be a date in the future.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                dpBirthday.Focus();
-                return;
-            }
-
-            if (parsedBirthday < DateTime.Today.AddYears(-120))
-            {
-                MessageBox.Show("Please check the birth year. Entry appears incorrect.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                dpBirthday.Focus();
-                return;
-            }
-
+            DateTime parsedBirthday = DateTime.ParseExact(dpBirthday.Text, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
             string birthdayStr = parsedBirthday.ToString("yyyy-MM-dd");
-
-            var (isGenderValid, cleanedGender, genderError) = InputValidator.ValidateGender(cmbGender.Text);
-            if (!isGenderValid)
-            {
-                MessageBox.Show(genderError, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                cmbGender.Focus();
-                return;
-            }
-
-            if (DatabaseHelper.IsPhoneNumberDuplicate(cleanedPhone, isEditMode ? editMemberId : ""))
-            {
-                MessageBox.Show($"The phone number '{cleanedPhone}' is already assigned to an existing member. Please check your entries.",
-                                "Duplicate Entry Blocked", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtPhone.Focus();
-                return;
-            }
-
-            string middleInitial = txtMiddleInitial.Text.Trim().ToUpper();
 
             if (DatabaseHelper.IsNameCombinationDuplicate(cleanedFirst, middleInitial, cleanedLast, isEditMode ? editMemberId : ""))
             {
@@ -215,8 +200,6 @@ namespace GymManagementSystem.Views.Windows
                     return;
                 }
             }
-
-            string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
 
             string computedFullName = string.IsNullOrWhiteSpace(middleInitial)
                 ? $"{cleanedFirst} {cleanedLast}"

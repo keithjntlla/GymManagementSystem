@@ -1,7 +1,7 @@
-﻿<Window x:Class="GymManagementSystem.Views.Windows.LoginWindow"
+<Window x:Class="GymManagementSystem.Views.Windows.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Login" Height="660" Width="450"
+        Title="Login" Height="680" Width="450"
         WindowStyle="None" Background="Transparent" AllowsTransparency="True"
         WindowStartupLocation="CenterScreen">
 
@@ -32,7 +32,7 @@
                        HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
             <TextBlock Text="Username" Foreground="#999" Margin="0,0,0,8" FontSize="16"/>
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,5">
                 <TextBox x:Name="txtUsername" Background="#222123" Foreground="White" 
                          BorderBrush="#444" Padding="15,10" FontSize="16" 
                          CaretBrush="White">
@@ -57,16 +57,18 @@
                     </TextBlock.Style>
                 </TextBlock>
             </Grid>
+            <TextBlock x:Name="lblUsernameError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
             <TextBlock Text="Password" Foreground="#999" Margin="0,0,0,8" FontSize="16"/>
             <PasswordBox x:Name="txtPassword" Background="#222123" Foreground="White" 
-                         BorderBrush="#444" Padding="15,10" FontSize="16" CaretBrush="White">
+                         BorderBrush="#444" Padding="15,10" FontSize="16" CaretBrush="White" Margin="0,0,0,5">
                 <PasswordBox.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="10"/>
                     </Style>
                 </PasswordBox.Resources>
             </PasswordBox>
+            <TextBlock x:Name="lblPasswordError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
             <TextBlock Text="Forgot password?" Foreground="#ff6b00" HorizontalAlignment="Right" 
                        Margin="0,15,0,30" Cursor="Hand" FontSize="14"

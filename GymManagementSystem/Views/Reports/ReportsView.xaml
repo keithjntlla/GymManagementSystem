@@ -22,7 +22,8 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,0">
             <RadioButton Content="Financial"   Tag="💰" IsChecked="True" Style="{StaticResource TabButtonStyle}" Click="TabFinancial_Click"/>
             <RadioButton Content="Attendance"  Tag="📊" Style="{StaticResource TabButtonStyle}" Click="TabAttendance_Click"/>
-            <RadioButton Content="Expirations" Tag="⏰" Style="{StaticResource TabButtonStyle}" Click="TabExpirations_Click"/>
+            <RadioButton x:Name="rbTabExpirations" Content="Expirations" Tag="⏰" Style="{StaticResource TabButtonStyle}" Click="TabExpirations_Click"/>
+            <RadioButton Content="Refunds"     Tag="↩" Style="{StaticResource TabButtonStyle}" Click="TabRefunds_Click"/>
         </StackPanel>
         <Separator Grid.Row="1" VerticalAlignment="Bottom" Background="#333"/>
 

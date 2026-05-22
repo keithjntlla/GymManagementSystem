@@ -57,6 +57,9 @@
                     <Button x:Name="btnRefreshAttendance" Style="{StaticResource IconButtonStyle}" Click="BtnRefreshAttendance_Click" ToolTip="Refresh">
                         <TextBlock Text="↺" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
+                    <Button Style="{StaticResource ModernGradientButton}" Padding="18,10" Margin="8,0,0,0" Click="ExportCsv_Click">
+                        <TextBlock Text="Export CSV" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                    </Button>
                 </StackPanel>
             </DockPanel>
         </Border>

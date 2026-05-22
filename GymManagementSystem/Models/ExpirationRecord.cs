@@ -15,5 +15,7 @@ namespace GymManagementSystem.Models
         public string DaysRemainingLabel { get; set; } = string.Empty;
         public string UrgencyLevel { get; set; } = string.Empty;
         public double ProgressWidth { get; set; }
+        public string LastNotifiedLabel { get; set; } = string.Empty;
+        public string? LastNotifiedDate { get; set; }
     }
 }

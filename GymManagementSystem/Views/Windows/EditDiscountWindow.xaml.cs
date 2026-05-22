@@ -1,4 +1,4 @@
-﻿using GymManagementSystem.Views.Settings;
+using GymManagementSystem.Views.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,6 +20,8 @@ namespace GymManagementSystem.Views.Windows
         public string WindowTitle { get; set; }
         public string SaveButtonText { get; set; }
 
+        private ValidationHelper _validationHelper = null!;
+
         public EditDiscountWindow() // ADD MODE
         {
             InitializeComponent();
@@ -29,6 +31,7 @@ namespace GymManagementSystem.Views.Windows
             SaveButtonText = "Create Tier";
             ViewModel = new FixedDiscount { DiscountID = Guid.NewGuid().ToString(), Percentage = 0, ApplicableRates = "All" };
             LoadGymPlans();
+            InitializeValidation();
         }
 
         public EditDiscountWindow(FixedDiscount existingDiscount) // EDIT MODE
@@ -46,6 +49,44 @@ namespace GymManagementSystem.Views.Windows
 
             chkAllRates.IsChecked = string.Equals(ViewModel.ApplicableRates, "All", StringComparison.OrdinalIgnoreCase);
             LoadGymPlans();
+            InitializeValidation();
+        }
+
+        private void InitializeValidation()
+        {
+            _validationHelper = new ValidationHelper();
+
+            _validationHelper.RegisterTextBox(txtTargetType, lblTargetTypeError, input =>
+            {
+                var (isValid, cleaned, error) = InputValidator.ValidateDiscountName(input);
+                if (!isValid) return (false, cleaned, error);
+
+                if (!_isEditMode && IsDiscountNameDuplicate(cleaned))
+                {
+                    return (false, cleaned, "A discount tier with this name already exists.");
+                }
+                return (true, cleaned, "");
+            });
+
+            _validationHelper.RegisterTextBox(txtPercentage, lblPercentageError, InputValidator.ValidateDiscountPercentage);
+        }
+
+        private bool IsDiscountNameDuplicate(string targetType)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT COUNT(*) FROM Discounts WHERE LOWER(TargetType) = LOWER(@type)";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@type", targetType);
+                        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                    }
+                }
+            }
+            catch { return false; }
         }
 
         private void LoadGymPlans()
@@ -90,9 +131,8 @@ namespace GymManagementSystem.Views.Windows
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtTargetType.Text) || !double.TryParse(txtPercentage.Text, out double pct))
+            if (!_validationHelper.ValidateAll())
             {
-                MessageBox.Show("Please enter valid parameters.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -109,7 +149,7 @@ namespace GymManagementSystem.Views.Windows
             }
 
             ViewModel.TargetType = txtTargetType.Text.Trim();
-            ViewModel.Percentage = pct;
+            ViewModel.Percentage = double.Parse(txtPercentage.Text);
             ViewModel.ApplicableRates = rateConfig;
 
             if (!_isEditMode)
@@ -129,7 +169,7 @@ namespace GymManagementSystem.Views.Windows
                         }
                     }
                 }
-                catch (Exception ex) { MessageBox.Show("Database assignment fault (Duplicate Type keys?): " + ex.Message); return; }
+                catch (Exception ex) { MessageBox.Show("Database assignment fault (Duplicate Type keys?): " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error); return; }
             }
             this.DialogResult = true;
             this.Close();

@@ -19,22 +19,23 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0" Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
 
             <TextBox x:Name="txtSearch" 
-                     Grid.Column="1"
-                     Style="{StaticResource ModernTextBox}"
-                     Width="250" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
-                     Tag="Search Name or ID..." 
-                     TextChanged="Filter_Changed"/>
+             Grid.Column="1"
+             Style="{StaticResource ModernTextBox}"
+             Width="250" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
+             Tag="Search Name or ID..." 
+             TextChanged="Filter_Changed"/>
 
             <ComboBox x:Name="cbStatusFilter" 
-                      Grid.Column="2"
-                      Style="{StaticResource ModernComboBox}"
-                      Width="150" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
-                      SelectionChanged="Filter_Changed">
+              Grid.Column="2"
+              Style="{StaticResource ModernComboBox}"
+              Width="150" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
+              SelectionChanged="Filter_Changed">
                 <ComboBoxItem Content="All Status" IsSelected="True"/>
                 <ComboBoxItem Content="Active"/>
                 <ComboBoxItem Content="Pending"/>
@@ -42,14 +43,29 @@
             </ComboBox>
 
             <Button Grid.Column="3" 
-                    Style="{StaticResource ModernGradientButton}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Click="AddMember_Click">
+            x:Name="btnRefreshAttendance" 
+            Style="{StaticResource IconButtonStyle}" 
+            Width="40" Height="40" Margin="0,0,15,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="Refresh_Click" 
+            ToolTip="Refresh">
+                <Viewbox Width="18" Height="18">
+                    <Path Fill="White" 
+                  Data="M19,8l-2.6,2.6C17.6,11.9,18,13.4,18,15c0,3.3-2.7,6-6,6s-6-2.7-6-6s2.7-6,6-6v3l5-4l-5-4v3c-4.4,0-8,3.6-8,8 s3.6,8,8,8s8-3.6,8-8C20,12.3,19.6,10,19,8z"/>
+                </Viewbox>
+            </Button>
+
+            <Button Grid.Column="4" 
+            Style="{StaticResource ModernGradientButton}"
+            Height="40"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Click="AddMember_Click">
                 <Button.Content>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Margin="20,0">
                         <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Add Member" VerticalAlignment="Center"/>
+                        <TextBlock Text="Add Member" VerticalAlignment="Center" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button.Content>
             </Button>
@@ -79,7 +95,7 @@
 
                     <DataGridTextColumn Header="Member Type" Binding="{Binding MemberType}" Width="120"/>
 
-                    <DataGridTemplateColumn Header="Current Plan" Width="180">
+                    <DataGridTemplateColumn Header="Current Plan" Width="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <DataTemplate.Resources>
@@ -87,8 +103,7 @@
                                 </DataTemplate.Resources>
 
                                 <ItemsControl ItemsSource="{Binding MembershipPlan, Converter={StaticResource StringToCollectionConverter}}"
-                          HorizontalAlignment="Left"
-                          VerticalAlignment="Center">
+                          HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
@@ -97,17 +112,31 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-
                                                 <ContentControl Content="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=0}" 
                                             Style="{StaticResource MembershipPlanBadge}" 
                                             VerticalAlignment="Center"/>
 
-                                                <TextBlock Text="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=1}" 
-                                                   Foreground="#ff9940" 
-                                                   FontWeight="Bold" 
-                                                   FontSize="14" 
-                                                   VerticalAlignment="Center" 
-                                                   Margin="6,0,0,0"/>
+                                                <Button Margin="6,0,0,0" VerticalAlignment="Center" Cursor="Hand"
+                                    Click="QueueBadge_Click" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGridRow}}">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="brdBadge" Background="#e67e22" CornerRadius="10" Padding="6,2">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock x:Name="txtMultiplier" Text="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=1}" 
+                                                           Foreground="White" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <DataTrigger Binding="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=1}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="brdBadge" Property="Background" Value="#d35400"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
                                             </StackPanel>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

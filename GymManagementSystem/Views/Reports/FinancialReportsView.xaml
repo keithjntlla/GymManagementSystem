@@ -19,22 +19,30 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="15" Margin="0,0,0,25" Grid.ColumnSpan="2">
-            <StackPanel Orientation="Horizontal">
-                <StackPanel Margin="0,0,20,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
                     <TextBlock Text="Start Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <DatePicker x:Name="dpStart" Width="180" Height="40" 
                                 Style="{StaticResource ModernDatePicker}"
                                 SelectedDateChanged="DatePicker_SelectedDateChanged"/>
                 </StackPanel>
 
-                <StackPanel Margin="0,0,20,0">
+                <StackPanel Grid.Column="1" Margin="0,0,20,0">
                     <TextBlock Text="End Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <DatePicker x:Name="dpEnd" Width="180" Height="40" 
                                 Style="{StaticResource ModernDatePicker}"
                                 SelectedDateChanged="DatePicker_SelectedDateChanged"/>
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Grid.Column="2">
                     <TextBlock Text="Filter by Plan" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
                     <ComboBox x:Name="cbPlanFilter" 
                               Width="180" 
@@ -44,7 +52,15 @@
                         <ComboBoxItem Content="All Plans" IsSelected="True"/>
                     </ComboBox>
                 </StackPanel>
-            </StackPanel>
+
+                <Button Grid.Column="4"
+                        Style="{StaticResource ModernGradientButton}"
+                        Padding="18,10"
+                        VerticalAlignment="Bottom"
+                        Click="ExportCsv_Click">
+                    <TextBlock Text="Export CSV" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                </Button>
+            </Grid>
         </Border>
 
         <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,30" Grid.ColumnSpan="2">

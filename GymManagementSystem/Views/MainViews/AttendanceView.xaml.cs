@@ -300,6 +300,11 @@ namespace GymManagementSystem.Views.MainViews
                     conn.Open();
                     string sql = @"SELECT MembershipType FROM Payments 
                                    WHERE MemberID = @memberId 
+                                     AND IFNULL(PaymentMode, '') <> 'Refund'
+                                     AND IFNULL(PaymentMode, '') <> 'Refunded'
+                                     AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
+                                     AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                     AND Date(NewExpiryDate) >= Date('now')
                                    ORDER BY PaymentID DESC LIMIT 1";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
@@ -445,6 +450,11 @@ namespace GymManagementSystem.Views.MainViews
                                 COALESCE(
                                     (SELECT P.MembershipType FROM Payments P
                                      WHERE P.MemberID = M.MemberID
+                                       AND IFNULL(P.PaymentMode, '') <> 'Refund'
+                                       AND IFNULL(P.PaymentMode, '') <> 'Refunded'
+                                       AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
+                                       AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                                       AND Date(P.NewExpiryDate) >= Date('now')
                                      ORDER BY P.PaymentID DESC LIMIT 1),
                                     'Unknown') AS MembershipType
                         FROM Attendance A
