@@ -29,6 +29,9 @@
                             <Trigger Property="Content" Value="Members">
                                 <Setter TargetName="icon" Property="Text" Value=""/>
                             </Trigger>
+                            <Trigger Property="Content" Value="Instructors">
+                                <Setter TargetName="icon" Property="Text" Value="👥"/>
+                            </Trigger>
                             <Trigger Property="Content" Value="Payments">
                                 <Setter TargetName="icon" Property="Text" Value="&#xE193;"/>
                             </Trigger>
@@ -110,6 +113,7 @@
                     <Separator Background="#222" Margin="15,15"/>
                     <RadioButton Content="Home" IsChecked="True" Style="{StaticResource MenuButtonStyle}" Click="NavHome_Click"/>
                     <RadioButton x:Name="btnNavMembers" Content="Members" Style="{StaticResource MenuButtonStyle}" Click="NavMembers_Click"/>
+                    <RadioButton x:Name="btnNavInstructors" Content="Instructors" Style="{StaticResource MenuButtonStyle}" Click="NavInstructors_Click"/>
                     <RadioButton x:Name="btnNavPayments" Content="Payments" Style="{StaticResource MenuButtonStyle}" Click="NavPayments_Click"/>
                     <RadioButton Content="Attendance" Style="{StaticResource MenuButtonStyle}" Click="NavAttendance_Click"/>
                 </StackPanel>

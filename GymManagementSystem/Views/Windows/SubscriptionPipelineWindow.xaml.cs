@@ -1,4 +1,4 @@
-﻿using GymManagementSystem.Models;
+using GymManagementSystem.Models;
 using GymManagementSystem.Views.MainViews;
 using System;
 using System.Collections.Generic;
@@ -62,7 +62,7 @@ namespace GymManagementSystem.Views.Windows
                                 lblActiveStart.Text = reader["DateOfTransaction"].ToString();
                                 lblActiveExpiry.Text = reader["NewExpiryDate"].ToString();
 
-                                if (DateTime.TryParse(lblActiveExpiry.Text, out DateTime parsedHorizon))
+                                if (DateTime.TryParse(lblActiveExpiry.Text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsedHorizon))
                                 {
                                     currentHorizon = parsedHorizon;
                                 }
@@ -306,16 +306,5 @@ namespace GymManagementSystem.Views.Windows
         }
 
         private void Close_Click(object sender, RoutedEventArgs e) => this.Close();
-    }
-
-    public class QueuedPlanItem
-    {
-        public int QueueNumber { get; set; }
-        public int PaymentID { get; set; }
-        public string PlanName { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
-        public DateTime ExpiryDate { get; set; }
-        public string DurationDescription { get; set; } = string.Empty;
-        public double RefundAmount { get; set; }
     }
 }

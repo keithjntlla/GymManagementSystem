@@ -24,6 +24,7 @@ namespace GymManagementSystem.Views.Windows
         {
             InitializeComponent();
             LoadDiscountTiersDropdown();
+            LoadTrainersDropdown();
             isEditMode = false;
             // Automatically capture today's timestamp as the clean default standard baseline
             historicalJoinDate = DateTime.Now.ToString("yyyy-MM-dd");
@@ -34,6 +35,7 @@ namespace GymManagementSystem.Views.Windows
         {
             InitializeComponent();
             LoadDiscountTiersDropdown();
+            LoadTrainersDropdown();
             isEditMode = true;
             editMemberId = memberToEdit.MemberID;
 
@@ -49,6 +51,15 @@ namespace GymManagementSystem.Views.Windows
             // Direct string configuration mapping assignment 
             cmbMemberType.SelectedValue = memberToEdit.MemberType;
 
+            if (!string.IsNullOrEmpty(memberToEdit.AssignedInstructorID))
+            {
+                cmbTrainer.SelectedValue = memberToEdit.AssignedInstructorID;
+            }
+            else
+            {
+                cmbTrainer.SelectedIndex = 0;
+            }
+
             if (memberToEdit.Birthday.HasValue)
             {
                 dpBirthday.SelectedDate = memberToEdit.Birthday.Value;
@@ -59,13 +70,13 @@ namespace GymManagementSystem.Views.Windows
             }
 
             // ── FIXED: RECOVERY TO Programmatic Backup Storage Variable ──
-            if (DateTime.TryParse(memberToEdit.DateJoined, out DateTime joinDate))
+            if (DateTime.TryParse(memberToEdit.DateJoined, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime joinDate))
             {
-                historicalJoinDate = joinDate.ToString("yyyy-MM-dd");
+                historicalJoinDate = joinDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
             }
             else
             {
-                historicalJoinDate = DateTime.Now.ToString("yyyy-MM-dd");
+                historicalJoinDate = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
             }
 
             if (!string.IsNullOrEmpty(memberToEdit.PhotoPath) && File.Exists(memberToEdit.PhotoPath))
@@ -101,9 +112,54 @@ namespace GymManagementSystem.Views.Windows
                 return (true, cleaned, "");
             });
 
-            _validationHelper.RegisterDatePicker(dpBirthday, lblBirthdayError, InputValidator.ValidateBirthday);
+            _validationHelper.RegisterDatePicker(dpBirthday, lblBirthdayError, input =>
+            {
+                var (isValid, cleaned, error) = InputValidator.ValidateBirthday(input);
+                if (!isValid) return (false, cleaned, error);
+
+                string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "";
+                if (selectedType.Equals("Senior", StringComparison.OrdinalIgnoreCase))
+                {
+                    DateTime parsedDate = DateTime.ParseExact(cleaned, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                    int age = DateTime.Today.Year - parsedDate.Year;
+                    if (parsedDate > DateTime.Today.AddYears(-age))
+                    {
+                        age--;
+                    }
+
+                    if (age < 60)
+                    {
+                        return (false, cleaned, "Member must be at least 60 years old to select the Senior member type.");
+                    }
+                }
+                return (true, cleaned, "");
+            });
+
             _validationHelper.RegisterComboBox(cmbGender, lblGenderError, InputValidator.ValidateGender);
-            _validationHelper.RegisterComboBox(cmbMemberType, lblMemberTypeError, InputValidator.ValidateMemberType);
+
+            _validationHelper.RegisterComboBox(cmbMemberType, lblMemberTypeError, input =>
+            {
+                var (isValid, cleaned, error) = InputValidator.ValidateMemberType(input);
+                if (!isValid) return (false, cleaned, error);
+
+                if (cleaned.Equals("Senior", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (dpBirthday.SelectedDate != null)
+                    {
+                        int age = DateTime.Today.Year - dpBirthday.SelectedDate.Value.Year;
+                        if (dpBirthday.SelectedDate.Value > DateTime.Today.AddYears(-age))
+                        {
+                            age--;
+                        }
+
+                        if (age < 60)
+                        {
+                            return (false, cleaned, "Member must be at least 60 years old to select the Senior member type.");
+                        }
+                    }
+                }
+                return (true, cleaned, "");
+            });
         }
 
         private void LoadDiscountTiersDropdown()
@@ -135,6 +191,46 @@ namespace GymManagementSystem.Views.Windows
 
             cmbMemberType.ItemsSource = tiersList;
             cmbMemberType.SelectedIndex = 0;
+        }
+
+        private void LoadTrainersDropdown()
+        {
+            var trainersList = new List<Instructor>
+            {
+                new Instructor { InstructorID = "", FirstName = "[ None ]", LastName = "" }
+            };
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand("SELECT InstructorID, FirstName, MiddleInitial, LastName FROM Instructors WHERE Status = 'Active'", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var trainer = new Instructor
+                            {
+                                InstructorID = reader["InstructorID"]?.ToString() ?? "",
+                                FirstName = reader["FirstName"]?.ToString() ?? "",
+                                MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                LastName = reader["LastName"]?.ToString() ?? ""
+                            };
+                            trainersList.Add(trainer);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to pull instructors: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            cmbTrainer.ItemsSource = trainersList;
+            cmbTrainer.DisplayMemberPath = "FullName";
+            cmbTrainer.SelectedValuePath = "InstructorID";
+            cmbTrainer.SelectedIndex = 0;
         }
 
         private void UploadPhoto_Click(object sender, RoutedEventArgs e)
@@ -183,9 +279,20 @@ namespace GymManagementSystem.Views.Windows
             string cleanedPhone = txtPhone.Text;
             string cleanedGender = cmbGender.Text;
             string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
+            string selectedTrainerId = cmbTrainer.SelectedValue?.ToString() ?? "";
 
             DateTime parsedBirthday = DateTime.ParseExact(dpBirthday.Text, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
             string birthdayStr = parsedBirthday.ToString("yyyy-MM-dd");
+
+            if (DatabaseHelper.IsNameAndBirthdayDuplicate(cleanedFirst, cleanedLast, birthdayStr, isEditMode ? editMemberId : ""))
+            {
+                MessageBox.Show("Cannot add or update member because a member with the same first name, last name, and birthday already exists. This might be the same person.",
+                                "Duplicate Member Blocked",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                txtFirstName.Focus();
+                return;
+            }
 
             if (DatabaseHelper.IsNameCombinationDuplicate(cleanedFirst, middleInitial, cleanedLast, isEditMode ? editMemberId : ""))
             {
@@ -201,21 +308,42 @@ namespace GymManagementSystem.Views.Windows
                 }
             }
 
+            // Student ID verification prompt
+            if (selectedType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+            {
+                var promptResult = MessageBox.Show(
+                    "Have they already presented a Student ID?",
+                    "Student ID Verification Required",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (promptResult != MessageBoxResult.Yes)
+                {
+                    MessageBox.Show(
+                        "A valid Student ID must be presented and verified to register as a Student member.",
+                        "Student ID Required",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    cmbMemberType.Focus();
+                    return;
+                }
+            }
+
             string computedFullName = string.IsNullOrWhiteSpace(middleInitial)
                 ? $"{cleanedFirst} {cleanedLast}"
                 : $"{cleanedFirst} {middleInitial}. {cleanedLast}";
 
             if (isEditMode)
             {
-                UpdateMember(cleanedFirst, middleInitial, cleanedLast, computedFullName, cleanedPhone, cleanedGender, birthdayStr, selectedType);
+                UpdateMember(cleanedFirst, middleInitial, cleanedLast, computedFullName, cleanedPhone, cleanedGender, birthdayStr, selectedType, selectedTrainerId);
             }
             else
             {
-                AddNewMember(cleanedFirst, middleInitial, cleanedLast, computedFullName, cleanedPhone, cleanedGender, birthdayStr, selectedType);
+                AddNewMember(cleanedFirst, middleInitial, cleanedLast, computedFullName, cleanedPhone, cleanedGender, birthdayStr, selectedType, selectedTrainerId);
             }
         }
 
-        private void AddNewMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType)
+        private void AddNewMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType, string trainerId)
         {
             string memberId = GenerateMemberID();
             // FIXED: Fully localized fallback generation logic
@@ -239,8 +367,8 @@ namespace GymManagementSystem.Views.Windows
                 {
                     conn.Open();
                     string sql = @"INSERT INTO Members 
-                        (MemberID, FirstName, MiddleInitial, LastName, FullName, Phone, Gender, Birthday, MemberType, DateJoined, ExpiryDate, Status, PhotoPath) 
-                        VALUES (@id, @fName, @mi, @lName, @fullName, @phone, @gender, @bday, @type, @joined, @expiry, @status, @photo)";
+                        (MemberID, FirstName, MiddleInitial, LastName, FullName, Phone, Gender, Birthday, MemberType, DateJoined, ExpiryDate, Status, PhotoPath, AssignedInstructorID) 
+                        VALUES (@id, @fName, @mi, @lName, @fullName, @phone, @gender, @bday, @type, @joined, @expiry, @status, @photo, @trainerId)";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
@@ -257,6 +385,7 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@expiry", expiryDate);
                         cmd.Parameters.AddWithValue("@status", status);
                         cmd.Parameters.AddWithValue("@photo", savedPhotoPath);
+                        cmd.Parameters.AddWithValue("@trainerId", trainerId);
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -270,7 +399,7 @@ namespace GymManagementSystem.Views.Windows
             }
         }
 
-        private void UpdateMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType)
+        private void UpdateMember(string firstName, string mi, string lastName, string fullName, string phone, string gender, string birthday, string memberType, string trainerId)
         {
             try
             {
@@ -286,7 +415,8 @@ namespace GymManagementSystem.Views.Windows
                                Gender = @gender, 
                                Birthday = @bday,
                                MemberType = @type,
-                               DateJoined = @joined 
+                               DateJoined = @joined,
+                               AssignedInstructorID = @trainerId
                            WHERE MemberID = @id";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
@@ -301,6 +431,7 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@type", memberType);
                         // FIXED: Re-maps the untouched background timestamp parameters safely 
                         cmd.Parameters.AddWithValue("@joined", historicalJoinDate);
+                        cmd.Parameters.AddWithValue("@trainerId", trainerId);
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();
                     }

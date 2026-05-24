@@ -9,6 +9,7 @@ namespace GymManagementSystem.Models
         public int PaymentID { get; set; }
         public string MemberID { get; set; } = string.Empty;
         public string MemberName { get; set; } = string.Empty;
+        public string MemberType { get; set; } = string.Empty;
         public double AmountPaid { get; set; }
         public double TotalAmount { get; set; }
         public string PaymentMode { get; set; } = string.Empty;

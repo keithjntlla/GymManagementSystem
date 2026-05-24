@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,9 +32,41 @@ namespace GymManagementSystem.Views.Reports
 
             dgAttendanceReport.ItemsSource = FilteredAttendanceRecords;
             dpAttendanceDate.SelectedDate = DateTime.Now;
+            LoadPlanFilterComboBox();
             LoadAttendanceData();
         }
 
+        private void LoadPlanFilterComboBox()
+        {
+            while (cbPlanFilter.Items.Count > 1)
+                cbPlanFilter.Items.RemoveAt(1);
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT PlanName FROM Rates ORDER BY DurationDays ASC";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            cbPlanFilter.Items.Add(new ComboBoxItem
+                            {
+                                Content = reader["PlanName"]?.ToString() ?? string.Empty
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading attendance plan filter: " + ex.Message);
+            }
+
+            cbPlanFilter.SelectedIndex = 0;
+        }
 
         private void BtnPrevDay_Click(object sender, RoutedEventArgs e)
                 => dpAttendanceDate.SelectedDate =
@@ -55,16 +88,27 @@ namespace GymManagementSystem.Views.Reports
         private void TxtAttendanceSearch_TextChanged(object sender, TextChangedEventArgs e)
             => ApplyAttendanceFilter();
 
+        private void FilterPlan_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded) ApplyAttendanceFilter();
+        }
+
         private void ApplyAttendanceFilter()
         {
             string query = txtAttendanceSearch.Text.Trim().ToLower();
+            string planFilter = (cbPlanFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Plans";
             FilteredAttendanceRecords.Clear();
 
             foreach (var r in _allAttendanceRecords)
             {
-                if (string.IsNullOrEmpty(query) ||
-                    r.Name.ToLower().Contains(query) ||
-                    r.MembershipType.ToLower().Contains(query))
+                bool searchMatch = string.IsNullOrEmpty(query) ||
+                                  r.Name.ToLower().Contains(query) ||
+                                  r.MembershipType.ToLower().Contains(query);
+
+                bool planMatch = planFilter == "All Plans" ||
+                                 r.MembershipType.Contains(planFilter, StringComparison.OrdinalIgnoreCase);
+
+                if (searchMatch && planMatch)
                     FilteredAttendanceRecords.Add(r);
             }
 
@@ -85,8 +129,6 @@ namespace GymManagementSystem.Views.Reports
                 {
                     conn.Open();
 
-                    // Join to Payments to get the actual last MembershipType paid for,
-                    // instead of guessing from the expiry date
                     string sql = @"
                         SELECT  A.AttendanceID,
                                 A.CheckInTime,
@@ -105,7 +147,7 @@ namespace GymManagementSystem.Views.Reports
                                      ORDER BY P.PaymentID DESC
                                      LIMIT 1),
                                     'Unknown'
-                                ) AS MembershipType
+                                 ) AS MembershipType
                         FROM    Attendance A
                         JOIN    Members M ON A.MemberID = M.MemberID
                         WHERE   A.CheckInDate = @date
@@ -193,8 +235,35 @@ namespace GymManagementSystem.Views.Reports
 
             try
             {
+                var gymProfile = DatabaseHelper.GetGymProfile();
+                string gymName = gymProfile.ContainsKey("GymName") ? gymProfile["GymName"] : "Gym";
+                string gymAddress = gymProfile.ContainsKey("Address") ? gymProfile["Address"] : "";
+                string gymContact = gymProfile.ContainsKey("ContactNumber") ? gymProfile["ContactNumber"] : "";
+                string gymEmail = gymProfile.ContainsKey("Email") ? gymProfile["Email"] : "";
+                string planFilter = (cbPlanFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Plans";
+
                 using (var writer = new StreamWriter(dialog.FileName))
                 {
+                    // 1. Gym Profile Block
+                    writer.WriteLine("GYM PROFILE");
+                    writer.WriteLine($"Gym Name,{Csv(gymName)}");
+                    writer.WriteLine($"Address,{Csv(gymAddress)}");
+                    writer.WriteLine($"Contact,{Csv(gymContact)}");
+                    writer.WriteLine($"Email,{Csv(gymEmail)}");
+                    writer.WriteLine();
+
+                    // 2. Report Summary Block
+                    writer.WriteLine("REPORT SUMMARY");
+                    writer.WriteLine("Report Type,Attendance Report");
+                    writer.WriteLine($"Date Generated,{Csv(DateTime.Now.ToString("yyyy-MM-dd hh:mm tt"))}");
+                    writer.WriteLine($"Selected Report Date,{Csv((dpAttendanceDate.SelectedDate ?? DateTime.Now).ToString("yyyy-MM-dd"))}");
+                    writer.WriteLine($"Plan Filter,{Csv(planFilter)}");
+                    writer.WriteLine($"Total Visitors,{Csv(FilteredAttendanceRecords.Count.ToString())}");
+                    writer.WriteLine($"Peak Hour,{Csv(lblPeakHour.Text)}");
+                    writer.WriteLine();
+
+                    // 3. Report Data Block
+                    writer.WriteLine("REPORT DATA");
                     writer.WriteLine("Date,Member ID,Member Name,Check In,Check Out,Membership Plan,Status");
                     foreach (var record in FilteredAttendanceRecords)
                     {

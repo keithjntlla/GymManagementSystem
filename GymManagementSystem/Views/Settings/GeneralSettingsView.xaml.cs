@@ -25,6 +25,7 @@ namespace GymManagementSystem.Views.Settings
             txtAddress.TextChanged += DataChanged;
             txtContact.TextChanged += DataChanged;
             txtEmail.TextChanged += DataChanged;
+            txtMaxCapacity.TextChanged += DataChanged;
         }
 
         private void InitializeValidation()
@@ -35,6 +36,11 @@ namespace GymManagementSystem.Views.Settings
             _validationHelper.RegisterTextBox(txtAddress, lblAddressError, InputValidator.ValidateAddress);
             _validationHelper.RegisterTextBox(txtContact, lblContactError, input => InputValidator.ValidatePhoneNumber(input, "Contact number"));
             _validationHelper.RegisterTextBox(txtEmail, lblEmailError, InputValidator.ValidateEmail);
+            _validationHelper.RegisterTextBox(txtMaxCapacity, lblMaxCapacityError, input => {
+                if (string.IsNullOrWhiteSpace(input)) return (false, "", "Maximum capacity is required.");
+                if (!int.TryParse(input, out int cap) || cap <= 0) return (false, "", "Maximum capacity must be a positive number.");
+                return (true, input, "");
+            });
         }
 
         private void DataChanged(object sender, TextChangedEventArgs e)
@@ -50,6 +56,7 @@ namespace GymManagementSystem.Views.Settings
             txtAddress.Text = profile.GetValueOrDefault("Address", "");
             txtContact.Text = profile.GetValueOrDefault("ContactNumber", "");
             txtEmail.Text = profile.GetValueOrDefault("Email", "");
+            txtMaxCapacity.Text = profile.GetValueOrDefault("MaxCapacity", "100");
 
             selectedLogoPath = profile.GetValueOrDefault("LogoPath", "");
             if (!string.IsNullOrEmpty(selectedLogoPath) && File.Exists(selectedLogoPath))
@@ -99,7 +106,8 @@ namespace GymManagementSystem.Views.Settings
 
             try
             {
-                DatabaseHelper.SaveGymProfile(txtGymName.Text, txtAddress.Text, txtContact.Text, txtEmail.Text, selectedLogoPath);
+                int maxCap = int.TryParse(txtMaxCapacity.Text, out int parsed) ? parsed : 100;
+                DatabaseHelper.SaveGymProfile(txtGymName.Text, txtAddress.Text, txtContact.Text, txtEmail.Text, selectedLogoPath, maxCap);
                 lblUnsavedHint.Visibility = Visibility.Collapsed;
                 MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }

@@ -25,7 +25,7 @@ namespace GymManagementSystem.Views.Windows
 
         private void InitializeValidation()
         {
-            _validationHelper = new ValidationHelper();
+            _validationHelper = new ValidationHelper(); 
 
             _validationHelper.RegisterTextBox(txtUsername, lblUsernameError, input =>
             {
@@ -129,7 +129,7 @@ namespace GymManagementSystem.Views.Windows
         {
             try
             {
-                string inputHashedPassword = HashPassword(password);
+                string inputHashedPassword = InputValidator.HashPassword(password);
 
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
@@ -164,17 +164,6 @@ namespace GymManagementSystem.Views.Windows
                 MessageBox.Show("Database error during login: " + ex.Message);
             }
             return false;
-        }
-
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes) builder.Append(b.ToString("x2"));
-                return builder.ToString();
-            }
         }
         private void ForgotPassword_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {

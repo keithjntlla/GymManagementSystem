@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
@@ -35,6 +35,7 @@ namespace GymManagementSystem.Views.Reports
 
         private void LoadExpirationsData()
         {
+            DatabaseHelper.RefreshMemberStatuses();
             _allExpirationRecords.Clear();
             FilteredExpirationRecords.Clear();
 
@@ -125,7 +126,7 @@ namespace GymManagementSystem.Views.Reports
             if (NotificationHelper.WasNotifiedOnDate(lastNotifiedDate, NotificationHelper.Yesterday))
                 return "Yesterday";
             if (!string.IsNullOrEmpty(lastNotifiedDate)
-                && DateTime.TryParse(lastNotifiedDate, out DateTime date))
+                && DateTime.TryParse(lastNotifiedDate, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime date))
             {
                 return date.ToString("yyyy-MM-dd");
             }
@@ -242,8 +243,34 @@ namespace GymManagementSystem.Views.Reports
 
             try
             {
+                var gymProfile = DatabaseHelper.GetGymProfile();
+                string gymName = gymProfile.ContainsKey("GymName") ? gymProfile["GymName"] : "Gym";
+                string gymAddress = gymProfile.ContainsKey("Address") ? gymProfile["Address"] : "";
+                string gymContact = gymProfile.ContainsKey("ContactNumber") ? gymProfile["ContactNumber"] : "";
+                string gymEmail = gymProfile.ContainsKey("Email") ? gymProfile["Email"] : "";
+
                 using (var writer = new StreamWriter(dialog.FileName))
                 {
+                    // 1. Gym Profile Block
+                    writer.WriteLine("GYM PROFILE");
+                    writer.WriteLine($"Gym Name,{Csv(gymName)}");
+                    writer.WriteLine($"Address,{Csv(gymAddress)}");
+                    writer.WriteLine($"Contact,{Csv(gymContact)}");
+                    writer.WriteLine($"Email,{Csv(gymEmail)}");
+                    writer.WriteLine();
+
+                    // 2. Report Summary Block
+                    writer.WriteLine("REPORT SUMMARY");
+                    writer.WriteLine("Report Type,Expiration Report");
+                    writer.WriteLine($"Date Generated,{Csv(DateTime.Now.ToString("yyyy-MM-dd hh:mm tt"))}");
+                    writer.WriteLine($"Expiry Window,Next {ExpiringWindowDays} Days");
+                    writer.WriteLine($"Total Expiring Members,{Csv(FilteredExpirationRecords.Count.ToString())}");
+                    writer.WriteLine($"Critical Status Count (<= {CriticalWindowDays} Days),{Csv(lblCriticalCount.Text)}");
+                    writer.WriteLine($"Pending Renewals (Expired Members),{Csv(lblPendingRenewals.Text)}");
+                    writer.WriteLine();
+
+                    // 3. Report Data Block
+                    writer.WriteLine("REPORT DATA");
                     writer.WriteLine("Member ID,Member Name,Phone,Plan Type,Expiry Date,Days Remaining,Last Notified");
                     foreach (var record in FilteredExpirationRecords)
                     {

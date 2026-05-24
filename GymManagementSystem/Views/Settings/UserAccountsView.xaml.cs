@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Windows;
@@ -113,6 +113,24 @@ namespace GymManagementSystem.Views.Settings
                 {
                     MessageBox.Show($"Error updating user status: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Opens the Edit User Account dialog for the selected user.
+        /// </summary>
+        private void btnEditUser_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var user = button?.DataContext as User;
+
+            if (user == null) return;
+
+            var editUserWin = new EditUserWindow(user);
+            editUserWin.Owner = Window.GetWindow(this);
+            if (editUserWin.ShowDialog() == true)
+            {
+                LoadUsers();
             }
         }
     }

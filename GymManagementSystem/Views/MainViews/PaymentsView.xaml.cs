@@ -376,6 +376,15 @@ namespace GymManagementSystem.Views.MainViews
                 lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
             }
 
+            if (!string.IsNullOrEmpty(selectedMembershipType))
+            {
+                lblSelectedPlanDisplay.Text = selectedMembershipType;
+            }
+            else
+            {
+                lblSelectedPlanDisplay.Text = "";
+            }
+
             CalculateChange();
             CalculateNewExpiry();
         }
@@ -690,12 +699,36 @@ namespace GymManagementSystem.Views.MainViews
                 lblCurrentExpiry.Text = "-";
             }
 
+            // Render Initials Fallback
+            string initials = "";
+            if (!string.IsNullOrWhiteSpace(member.FirstName)) initials += member.FirstName[0];
+            if (!string.IsNullOrWhiteSpace(member.LastName)) initials += member.LastName[0];
+            if (string.IsNullOrEmpty(initials)) initials = "M";
+            txtInitials.Text = initials.ToUpper();
+
+            // Load Perfect Circle Image safely
             if (!string.IsNullOrEmpty(member.PhotoPath) && File.Exists(member.PhotoPath))
             {
-                try { imgMemberPhoto.Source = new BitmapImage(new Uri(member.PhotoPath)); }
-                catch { imgMemberPhoto.Source = null; }
+                try
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.UriSource = new Uri(member.PhotoPath);
+                    bitmap.EndInit();
+
+                    imgBrush.ImageSource = bitmap;
+                    ellPhoto.Visibility = Visibility.Visible;
+                }
+                catch
+                {
+                    ellPhoto.Visibility = Visibility.Collapsed;
+                }
             }
-            else { imgMemberPhoto.Source = null; }
+            else
+            {
+                ellPhoto.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void TxtAmountPaid_TextChanged(object sender, TextChangedEventArgs e)
@@ -809,6 +842,12 @@ namespace GymManagementSystem.Views.MainViews
 
             lblMemberPlan.Text = "-";
             lblCurrentExpiry.Text = "-";
+
+            // Clear photo fallback elements and selected plan label
+            ellPhoto.Visibility = Visibility.Collapsed;
+            imgBrush.ImageSource = null;
+            txtInitials.Text = "--";
+            lblSelectedPlanDisplay.Text = "";
 
             lblExpiryTitle.Text = "New Expiry Date";
             lblMultiplierValue.Text = "1";

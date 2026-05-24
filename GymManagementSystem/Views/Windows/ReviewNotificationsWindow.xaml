@@ -77,7 +77,7 @@
                         Background="#1a1a1a" Foreground="White" BorderBrush="#333"
                         Click="Cancel_Click"/>
                 <Button x:Name="btnSend" Grid.Column="1" Margin="8,0,0,0" Padding="0,12"
-                        Background="#e85d04" Foreground="White" FontWeight="Bold" BorderThickness="0"
+                        Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0"
                         Click="Send_Click"/>
             </Grid>
         </Grid>

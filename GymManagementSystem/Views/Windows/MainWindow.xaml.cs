@@ -73,6 +73,11 @@ namespace GymManagementSystem.Views.Windows
             MainFrame.Content = new MembersView();
         }
 
+        private void NavInstructors_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new InstructorsView();
+        }
+
         private void NavPayments_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Content = new PaymentsView();

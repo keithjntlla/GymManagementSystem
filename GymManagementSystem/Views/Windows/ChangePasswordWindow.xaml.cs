@@ -89,7 +89,7 @@ namespace GymManagementSystem.Views.Windows
             // Save to DB
             try
             {
-                string hashed = HashPassword(newPassword);
+                string hashed = InputValidator.HashPassword(newPassword);
 
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
@@ -109,17 +109,6 @@ namespace GymManagementSystem.Views.Windows
             catch (Exception ex)
             {
                 MessageBox.Show("Error updating password: " + ex.Message, "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes) builder.Append(b.ToString("x2"));
-                return builder.ToString();
             }
         }
 

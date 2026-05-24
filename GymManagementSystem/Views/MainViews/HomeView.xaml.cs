@@ -8,24 +8,17 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace GymManagementSystem.Views.MainViews
 {
-    public class ExpiringMember
-    {
-        public string FullName { get; set; } = "";
-        public string MemberID { get; set; } = "";
-        public string Phone { get; set; } = "";
-        public string ExpiryDate { get; set; } = "";
-        public int DaysRemaining { get; set; }
-        public string DaysLeft { get; set; } = "";
-        public string? LastNotifiedDate { get; set; }
-    }
-
     public partial class HomeView : UserControl
     {
         private Window? _ownerWindow;
         private List<ExpiringMember> _expiringMembers = new();
+        private string currentInlineSelectedMemberId = "";
+        private bool isSelectingSuggestion = false;
+        private DispatcherTimer? _inlineAlertTimer;
 
         public ObservableCollection<PaymentRecord> RecentTransactionsList { get; set; }
             = new ObservableCollection<PaymentRecord>();
@@ -43,6 +36,8 @@ namespace GymManagementSystem.Views.MainViews
             _ownerWindow = Window.GetWindow(this);
             if (_ownerWindow != null)
                 _ownerWindow.Activated += OnOwnerWindowActivated;
+
+            // Checked in/out and other states are loaded as standard
 
             RefreshHeader();
             LoadDashboardData();
@@ -84,11 +79,9 @@ namespace GymManagementSystem.Views.MainViews
                 {
                     conn.Open();
 
-                    using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM Members WHERE Status = 'Active'", conn))
-                        lblTotalMembers.Text = Convert.ToInt32(cmd.ExecuteScalar() ?? 0).ToString();
-
-                    using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM Members WHERE Status = 'Expired'", conn))
-                        lblExpiredMembers.Text = Convert.ToInt32(cmd.ExecuteScalar() ?? 0).ToString();
+                    // Load Gym Profile and Max Capacity
+                    var profile = DatabaseHelper.GetGymProfile();
+                    lblMaxCapacity.Text = profile.GetValueOrDefault("MaxCapacity", "100");
 
                     using (var cmd = new SQLiteCommand(
                         "SELECT COUNT(*) FROM Attendance WHERE CheckInDate = @today", conn))
@@ -190,6 +183,29 @@ namespace GymManagementSystem.Views.MainViews
                     dgExpiringSoon.ItemsSource = _expiringMembers.ToList();
                     ExpiringSoonSection.Visibility = Visibility.Visible;
 
+                    // Load Pending Registrations
+                    List<Member> pendingList = new List<Member>();
+                    using (var cmd = new SQLiteCommand(
+                        "SELECT MemberID, FirstName, MiddleInitial, LastName, DateJoined, Status FROM Members WHERE Status = 'Pending' ORDER BY DateJoined DESC", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            pendingList.Add(new Member
+                            {
+                                MemberID = reader["MemberID"]?.ToString() ?? "",
+                                FirstName = reader["FirstName"]?.ToString() ?? "",
+                                MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                LastName = reader["LastName"]?.ToString() ?? "",
+                                DateJoined = reader["DateJoined"]?.ToString() ?? "",
+                                Status = reader["Status"]?.ToString() ?? ""
+                            });
+                        }
+                    }
+                    dgPendingRegistrations.ItemsSource = pendingList;
+                    lblPendingRegistrationsCount.Text = pendingList.Count.ToString();
+
+                    // Load Recent Transactions
                     using (var cmd = new SQLiteCommand(@"SELECT MemberName, MembershipType, TotalAmount, AmountPaid, DateOfTransaction, PaymentMode
                         FROM Payments
                         WHERE IFNULL(PaymentMode, '') <> 'Refunded'
@@ -240,6 +256,12 @@ namespace GymManagementSystem.Views.MainViews
                 PaymentNavigationHelper.TryNavigateToPayment(this, member.MemberID);
         }
 
+        private void CollectPendingPayment_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.CommandParameter is Member member)
+                PaymentNavigationHelper.TryNavigateToPayment(this, member.MemberID);
+        }
+
         private void NotifyMember_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as Button)?.CommandParameter is not ExpiringMember member)
@@ -283,6 +305,447 @@ namespace GymManagementSystem.Views.MainViews
                     "Notifications Sent", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadDashboardData();
             }
+        }
+
+        // Admin capacity edit button is disabled from dashboard
+
+        // Inline Check-in / Out Logic
+        private void TxtInlineSearch_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                string input = txtInlineSearch.Text.Trim();
+                if (!string.IsNullOrEmpty(input))
+                {
+                    popInlineSearch.IsOpen = false;
+                    ProcessInlineCheck(input);
+                }
+                e.Handled = true;
+            }
+        }
+
+        private void TxtInlineSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (isSelectingSuggestion) return;
+
+            string query = txtInlineSearch.Text.Trim();
+            if (query.Length >= 1)
+            {
+                List<Member> suggestions = new List<Member>();
+                try
+                {
+                    using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                    {
+                        conn.Open();
+                        string sql = "SELECT MemberID, FirstName, MiddleInitial, LastName FROM Members WHERE FullName LIKE @q OR MemberID LIKE @q LIMIT 10";
+                        using (var cmd = new SQLiteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@q", "%" + query + "%");
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    suggestions.Add(new Member
+                                    {
+                                        MemberID = reader["MemberID"]?.ToString() ?? "",
+                                        FirstName = reader["FirstName"]?.ToString() ?? "",
+                                        MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                        LastName = reader["LastName"]?.ToString() ?? ""
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    lstInlineSearchResults.ItemsSource = suggestions;
+                    popInlineSearch.IsOpen = suggestions.Count > 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Inline search suggestion error: " + ex.Message);
+                }
+            }
+            else
+            {
+                popInlineSearch.IsOpen = false;
+            }
+        }
+
+        private void TxtInlineSearch_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtInlineSearch.Text.Trim().Length >= 1)
+            {
+                popInlineSearch.IsOpen = true;
+            }
+        }
+
+        private void TxtInlineSearch_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // A small delay to allow clicking suggestions before hiding
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (string.IsNullOrWhiteSpace(txtInlineSearch.Text))
+                {
+                    txtInlineSearch.Text = "";
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void LstInlineSearchResults_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstInlineSearchResults.SelectedItem is Member member)
+            {
+                isSelectingSuggestion = true;
+                txtInlineSearch.Text = member.MemberID;
+                currentInlineSelectedMemberId = member.MemberID;
+                isSelectingSuggestion = false;
+
+                popInlineSearch.IsOpen = false;
+                lstInlineSearchResults.SelectedItem = null;
+
+                ProcessInlineCheck(member.MemberID);
+            }
+        }
+
+        private void BtnInlineCheck_Click(object sender, RoutedEventArgs e)
+        {
+            string input = txtInlineSearch.Text.Trim();
+            if (!string.IsNullOrEmpty(input))
+            {
+                ProcessInlineCheck(input);
+            }
+            else
+            {
+                ShowInlineAlert("Please enter a member name or ID.", false);
+            }
+        }
+
+        private void BtnCollectPaymentLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(currentInlineSelectedMemberId))
+            {
+                brdInlineAlert.Visibility = Visibility.Collapsed;
+                PaymentNavigationHelper.TryNavigateToPayment(this, currentInlineSelectedMemberId);
+            }
+        }
+
+        private string? GetMemberCurrentCheckInTime(string memberId)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"SELECT CheckInTime FROM Attendance 
+                                   WHERE MemberID = @memberId 
+                                   AND CheckInDate = @today 
+                                   AND (CheckOutTime IS NULL OR CheckOutTime = '')
+                                   LIMIT 1";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@memberId", memberId);
+                        cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
+                        object res = cmd.ExecuteScalar();
+                        return res != null && res != DBNull.Value ? res.ToString() : null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error getting check in time: " + ex.Message);
+                return null;
+            }
+        }
+
+        private void ProcessInlineCheck(string identifier)
+        {
+            if (string.IsNullOrWhiteSpace(identifier)) return;
+
+            Member? member = GetMemberByIdentifier(identifier);
+            if (member == null)
+            {
+                ShowInlineAlert("No member found matching that search.", false);
+                return;
+            }
+
+            currentInlineSelectedMemberId = member.MemberID;
+
+            // Check status: must be Active to check in.
+            // Expired or Pending members should be blocked with payment options
+            if (member.Status == "Expired" || member.Status == "Pending")
+            {
+                string statusText = member.Status == "Expired" ? "Membership Expired." : "Membership Pending Payment.";
+                ShowInlineAlert(statusText, false, showCollectLink: true);
+                return;
+            }
+
+            if (member.Status != "Active")
+            {
+                ShowInlineAlert($"Check-in Denied. Member status is '{member.Status}'.", false);
+                return;
+            }
+
+            // Member is Active! Let's check check-in vs check-out state
+            string? checkInTime = GetMemberCurrentCheckInTime(member.MemberID);
+            bool isCurrentlyIn = checkInTime != null;
+            if (isCurrentlyIn)
+            {
+                // Confirmation popup before checking out
+                var checkOutConfirm = MessageBox.Show(
+                    $"This person is checked in at {checkInTime}. Do you want to check out?",
+                    "Confirm Check-out",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (checkOutConfirm != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+
+                // Clock them out!
+                try
+                {
+                    using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                    {
+                        conn.Open();
+                        string sql = @"UPDATE Attendance 
+                                       SET CheckOutTime = @checkOutTime 
+                                       WHERE MemberID = @memberId 
+                                       AND CheckInDate = @today 
+                                       AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                        using (var cmd = new SQLiteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@checkOutTime", DateTime.Now.ToString("hh:mm tt").ToUpper());
+                            cmd.Parameters.AddWithValue("@memberId", member.MemberID);
+                            cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    ShowInlineAlert($"{member.FullName} Checked Out successfully!", true);
+                    txtInlineSearch.Text = "";
+                    LoadDashboardData();
+                }
+                catch (Exception ex)
+                {
+                    ShowInlineAlert("Database error during check-out.", false);
+                    MessageBox.Show("Error during check-out: " + ex.Message);
+                }
+            }
+            else
+            {
+                // Clock them in!
+                // Confirmation popup before checking in
+                var checkInConfirm = MessageBox.Show(
+                    $"Are you sure you want to check in {member.FullName}?",
+                    "Confirm Check-in",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (checkInConfirm != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+
+                // Check capacity before clocking in
+                int currentlyInsideCount = 0;
+                int maxCapacity = 100;
+
+                try
+                {
+                    using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                    {
+                        conn.Open();
+                        using (var cmd = new SQLiteCommand("SELECT COUNT(*) FROM Attendance WHERE CheckInDate = @today AND (CheckOutTime IS NULL OR CheckOutTime = '')", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
+                            currentlyInsideCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                        }
+                    }
+                }
+                catch { }
+
+                var profile = DatabaseHelper.GetGymProfile();
+                if (int.TryParse(profile.GetValueOrDefault("MaxCapacity", "100"), out int cap))
+                {
+                    maxCapacity = cap;
+                }
+
+                if (currentlyInsideCount >= maxCapacity)
+                {
+                    var capResult = MessageBox.Show(
+                        $"Warning: The gym has reached maximum capacity ({maxCapacity}/{maxCapacity}).\n\nAre you sure you want to check in {member.FullName} anyway?",
+                        "Max Capacity Reached",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (capResult != MessageBoxResult.Yes)
+                    {
+                        return;
+                    }
+                }
+
+                try
+                {
+                    using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                    {
+                        conn.Open();
+                        string sql = "INSERT INTO Attendance (MemberID, CheckInTime, CheckInDate, CheckOutTime) VALUES (@memberId, @checkInTime, @checkInDate, NULL)";
+                        using (var cmd = new SQLiteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@memberId", member.MemberID);
+                            cmd.Parameters.AddWithValue("@checkInTime", DateTime.Now.ToString("hh:mm tt").ToUpper());
+                            cmd.Parameters.AddWithValue("@checkInDate", DateTime.Now.ToString("yyyy-MM-dd"));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    ShowInlineAlert($"{member.FullName} Checked In successfully!", true);
+                    txtInlineSearch.Text = "";
+                    LoadDashboardData();
+                }
+                catch (Exception ex)
+                {
+                    ShowInlineAlert("Database error during check-in.", false);
+                    MessageBox.Show("Error during check-in: " + ex.Message);
+                }
+            }
+        }
+
+        private Member? GetMemberByIdentifier(string identifier)
+        {
+            DatabaseHelper.RefreshMemberStatuses();
+            Member? member = null;
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    // Try exact match first
+                    string sql = "SELECT * FROM Members WHERE LOWER(MemberID) = @identifier OR LOWER(FullName) = @identifier";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@identifier", identifier.ToLower());
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                member = ReadMemberFromReader(reader);
+                            }
+                        }
+                    }
+
+                    // Try partial name matches if not found
+                    if (member == null)
+                    {
+                        string sqlLike = "SELECT * FROM Members WHERE FullName LIKE @q OR MemberID LIKE @q LIMIT 1";
+                        using (var cmd = new SQLiteCommand(sqlLike, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@q", "%" + identifier + "%");
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    member = ReadMemberFromReader(reader);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Database error in GetMemberByIdentifier: " + ex.Message);
+            }
+            return member;
+        }
+
+        private Member ReadMemberFromReader(SQLiteDataReader reader)
+        {
+            string statusVal = reader["Status"]?.ToString() ?? string.Empty;
+            string expDateStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(expDateStr) && DateTime.TryParse(expDateStr, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime expDate))
+            {
+                if (DateTime.Today > expDate.Date)
+                {
+                    statusVal = "Expired";
+                }
+                else if (statusVal == "Expired")
+                {
+                    statusVal = "Active";
+                }
+            }
+
+            return new Member
+            {
+                MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
+                FirstName = reader["FirstName"]?.ToString() ?? "",
+                MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                LastName = reader["LastName"]?.ToString() ?? "",
+                ExpiryDate = expDateStr,
+                Status = statusVal
+            };
+        }
+
+        private bool IsMemberAlreadyTimedIn(string memberId)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"SELECT COUNT(*) FROM Attendance 
+                                   WHERE MemberID = @memberId 
+                                   AND CheckInDate = @today 
+                                   AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@memberId", memberId);
+                        cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
+                        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error checking duplicate check-in: " + ex.Message);
+                return false;
+            }
+        }
+
+        private void ShowInlineAlert(string message, bool isSuccess, bool showCollectLink = false)
+        {
+            txtInlineAlertMessage.Text = message;
+
+            if (isSuccess)
+            {
+                brdInlineAlert.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1e3a2a"));
+                txtInlineAlertIcon.Text = "✓";
+                txtInlineAlertIcon.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#2ecc71"));
+                btnCollectPaymentLink.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                brdInlineAlert.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#3b1214"));
+                txtInlineAlertIcon.Text = "✕";
+                txtInlineAlertIcon.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#ff4444"));
+                btnCollectPaymentLink.Visibility = showCollectLink ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            brdInlineAlert.Visibility = Visibility.Visible;
+
+            if (_inlineAlertTimer == null)
+            {
+                _inlineAlertTimer = new DispatcherTimer();
+                _inlineAlertTimer.Interval = TimeSpan.FromSeconds(5);
+                _inlineAlertTimer.Tick += (s, e) =>
+                {
+                    brdInlineAlert.Visibility = Visibility.Collapsed;
+                    _inlineAlertTimer.Stop();
+                };
+            }
+            else
+            {
+                _inlineAlertTimer.Stop();
+            }
+            _inlineAlertTimer.Start();
         }
     }
 }

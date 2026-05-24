@@ -93,6 +93,7 @@ namespace GymManagementSystem.Views.MainViews
 
         private void SearchMembers(string query)
         {
+            DatabaseHelper.RefreshMemberStatuses();
             _searchResults.Clear();
             try
             {
@@ -107,6 +108,20 @@ namespace GymManagementSystem.Views.MainViews
                         {
                             while (reader.Read())
                             {
+                                string statusVal = reader["Status"]?.ToString() ?? string.Empty;
+                                string expDateStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
+                                if (!string.IsNullOrWhiteSpace(expDateStr) && DateTime.TryParse(expDateStr, out DateTime expDate))
+                                {
+                                    if (DateTime.Today > expDate.Date)
+                                    {
+                                        statusVal = "Expired";
+                                    }
+                                    else if (statusVal == "Expired")
+                                    {
+                                        statusVal = "Active";
+                                    }
+                                }
+
                                 _searchResults.Add(new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
@@ -115,8 +130,8 @@ namespace GymManagementSystem.Views.MainViews
                                     LastName = reader["LastName"]?.ToString() ?? "",
                                     Phone = reader["Phone"]?.ToString() ?? string.Empty,
                                     Gender = reader["Gender"]?.ToString() ?? string.Empty,
-                                    ExpiryDate = reader["ExpiryDate"]?.ToString() ?? string.Empty,
-                                    Status = reader["Status"]?.ToString() ?? string.Empty,
+                                    ExpiryDate = expDateStr,
+                                    Status = statusVal,
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? string.Empty
                                 });
                             }
@@ -324,6 +339,7 @@ namespace GymManagementSystem.Views.MainViews
 
         private Member? GetMemberByIdentifier(string identifier)
         {
+            DatabaseHelper.RefreshMemberStatuses();
             Member? member = null;
             try
             {
@@ -338,6 +354,20 @@ namespace GymManagementSystem.Views.MainViews
                         {
                             if (reader.Read())
                             {
+                                string statusVal = reader["Status"]?.ToString() ?? string.Empty;
+                                string expDateStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
+                                if (!string.IsNullOrWhiteSpace(expDateStr) && DateTime.TryParse(expDateStr, out DateTime expDate))
+                                {
+                                    if (DateTime.Today > expDate.Date)
+                                    {
+                                        statusVal = "Expired";
+                                    }
+                                    else if (statusVal == "Expired")
+                                    {
+                                        statusVal = "Active";
+                                    }
+                                }
+
                                 member = new Member
                                 {
                                     MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
@@ -347,8 +377,8 @@ namespace GymManagementSystem.Views.MainViews
                                     Phone = reader["Phone"]?.ToString() ?? string.Empty,
                                     Gender = reader["Gender"]?.ToString() ?? string.Empty,
                                     DateJoined = reader["DateJoined"]?.ToString() ?? string.Empty,
-                                    ExpiryDate = reader["ExpiryDate"]?.ToString() ?? string.Empty,
-                                    Status = reader["Status"]?.ToString() ?? string.Empty,
+                                    ExpiryDate = expDateStr,
+                                    Status = statusVal,
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? string.Empty
                                 };
                             }

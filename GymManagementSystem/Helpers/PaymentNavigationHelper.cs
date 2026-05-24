@@ -11,6 +11,7 @@ namespace GymManagementSystem
     {
         public static bool TryNavigateToPayment(DependencyObject context, string memberId)
         {
+            DatabaseHelper.RefreshMemberStatuses();
             if (string.IsNullOrWhiteSpace(memberId))
                 return false;
 
@@ -47,6 +48,30 @@ namespace GymManagementSystem
                             if (!reader.Read())
                                 return false;
 
+                            string dbStatus = reader["Status"]?.ToString() ?? "Pending";
+                            string expiryStr = reader["ExpiryDate"]?.ToString() ?? string.Empty;
+
+                            if (!string.IsNullOrWhiteSpace(expiryStr) && DateTime.TryParse(expiryStr, out DateTime expiryDate))
+                            {
+                                expiryStr = expiryDate.ToString("yyyy-MM-dd");
+                                if (DateTime.Today > expiryDate.Date)
+                                {
+                                    dbStatus = "Expired";
+                                }
+                                else if (dbStatus == "Expired")
+                                {
+                                    dbStatus = "Active";
+                                }
+                            }
+                            else
+                            {
+                                expiryStr = "-";
+                                if (dbStatus.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    dbStatus = "Expired";
+                                }
+                            }
+
                             member = new Member
                             {
                                 MemberID = reader["MemberID"]?.ToString() ?? string.Empty,
@@ -56,9 +81,9 @@ namespace GymManagementSystem
                                 Phone = reader["Phone"]?.ToString() ?? string.Empty,
                                 Gender = reader["Gender"]?.ToString() ?? string.Empty,
                                 MemberType = reader["MemberType"]?.ToString() ?? "Regular",
-                                Status = reader["Status"]?.ToString() ?? string.Empty,
+                                Status = dbStatus,
                                 PhotoPath = reader["PhotoPath"]?.ToString() ?? string.Empty,
-                                ExpiryDate = reader["ExpiryDate"]?.ToString() ?? string.Empty,
+                                ExpiryDate = expiryStr,
                                 DateJoined = reader["DateJoined"]?.ToString() ?? string.Empty
                             };
 

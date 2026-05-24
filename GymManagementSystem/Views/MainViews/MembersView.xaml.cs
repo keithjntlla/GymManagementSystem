@@ -9,6 +9,8 @@ using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Input;
 
 namespace GymManagementSystem.Views.MainViews
 {
@@ -17,28 +19,155 @@ namespace GymManagementSystem.Views.MainViews
         public ObservableCollection<Member> MembersList { get; set; } = new ObservableCollection<Member>();
         private ICollectionView? _membersView;
 
+        private List<CheckBox> _dynamicTypeCheckBoxes = new List<CheckBox>();
+        private List<CheckBox> _dynamicPlanCheckBoxes = new List<CheckBox>();
+
         public MembersView()
         {
             InitializeComponent();
+            LoadDynamicMemberTypes();
+            LoadDynamicPlans();
             LoadMembers();
+        }
+
+        private void LoadDynamicMemberTypes()
+        {
+            // Save currently checked types to restore them
+            var checkedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var chk in _dynamicTypeCheckBoxes)
+            {
+                if (chk.IsChecked == true)
+                {
+                    string name = chk.Content?.ToString();
+                    if (!string.IsNullOrEmpty(name)) checkedTypes.Add(name);
+                }
+            }
+
+            spDynamicTypes.Children.Clear();
+            _dynamicTypeCheckBoxes.Clear();
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand("SELECT DISTINCT TargetType FROM Discounts", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string tierName = reader["TargetType"]?.ToString() ?? "";
+                            if (!string.IsNullOrWhiteSpace(tierName) && 
+                                !tierName.Equals("Regular", StringComparison.OrdinalIgnoreCase) && 
+                                !tierName.Equals("Student", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var chk = new CheckBox
+                                {
+                                    Content = tierName,
+                                    Style = (Style)FindResource("PopupCheckBox")
+                                };
+                                chk.Checked += FilterCheckbox_Changed;
+                                chk.Unchecked += FilterCheckbox_Changed;
+                                
+                                if (checkedTypes.Contains(tierName))
+                                {
+                                    chk.IsChecked = true;
+                                }
+
+                                spDynamicTypes.Children.Add(chk);
+                                _dynamicTypeCheckBoxes.Add(chk);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to pull lookups for member type filter: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LoadDynamicPlans()
+        {
+            // Save currently checked plans to restore them
+            var checkedPlans = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var chk in _dynamicPlanCheckBoxes)
+            {
+                if (chk.IsChecked == true)
+                {
+                    string name = chk.Content?.ToString();
+                    if (!string.IsNullOrEmpty(name)) checkedPlans.Add(name);
+                }
+            }
+
+            spDynamicPlans.Children.Clear();
+            _dynamicPlanCheckBoxes.Clear();
+
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand("SELECT DISTINCT PlanName FROM Rates WHERE IsArchived = 0 ORDER BY DurationDays ASC", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string planName = reader["PlanName"]?.ToString() ?? "";
+                            if (!string.IsNullOrWhiteSpace(planName))
+                            {
+                                var chk = new CheckBox
+                                {
+                                    Content = planName,
+                                    Style = (Style)FindResource("PopupCheckBox")
+                                };
+                                chk.Checked += FilterCheckbox_Changed;
+                                chk.Unchecked += FilterCheckbox_Changed;
+
+                                if (checkedPlans.Contains(planName))
+                                {
+                                    chk.IsChecked = true;
+                                }
+
+                                spDynamicPlans.Children.Add(chk);
+                                _dynamicPlanCheckBoxes.Add(chk);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to pull lookups for plan filter: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public void SetStatusFilter(string status)
         {
-            foreach (ComboBoxItem item in cbStatusFilter.Items)
+            chkStatusActive.IsChecked = false;
+            chkStatusPending.IsChecked = false;
+            chkStatusExpired.IsChecked = false;
+
+            if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
             {
-                if ((item.Content?.ToString() ?? string.Empty).Equals(status, StringComparison.OrdinalIgnoreCase))
-                {
-                    cbStatusFilter.SelectedItem = item;
-                    break;
-                }
+                chkStatusActive.IsChecked = true;
+            }
+            else if (status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+            {
+                chkStatusPending.IsChecked = true;
+            }
+            else if (status.Equals("Expired", StringComparison.OrdinalIgnoreCase))
+            {
+                chkStatusExpired.IsChecked = true;
             }
 
+            UpdateFilterChips();
             _membersView?.Refresh();
         }
 
         public void LoadMembers()
         {
+            DatabaseHelper.RefreshMemberStatuses();
             MembersList.Clear();
             try
             {
@@ -87,9 +216,16 @@ namespace GymManagementSystem.Views.MainViews
                                         ORDER BY P2.PaymentID ASC
                                         LIMIT 1
                                     ), '-'
-                                ) as CurrentPlanExpiry
+                                ) as CurrentPlanExpiry,
+
+                                CASE 
+                                    WHEN I.InstructorID IS NULL THEN '-' 
+                                    WHEN I.MiddleInitial IS NULL OR TRIM(I.MiddleInitial) = '' THEN I.FirstName || ' ' || I.LastName 
+                                    ELSE I.FirstName || ' ' || I.MiddleInitial || '. ' || I.LastName 
+                                END as AssignedTrainerName
 
                                 FROM Members M 
+                                LEFT JOIN Instructors I ON M.AssignedInstructorID = I.InstructorID
                                 ORDER BY M.MemberID DESC";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
@@ -110,7 +246,9 @@ namespace GymManagementSystem.Views.MainViews
                                     Phone = reader["Phone"]?.ToString() ?? "",
                                     Gender = reader["Gender"]?.ToString() ?? "",
                                     MembershipPlan = reader["ActivePlans"]?.ToString() ?? "-",
-                                    PhotoPath = reader["PhotoPath"]?.ToString() ?? ""
+                                    PhotoPath = reader["PhotoPath"]?.ToString() ?? "",
+                                    AssignedInstructorID = reader["AssignedInstructorID"]?.ToString() ?? "",
+                                    AssignedTrainerName = reader["AssignedTrainerName"]?.ToString() ?? "-"
                                 };
 
                                 if (reader["DateJoined"] != DBNull.Value && DateTime.TryParse(reader["DateJoined"].ToString(), out DateTime joinDate))
@@ -134,6 +272,10 @@ namespace GymManagementSystem.Views.MainViews
                                     if (DateTime.Today > expiryDate.Date)
                                     {
                                         dbStatus = "Expired";
+                                    }
+                                    else if (dbStatus == "Expired")
+                                    {
+                                        dbStatus = "Active";
                                     }
                                 }
                                 else
@@ -164,6 +306,30 @@ namespace GymManagementSystem.Views.MainViews
                         }
                     }
                 }
+
+                // Count active, pending, and expired members dynamically
+                int activeCount = 0;
+                int pendingCount = 0;
+                int expiredCount = 0;
+                foreach (var m in MembersList)
+                {
+                    if (m.Status != null && m.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                    {
+                        activeCount++;
+                    }
+                    else if (m.Status != null && m.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                    {
+                        pendingCount++;
+                    }
+                    else if (m.Status != null && m.Status.Equals("Expired", StringComparison.OrdinalIgnoreCase))
+                    {
+                        expiredCount++;
+                    }
+                }
+                lblActiveCount.Text = activeCount.ToString();
+                lblPendingCount.Text = pendingCount.ToString();
+                lblExpiredCount.Text = expiredCount.ToString();
+
                 _membersView = System.Windows.Data.CollectionViewSource.GetDefaultView(MembersList);
                 _membersView.Filter = MemberFilterLogic;
                 dgMembers.ItemsSource = MembersList;
@@ -179,19 +345,208 @@ namespace GymManagementSystem.Views.MainViews
             _membersView?.Refresh();
         }
 
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            popFilter.IsOpen = !popFilter.IsOpen;
+        }
+
+        private void FilterCheckbox_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateFilterChips();
+            _membersView?.Refresh();
+        }
+
+        private FrameworkElement CreateChip(string text, CheckBox associatedCheckBox)
+        {
+            var border = new Border
+            {
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1a1a1c")),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff6b00")),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(10, 4, 8, 4),
+                Margin = new Thickness(0, 0, 8, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                Foreground = Brushes.White,
+                FontSize = 12,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 6, 0)
+            };
+            stackPanel.Children.Add(textBlock);
+
+            var closeBtn = new Button
+            {
+                Content = "✕",
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff6b00")),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.Bold,
+                FontSize = 12,
+                Padding = new Thickness(2, 0, 2, 0)
+            };
+
+            closeBtn.Template = new ControlTemplate(typeof(Button))
+            {
+                VisualTree = new FrameworkElementFactory(typeof(ContentPresenter))
+            };
+
+            closeBtn.MouseEnter += (s, e) => closeBtn.Foreground = Brushes.Red;
+            closeBtn.MouseLeave += (s, e) => closeBtn.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff6b00"));
+
+            closeBtn.Click += (s, e) =>
+            {
+                associatedCheckBox.IsChecked = false;
+            };
+
+            stackPanel.Children.Add(closeBtn);
+            border.Child = stackPanel;
+
+            return border;
+        }
+
+        private void UpdateFilterChips()
+        {
+            wpChips.Children.Clear();
+
+            // Status category
+            if (chkStatusActive.IsChecked == true) wpChips.Children.Add(CreateChip("Active", chkStatusActive));
+            if (chkStatusPending.IsChecked == true) wpChips.Children.Add(CreateChip("Pending", chkStatusPending));
+            if (chkStatusExpired.IsChecked == true) wpChips.Children.Add(CreateChip("Expired", chkStatusExpired));
+
+            // Member Type category
+            if (chkTypeRegular.IsChecked == true) wpChips.Children.Add(CreateChip("Regular", chkTypeRegular));
+            if (chkTypeStudent.IsChecked == true) wpChips.Children.Add(CreateChip("Student", chkTypeStudent));
+
+            // Dynamic types
+            foreach (var chk in _dynamicTypeCheckBoxes)
+            {
+                if (chk.IsChecked == true)
+                {
+                    wpChips.Children.Add(CreateChip(chk.Content?.ToString() ?? "Type", chk));
+                }
+            }
+
+            // Dynamic plans
+            foreach (var chk in _dynamicPlanCheckBoxes)
+            {
+                if (chk.IsChecked == true)
+                {
+                    wpChips.Children.Add(CreateChip(chk.Content?.ToString() ?? "Plan", chk));
+                }
+            }
+
+            // Plan category
+            if (chkPlanNone.IsChecked == true) wpChips.Children.Add(CreateChip("None", chkPlanNone));
+        }
+
         private bool MemberFilterLogic(object obj)
         {
             if (obj is Member member)
             {
+                // 1. Search Text (AND)
                 string searchText = txtSearch.Text.Trim().ToLower();
-                bool matchesText = string.IsNullOrEmpty(searchText) ||
-                                   member.FullName.ToLower().Contains(searchText) ||
-                                   member.MemberID.ToLower().Contains(searchText);
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    bool matchesSearch = member.FullName.ToLower().Contains(searchText) ||
+                                         member.MemberID.ToLower().Contains(searchText);
+                    if (!matchesSearch) return false;
+                }
 
-                string selectedStatus = (cbStatusFilter.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Status";
-                bool matchesStatus = selectedStatus == "All Status" || member.Status == selectedStatus;
+                // 2. Status Category (AND across categories, OR within category)
+                bool isStatusFilterActive = chkStatusActive.IsChecked == true ||
+                                            chkStatusPending.IsChecked == true ||
+                                            chkStatusExpired.IsChecked == true;
+                if (isStatusFilterActive)
+                {
+                    bool statusMatched = false;
+                    if (chkStatusActive.IsChecked == true && member.Status.Equals("Active", StringComparison.OrdinalIgnoreCase)) statusMatched = true;
+                    if (chkStatusPending.IsChecked == true && member.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase)) statusMatched = true;
+                    if (chkStatusExpired.IsChecked == true && member.Status.Equals("Expired", StringComparison.OrdinalIgnoreCase)) statusMatched = true;
+                    
+                    if (!statusMatched) return false;
+                }
 
-                return matchesText && matchesStatus;
+                // 3. Member Type Category (AND across categories, OR within category)
+                bool isTypeFilterActive = chkTypeRegular.IsChecked == true ||
+                                          chkTypeStudent.IsChecked == true;
+                foreach (var chk in _dynamicTypeCheckBoxes)
+                {
+                    if (chk.IsChecked == true)
+                    {
+                        isTypeFilterActive = true;
+                        break;
+                    }
+                }
+
+                if (isTypeFilterActive)
+                {
+                    bool typeMatched = false;
+                    if (chkTypeRegular.IsChecked == true && member.MemberType.Equals("Regular", StringComparison.OrdinalIgnoreCase)) typeMatched = true;
+                    if (chkTypeStudent.IsChecked == true && member.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase)) typeMatched = true;
+                    
+                    foreach (var chk in _dynamicTypeCheckBoxes)
+                    {
+                        if (chk.IsChecked == true && member.MemberType.Equals(chk.Content?.ToString(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            typeMatched = true;
+                            break;
+                        }
+                    }
+
+                    if (!typeMatched) return false;
+                }
+
+                // 4. Plan Category (AND across categories, OR within category)
+                bool isPlanFilterActive = chkPlanNone.IsChecked == true;
+                foreach (var chk in _dynamicPlanCheckBoxes)
+                {
+                    if (chk.IsChecked == true)
+                    {
+                        isPlanFilterActive = true;
+                        break;
+                    }
+                }
+
+                if (isPlanFilterActive)
+                {
+                    bool planMatched = false;
+                    string planStr = member.MembershipPlan ?? "-";
+                    bool hasNoActivePlan = planStr == "-" || string.IsNullOrWhiteSpace(planStr) || member.Status.Equals("Expired", StringComparison.OrdinalIgnoreCase);
+
+                    if (!hasNoActivePlan)
+                    {
+                        foreach (var chk in _dynamicPlanCheckBoxes)
+                        {
+                            if (chk.IsChecked == true)
+                            {
+                                string planName = chk.Content?.ToString() ?? "";
+                                if (!string.IsNullOrEmpty(planName) && planStr.Contains(planName, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    planMatched = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (chkPlanNone.IsChecked == true && hasNoActivePlan)
+                    {
+                        planMatched = true;
+                    }
+
+                    if (!planMatched) return false;
+                }
+
+                return true;
             }
             return false;
         }
@@ -245,6 +600,7 @@ namespace GymManagementSystem.Views.MainViews
                     ExpiryDate = memberToEdit.ExpiryDate,
                     Status = memberToEdit.Status,
                     PhotoPath = memberToEdit.PhotoPath,
+                    AssignedInstructorID = memberToEdit.AssignedInstructorID,
                     MembershipPlan = memberToEdit.MembershipPlan.Contains(",")
                         ? memberToEdit.MembershipPlan.Split(',')[0]
                         : memberToEdit.MembershipPlan
@@ -334,6 +690,8 @@ namespace GymManagementSystem.Views.MainViews
 
         private void Refresh_Click(object sender, RoutedEventArgs e)
         {
+            LoadDynamicMemberTypes();
+            LoadDynamicPlans();
             LoadMembers();
         }
 
@@ -347,6 +705,16 @@ namespace GymManagementSystem.Views.MainViews
                 SubscriptionPipelineWindow pipelineWin = new SubscriptionPipelineWindow(memberObj, this);
                 pipelineWin.Owner = Window.GetWindow(this);
                 pipelineWin.ShowDialog();
+            }
+        }
+
+        private void MemberName_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.CommandParameter is Member member)
+            {
+                var detailsWin = new MemberDetailsWindow(member);
+                detailsWin.Owner = Window.GetWindow(this);
+                detailsWin.ShowDialog();
             }
         }
     }

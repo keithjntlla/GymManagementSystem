@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.Windows;
@@ -109,6 +109,17 @@ namespace GymManagementSystem.Views.Settings
         {
             if (sender is Button btn && btn.DataContext is FixedDiscount item)
             {
+                if (item.TargetType.Equals("Senior", StringComparison.OrdinalIgnoreCase) ||
+                    item.TargetType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show(
+                        $"The '{item.TargetType}' discount tier is a core default system option and cannot be archived or deleted.",
+                        "Action Denied",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 var result = MessageBox.Show(
                     $"Are you sure you want to archive '{item.TargetType}'?\n\n" +
                     "Archived rules will be preserved, but won't show up when adding or editing member tier registrations.",

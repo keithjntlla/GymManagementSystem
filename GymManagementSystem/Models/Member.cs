@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -34,5 +34,9 @@ namespace GymManagementSystem.Models
 
         // Media
         public string PhotoPath { get; set; } = string.Empty;
+
+        // Assigned Instructor
+        public string AssignedInstructorID { get; set; } = string.Empty;
+        public string AssignedTrainerName { get; set; } = string.Empty;
     }
 }

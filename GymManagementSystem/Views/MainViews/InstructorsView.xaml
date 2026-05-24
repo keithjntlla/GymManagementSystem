@@ -1,0 +1,275 @@
+<UserControl x:Class="GymManagementSystem.Views.MainViews.InstructorsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GymManagementSystem"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000">
+
+    <UserControl.Resources>
+        <local:StringToCollectionConverter x:Key="StringToCollectionConverter"/>
+        
+        <Style x:Key="SpecializationBadge" TargetType="ContentControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Border Background="#2b1b10" BorderBrush="#ff6b00" BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="0,0,5,0">
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="#ffb74d" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="0,20,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header & Filter Row -->
+        <Grid Grid.Row="0" Margin="0,0,0,30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Instructors Directory" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <TextBox x:Name="txtSearch" 
+                     Grid.Column="1"
+                     Style="{StaticResource ModernTextBox}"
+                     Width="250" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
+                     Tag="Search Name or ID..." 
+                     TextChanged="Filter_Changed"/>
+
+            <ComboBox x:Name="cmbStatusFilter" 
+                      Grid.Column="2" 
+                      Style="{StaticResource ModernComboBox}" 
+                      Width="120" Height="40" Margin="0,0,15,0" 
+                      VerticalAlignment="Center"
+                      SelectionChanged="Filter_Changed">
+                <ComboBoxItem Content="All Status" IsSelected="True"/>
+                <ComboBoxItem Content="Active"/>
+                <ComboBoxItem Content="Inactive"/>
+            </ComboBox>
+
+            <Button Grid.Column="3" 
+                    Style="{StaticResource ModernGradientButton}"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="AddInstructor_Click">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal" Margin="20,0">
+                        <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Add Instructor" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+        </Grid>
+
+        <!-- Summary Cards (Top Row) -->
+        <UniformGrid Grid.Row="1" Columns="3" Height="110" Margin="0,0,0,20">
+            <!-- Total Staff -->
+            <Border Background="#111a30" BorderBrush="#1c2a4e" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Total Instructors" Foreground="#8a99ad" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblTotalInstructorsCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Active Coaches -->
+            <Border Background="#0e291d" BorderBrush="#133827" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Active Coaches" Foreground="#81c784" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblActiveInstructorsCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Inactive -->
+            <Border Background="#2b0d0e" BorderBrush="#4a1618" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Inactive / On Leave" Foreground="#e57373" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblInactiveInstructorsCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </UniformGrid>
+
+        <!-- Instructors Table -->
+        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
+            <DataGrid x:Name="dgInstructors" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1a1a1c"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Instructor ID" Binding="{Binding InstructorID}" Width="110"/>
+                    
+                    <DataGridTemplateColumn Header="Full Name" Width="1.5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding FullName}" 
+                                        Click="InstructorName_Click" 
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <TextBlock x:Name="txtBtn" Text="{TemplateBinding Content}" 
+                                                       Foreground="White" 
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="txtBtn" Property="Foreground" Value="#ff6b00"/>
+                                                    <Setter TargetName="txtBtn" Property="TextDecorations" Value="Underline"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="120"/>
+
+                    <DataGridTemplateColumn Header="Specializations" Width="1.8*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding Specialization, Converter={StaticResource StringToCollectionConverter}}"
+                                              HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ContentControl Content="{Binding}" Style="{StaticResource SpecializationBadge}" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Clients Assigned -->
+                    <DataGridTemplateColumn Header="Assigned Clients" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding ClientCountText}" 
+                                        Click="ClientsCount_Click" 
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="brdBadge" Background="#111a30" BorderBrush="#1c2a4e" BorderThickness="1" CornerRadius="10" Padding="8,3">
+                                                <TextBlock x:Name="txtBtn" Text="{TemplateBinding Content}" 
+                                                           Foreground="#8a99ad" 
+                                                           FontWeight="SemiBold"
+                                                           FontSize="12"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="brdBadge" Property="Background" Value="#1c2a4e"/>
+                                                    <Setter TargetName="txtBtn" Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Status" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                        <Setter Property="Fill" Value="#00ff00"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Inactive">
+                                                        <Setter Property="Fill" Value="#ff3333"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Actions" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="✎" Foreground="#ff6b00" FontSize="18" Cursor="Hand" 
+                                            Click="EditInstructor_Click" CommandParameter="{Binding}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="1" Content="🗑" Foreground="#ff3333" FontSize="18" Cursor="Hand" 
+                                            Click="DeleteInstructor_Click" CommandParameter="{Binding}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -249,12 +249,14 @@ namespace GymManagementSystem
                 return (false, "", "Email address cannot be empty.");
             }
 
-            string cleaned = input.Trim();
-            string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            string cleaned = input.Trim().ToLower(); // Convert to lowercase for uniform DB storage
+
+            // Strict pattern: ends only with .com, .ph, .net, or .org (case-insensitive)
+            string emailPattern = @"^[^@\s]+@[^@\s]+\.(com|ph|net|org)$";
 
             if (!Regex.IsMatch(cleaned, emailPattern))
             {
-                return (false, "", "Please enter a valid email address (e.g., info@gym.com).");
+                return (false, "", "Please enter a valid email address ending in .com, .ph, .net, or .org.");
             }
 
             if (cleaned.Length > 100)
@@ -504,6 +506,89 @@ namespace GymManagementSystem
             }
 
             return (true, paid.ToString("0.##"), "");
+        }
+
+        /// <summary>
+        /// Validates Instructor Birthday.
+        /// Format strictly DD/MM/YYYY.
+        /// Age must be strictly between 14 and 100.
+        /// </summary>
+        public static (bool isValid, string cleanedValue, string errorMessage) ValidateInstructorBirthday(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return (false, "", "Birthday is required.");
+            }
+
+            string cleaned = input.Trim();
+            string format = "dd/MM/yyyy";
+
+            if (!DateTime.TryParseExact(cleaned, format, 
+                                        CultureInfo.InvariantCulture, 
+                                        DateTimeStyles.None, 
+                                        out DateTime parsedDate))
+            {
+                return (false, "", "Birthday must strictly follow the DD/MM/YYYY format.");
+            }
+
+            if (parsedDate >= DateTime.Today)
+            {
+                return (false, "", "Birthday must be a date in the past (cannot be today or in the future).");
+            }
+
+            // Age calculation
+            int age = DateTime.Today.Year - parsedDate.Year;
+            if (parsedDate > DateTime.Today.AddYears(-age))
+            {
+                age--;
+            }
+
+            if (age < 14)
+            {
+                return (false, "", "Instructor must be at least 14 years old.");
+            }
+
+            if (age > 100)
+            {
+                return (false, "", "Age cannot exceed 100 years.");
+            }
+
+            return (true, parsedDate.ToString("dd/MM/yyyy"), "");
+        }
+
+        /// <summary>
+        /// Validates Instructor Specialization field.
+        /// </summary>
+        public static (bool isValid, string cleanedValue, string errorMessage) ValidateSpecialization(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return (false, "", "Specialization cannot be empty.");
+            }
+
+            string cleaned = input.Trim();
+            cleaned = Regex.Replace(cleaned, @"\s+", " ");
+
+            if (cleaned.Length > 200)
+            {
+                return (false, "", "Specialization cannot exceed 200 characters.");
+            }
+
+            return (true, cleaned, "");
+        }
+
+        /// <summary>
+        /// Hashes a password string using SHA-256 algorithm.
+        /// </summary>
+        public static string HashPassword(string password)
+        {
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                var sb = new System.Text.StringBuilder();
+                foreach (byte b in bytes) sb.Append(b.ToString("x2"));
+                return sb.ToString();
+            }
         }
     }
 }

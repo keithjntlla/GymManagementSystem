@@ -1,0 +1,171 @@
+<Window x:Class="GymManagementSystem.Views.Windows.InstructorDetailsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GymManagementSystem"
+        Title="Instructor Profile Details" Height="600" Width="440"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Window.Resources>
+        <local:StringToCollectionConverter x:Key="StringToCollectionConverter"/>
+        
+        <Style x:Key="SpecializationBadge" TargetType="ContentControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Border Background="#2b1b10" BorderBrush="#ff6b00" BorderThickness="1" CornerRadius="8" Padding="8,3" Margin="0,0,5,0">
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="#ffb74d" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#222222" Height="600" CornerRadius="15" BorderBrush="#333333" BorderThickness="1">
+        <Grid Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header / Close button -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,15">
+                <TextBlock Text="Instructor Profile" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Close_Click" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="Transparent">
+                                <ContentPresenter />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </DockPanel>
+
+            <!-- Circular Avatar & Name Header -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,20">
+                <Grid Width="110" Height="110" HorizontalAlignment="Center">
+                    <!-- Initials Fallback (Dark Background) -->
+                    <Border x:Name="brdInitials" Width="100" Height="100" CornerRadius="50" BorderThickness="2" Background="#1a1a1c">
+                        <TextBlock x:Name="txtInitials" Text="--" Foreground="White" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <!-- Perfect Circle Image -->
+                    <Ellipse x:Name="ellPhoto" Width="100" Height="100" Stroke="#ff6b00" StrokeThickness="2" Visibility="Collapsed">
+                        <Ellipse.Fill>
+                            <ImageBrush x:Name="imgBrush" Stretch="UniformToFill"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                </Grid>
+                
+                <TextBlock x:Name="txtFullName" Text="Instructor Name" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,8,0,2" TextAlignment="Center"/>
+                <Border x:Name="brdStatusBadge" CornerRadius="12" Padding="12,4" HorizontalAlignment="Center" Margin="0,4,0,0">
+                    <TextBlock x:Name="txtStatus" Text="ACTIVE" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                </Border>
+            </StackPanel>
+
+            <!-- Scrollable details grid -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,5,0">
+                <StackPanel>
+                    <!-- Grid of details -->
+                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                        <StackPanel Margin="0,0,10,15">
+                            <TextBlock Text="INSTRUCTOR ID" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtInstructorID" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <StackPanel Margin="10,0,0,15">
+                            <TextBlock Text="GENDER" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtGender" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,10,15">
+                            <TextBlock Text="PHONE NUMBER" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtPhone" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="10,0,0,15">
+                            <TextBlock Text="BIRTHDAY" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtBirthday" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,10,15">
+                            <TextBlock Text="DATE JOINED" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtDateJoined" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <!-- Specializations Row -->
+                    <StackPanel Margin="0,0,0,15">
+                        <TextBlock Text="SPECIALIZATIONS" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <ItemsControl x:Name="icSpecializations" ItemsSource="{Binding Specialization, Converter={StaticResource StringToCollectionConverter}}"
+                                      HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ContentControl Content="{Binding}" Style="{StaticResource SpecializationBadge}" VerticalAlignment="Center" Margin="0,0,6,6"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Assigned Clients Section -->
+                    <Border Background="#1a1a1c" CornerRadius="10" Padding="15" Margin="0,5,0,0" BorderBrush="#333" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="ASSIGNED CLIENTS OVERVIEW" Foreground="#00a651" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="ACTIVE CLIENTS" Foreground="Gray" FontSize="11" Margin="0,0,0,4"/>
+                                    <TextBlock x:Name="txtClientsCount" Text="0 Clients" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                                </StackPanel>
+
+                                <Button Grid.Column="1" 
+                                        Content="View Clients" 
+                                        Click="ViewClients_Click"
+                                        Cursor="Hand"
+                                        Padding="15,8"
+                                        Background="#111a30"
+                                        Foreground="#8a99ad"
+                                        BorderBrush="#1c2a4e"
+                                        BorderThickness="1"
+                                        FontWeight="SemiBold"
+                                        VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="brdBadge" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="12,6">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="brdBadge" Property="Background" Value="#1c2a4e"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</Window>

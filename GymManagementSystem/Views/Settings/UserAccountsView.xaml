@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="GymManagementSystem.Views.Settings.UserAccountsView"
+<UserControl x:Class="GymManagementSystem.Views.Settings.UserAccountsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -110,37 +110,52 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Actions" Width="160">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Width="110" Height="34" FontSize="13"
-                                        Background="#222" Foreground="#AAA" BorderThickness="0"
-                                        VerticalAlignment="Center" Cursor="Hand" Click="btnToggleStatus_Click">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Content" Value="Deactivate"/>
-                                            <Setter Property="Background" Value="#222"/>
-                                            <Setter Property="Foreground" Value="#AAA"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Status}" Value="Inactive">
-                                                    <Setter Property="Content" Value="Activate"/>
-                                                    <Setter Property="Background" Value="#1A3D25"/>
-                                                    <Setter Property="Foreground" Value="#5BE582"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                     <DataGridTemplateColumn Header="Actions" Width="200">
+                         <DataGridTemplateColumn.CellTemplate>
+                             <DataTemplate>
+                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                     <Button x:Name="btnEditUser" Width="70" Height="34" FontSize="13" Margin="0,0,8,0"
+                                             Background="#1A1A1C" Foreground="White" BorderBrush="#333" BorderThickness="1"
+                                             VerticalAlignment="Center" Cursor="Hand" Click="btnEditUser_Click">
+                                         <Button.Template>
+                                             <ControlTemplate TargetType="Button">
+                                                 <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                 </Border>
+                                             </ControlTemplate>
+                                         </Button.Template>
+                                         Edit
+                                     </Button>
+
+                                     <Button Width="90" Height="34" FontSize="13"
+                                             Background="#222" Foreground="#AAA" BorderThickness="0"
+                                             VerticalAlignment="Center" Cursor="Hand" Click="btnToggleStatus_Click">
+                                         <Button.Template>
+                                             <ControlTemplate TargetType="Button">
+                                                 <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                 </Border>
+                                             </ControlTemplate>
+                                         </Button.Template>
+                                         <Button.Style>
+                                             <Style TargetType="Button">
+                                                 <Setter Property="Content" Value="Deactivate"/>
+                                                 <Setter Property="Background" Value="#222"/>
+                                                 <Setter Property="Foreground" Value="#AAA"/>
+                                                 <Style.Triggers>
+                                                     <DataTrigger Binding="{Binding Status}" Value="Inactive">
+                                                         <Setter Property="Content" Value="Activate"/>
+                                                         <Setter Property="Background" Value="#1A3D25"/>
+                                                         <Setter Property="Foreground" Value="#5BE582"/>
+                                                     </DataTrigger>
+                                                 </Style.Triggers>
+                                             </Style>
+                                         </Button.Style>
+                                     </Button>
+                                 </StackPanel>
+                             </DataTemplate>
+                         </DataGridTemplateColumn.CellTemplate>
+                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

@@ -95,7 +95,7 @@ namespace GymManagementSystem.Views.Windows
                     {
                         cmd.Parameters.AddWithValue("@id", "USR" + DateTime.Now.Ticks.ToString().Substring(12));
                         cmd.Parameters.AddWithValue("@user", username);
-                        cmd.Parameters.AddWithValue("@pass", HashPassword(password));
+                        cmd.Parameters.AddWithValue("@pass", InputValidator.HashPassword(password));
                         cmd.Parameters.AddWithValue("@role", cbRole.Text);
                         cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
                         cmd.ExecuteNonQuery();
@@ -105,17 +105,6 @@ namespace GymManagementSystem.Views.Windows
                 this.Close();
             }
             catch (Exception ex) { MessageBox.Show("Error saving user: " + ex.Message, "Database Error", MessageBoxButton.OK, MessageBoxImage.Error); }
-        }
-
-        private string HashPassword(string pass)
-        {
-            using (SHA256 sha = SHA256.Create())
-            {
-                byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(pass));
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in bytes) sb.Append(b.ToString("x2"));
-                return sb.ToString();
-            }
         }
 
         private void TogglePassword_Checked(object sender, RoutedEventArgs e)

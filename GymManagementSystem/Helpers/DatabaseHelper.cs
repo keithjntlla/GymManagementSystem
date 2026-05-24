@@ -164,12 +164,89 @@ namespace GymManagementSystem
             LogoPath TEXT
         );";
                 using (var cmd = new SQLiteCommand(gymProfileTable, conn)) cmd.ExecuteNonQuery();
+
+                // 9. Instructors Table
+                string instructorsTable = @"CREATE TABLE IF NOT EXISTS Instructors (
+            InstructorID TEXT PRIMARY KEY,
+            FirstName TEXT NOT NULL,
+            MiddleInitial TEXT,
+            LastName TEXT NOT NULL,
+            Phone TEXT,
+            Email TEXT,
+            Specialization TEXT,
+            Certifications TEXT,
+            Status TEXT DEFAULT 'Active',
+            PhotoPath TEXT,
+            DateHired TEXT NOT NULL
+        );";
+                using (var cmd = new SQLiteCommand(instructorsTable, conn)) cmd.ExecuteNonQuery();
             }
 
             MigrateUsersTable();
             MigratePaymentsTableForDiscounts();
             MigratePaymentsTableForRefundProcessing();
             MigrateMemberNotificationsTable();
+            MigrateGymProfileTableForCapacity();
+            MigrateMembersTableForInstructors();
+            MigrateInstructorsTable();
+        }
+
+        private static void MigrateInstructorsTable()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasBirthdayCol = false;
+                bool hasGenderCol = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Instructors)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string colName = reader["name"]?.ToString() ?? "";
+                        if (colName == "Birthday") hasBirthdayCol = true;
+                        if (colName == "Gender") hasGenderCol = true;
+                    }
+                }
+
+                if (!hasBirthdayCol)
+                {
+                    string alter = "ALTER TABLE Instructors ADD COLUMN Birthday TEXT";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasGenderCol)
+                {
+                    string alter = "ALTER TABLE Instructors ADD COLUMN Gender TEXT";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void MigrateMembersTableForInstructors()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasAssignedInstructorCol = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Members)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"]?.ToString() == "AssignedInstructorID")
+                        {
+                            hasAssignedInstructorCol = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!hasAssignedInstructorCol)
+                {
+                    string alter = "ALTER TABLE Members ADD COLUMN AssignedInstructorID TEXT";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         private static void MigrateMemberNotificationsTable()
@@ -185,6 +262,32 @@ namespace GymManagementSystem
         );";
                 using (var cmd = new SQLiteCommand(table, conn))
                     cmd.ExecuteNonQuery();
+            }
+        }
+
+        private static void MigrateGymProfileTableForCapacity()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasCapacityCol = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(GymProfile)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["name"]?.ToString() == "MaxCapacity")
+                        {
+                            hasCapacityCol = true;
+                            break;
+                        }
+                    }
+                }
+                if (!hasCapacityCol)
+                {
+                    string alter = "ALTER TABLE GymProfile ADD COLUMN MaxCapacity INTEGER DEFAULT 100";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
             }
         }
 
@@ -325,21 +428,21 @@ namespace GymManagementSystem
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                string sql = @"INSERT OR REPLACE INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath) 
-                       VALUES (1, 'Gym', '', '', '', '')";
+                string sql = @"INSERT OR REPLACE INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath, MaxCapacity) 
+                       VALUES (1, 'Gym', '', '', '', '', 100)";
                 using (var cmd = new SQLiteCommand(sql, conn))
                     cmd.ExecuteNonQuery();
             }
             ProfileUpdated?.Invoke();
         }
 
-        public static void SaveGymProfile(string name, string address, string contact, string email, string logo)
+        public static void SaveGymProfile(string name, string address, string contact, string email, string logo, int maxCapacity = 100)
         {
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                string sql = @"INSERT OR REPLACE INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath)  
-                       VALUES (1, @name, @address, @contact, @email, @logo)";
+                string sql = @"INSERT OR REPLACE INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath, MaxCapacity)  
+                       VALUES (1, @name, @address, @contact, @email, @logo, @capacity)";
 
                 using (var cmd = new SQLiteCommand(sql, conn))
                 {
@@ -348,6 +451,22 @@ namespace GymManagementSystem
                     cmd.Parameters.AddWithValue("@contact", contact);
                     cmd.Parameters.AddWithValue("@email", email);
                     cmd.Parameters.AddWithValue("@logo", logo);
+                    cmd.Parameters.AddWithValue("@capacity", maxCapacity);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            ProfileUpdated?.Invoke();
+        }
+
+        public static void UpdateMaxCapacity(int capacity)
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = "UPDATE GymProfile SET MaxCapacity = @capacity WHERE ID = 1";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@capacity", capacity);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -370,6 +489,7 @@ namespace GymManagementSystem
                         profile["ContactNumber"] = reader["ContactNumber"]?.ToString() ?? string.Empty;
                         profile["Email"] = reader["Email"]?.ToString() ?? string.Empty;
                         profile["LogoPath"] = reader["LogoPath"]?.ToString() ?? string.Empty;
+                        profile["MaxCapacity"] = reader["MaxCapacity"]?.ToString() ?? "100";
                     }
                 }
             }
@@ -513,17 +633,87 @@ namespace GymManagementSystem
             }
         }
 
+        public static bool IsNameAndBirthdayDuplicate(string firstName, string lastName, string birthdayYmd, string excludeMemberId = "")
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"SELECT COUNT(*) FROM Members 
+                       WHERE LOWER(TRIM(FirstName)) = LOWER(TRIM(@fName)) 
+                       AND LOWER(TRIM(LastName)) = LOWER(TRIM(@lName)) 
+                       AND Birthday = @bday 
+                       AND MemberID != @excludeId";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@fName", firstName);
+                    cmd.Parameters.AddWithValue("@lName", lastName);
+                    cmd.Parameters.AddWithValue("@bday", birthdayYmd);
+                    cmd.Parameters.AddWithValue("@excludeId", excludeMemberId);
+                    return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                }
+            }
+        }
+
+        public static bool IsInstructorPhoneNumberDuplicate(string phone, string excludeInstructorId = "")
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = "SELECT COUNT(*) FROM Instructors WHERE Phone = @phone AND InstructorID != @excludeId";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@phone", phone);
+                    cmd.Parameters.AddWithValue("@excludeId", excludeInstructorId);
+                    return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                }
+            }
+        }
+
+        public static bool IsInstructorNameAndBirthdayDuplicate(string firstName, string lastName, string birthdayYmd, string excludeInstructorId = "")
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"SELECT COUNT(*) FROM Instructors 
+                       WHERE LOWER(TRIM(FirstName)) = LOWER(TRIM(@fName)) 
+                       AND LOWER(TRIM(LastName)) = LOWER(TRIM(@lName)) 
+                       AND Birthday = @bday 
+                       AND InstructorID != @excludeId";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@fName", firstName);
+                    cmd.Parameters.AddWithValue("@lName", lastName);
+                    cmd.Parameters.AddWithValue("@bday", birthdayYmd);
+                    cmd.Parameters.AddWithValue("@excludeId", excludeInstructorId);
+                    return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                }
+            }
+        }
+
         public static void RefreshMemberStatuses()
         {
             string today = DateTime.Today.ToString("yyyy-MM-dd");
             using (var conn = new SQLiteConnection(ConnectionString))
             {
                 conn.Open();
-                string updateSql = @"UPDATE Members SET Status = 'Expired'
+
+                // 1. Transition Active -> Expired if the expiry date has passed
+                string expireSql = @"UPDATE Members SET Status = 'Expired'
                                      WHERE ExpiryDate != '-' AND ExpiryDate != ''
                                      AND Date(ExpiryDate) < Date(@today)
                                      AND Status = 'Active'";
-                using (var cmd = new SQLiteCommand(updateSql, conn))
+                using (var cmd = new SQLiteCommand(expireSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@today", today);
+                    cmd.ExecuteNonQuery();
+                }
+
+                // 2. Transition Expired -> Active if the expiry date is today or in the future
+                string activeSql = @"UPDATE Members SET Status = 'Active'
+                                     WHERE ExpiryDate != '-' AND ExpiryDate != ''
+                                     AND Date(ExpiryDate) >= Date(@today)
+                                     AND Status = 'Expired'";
+                using (var cmd = new SQLiteCommand(activeSql, conn))
                 {
                     cmd.Parameters.AddWithValue("@today", today);
                     cmd.ExecuteNonQuery();

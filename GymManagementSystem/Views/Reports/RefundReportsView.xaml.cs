@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using GymManagementSystem.Models;
 
 namespace GymManagementSystem.Views.Reports
 {
@@ -185,9 +186,9 @@ namespace GymManagementSystem.Views.Reports
 
         private static void SetRefundDate(RefundTransaction refund, string rawDate)
         {
-            if (DateTime.TryParse(rawDate, out DateTime parsedDate))
+            if (DateTime.TryParse(rawDate, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
             {
-                refund.FormattedDate = parsedDate.ToString("yyyy-MM-dd");
+                refund.FormattedDate = parsedDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
                 refund.FormattedTime = rawDate.Contains(":")
                     ? parsedDate.ToString("hh:mm tt", CultureInfo.InvariantCulture)
                     : string.Empty;
@@ -218,8 +219,38 @@ namespace GymManagementSystem.Views.Reports
 
             try
             {
+                var gymProfile = DatabaseHelper.GetGymProfile();
+                string gymName = gymProfile.ContainsKey("GymName") ? gymProfile["GymName"] : "Gym";
+                string gymAddress = gymProfile.ContainsKey("Address") ? gymProfile["Address"] : "";
+                string gymContact = gymProfile.ContainsKey("ContactNumber") ? gymProfile["ContactNumber"] : "";
+                string gymEmail = gymProfile.ContainsKey("Email") ? gymProfile["Email"] : "";
+
+                string startDate = StartDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? "N/A";
+                string endDate = EndDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? "N/A";
+                string planFilter = (PlanFilterComboBox.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Plans";
+
                 using (var writer = new StreamWriter(dialog.FileName))
                 {
+                    // 1. Gym Profile Block
+                    writer.WriteLine("GYM PROFILE");
+                    writer.WriteLine($"Gym Name,{Csv(gymName)}");
+                    writer.WriteLine($"Address,{Csv(gymAddress)}");
+                    writer.WriteLine($"Contact,{Csv(gymContact)}");
+                    writer.WriteLine($"Email,{Csv(gymEmail)}");
+                    writer.WriteLine();
+
+                    // 2. Report Summary Block
+                    writer.WriteLine("REPORT SUMMARY");
+                    writer.WriteLine("Report Type,Refund Report");
+                    writer.WriteLine($"Date Generated,{Csv(DateTime.Now.ToString("yyyy-MM-dd hh:mm tt"))}");
+                    writer.WriteLine($"Filter Period,{Csv($"{startDate} to {endDate}")}");
+                    writer.WriteLine($"Plan Filter,{Csv(planFilter)}");
+                    writer.WriteLine($"Total Refunded Amount,{Csv($"₱{TotalRefundsAmount:N2}")}");
+                    writer.WriteLine($"Total Refund Transactions,{Csv(TotalRefundsCount.ToString())}");
+                    writer.WriteLine();
+
+                    // 3. Report Data Block
+                    writer.WriteLine("REPORT DATA");
                     writer.WriteLine("Refund ID,Date,Time,Member ID,Member Name,Plan,Original Amount,Refund Amount,Processed By");
 
                     foreach (var refund in RefundTransactions)
@@ -257,18 +288,5 @@ namespace GymManagementSystem.Views.Reports
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-    }
-
-    public class RefundTransaction
-    {
-        public string RefundId { get; set; } = string.Empty;
-        public string FormattedDate { get; set; } = string.Empty;
-        public string FormattedTime { get; set; } = string.Empty;
-        public string MemberId { get; set; } = string.Empty;
-        public string MemberName { get; set; } = string.Empty;
-        public string PlanName { get; set; } = string.Empty;
-        public double OriginalAmount { get; set; }
-        public double RefundAmount { get; set; }
-        public string ProcessedBy { get; set; } = string.Empty;
     }
 }

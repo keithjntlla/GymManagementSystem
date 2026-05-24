@@ -1,7 +1,7 @@
-<Window x:Class="GymManagementSystem.Views.Windows.AddMemberWindow"
+<Window x:Class="GymManagementSystem.Views.Windows.AddInstructorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Add New Member" Height="680" Width="420"
+        Title="Add/Edit Instructor" Height="680" Width="420"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
@@ -14,12 +14,13 @@
             </Grid.RowDefinitions>
 
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBlock x:Name="lblTitle" Text="Add New Member" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="lblTitle" Text="Add New Instructor" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
                 <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
             </DockPanel>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,5,0">
                 <StackPanel>
+                    <!-- Names Grid -->
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*"/>
@@ -51,6 +52,7 @@
                         </StackPanel>
                     </Grid>
 
+                    <!-- Phone Number -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                         <TextBlock Text="Phone Number" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
@@ -58,6 +60,7 @@
                     <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" Margin="0,0,0,5"/>
                     <TextBlock x:Name="lblPhoneError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
+                    <!-- Birthday & Gender Grid -->
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -91,16 +94,27 @@
                         </StackPanel>
                     </Grid>
 
+                    <!-- Specializations -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                        <TextBlock Text="Member Type Tier" Foreground="White"/>
+                        <TextBlock Text="Specializations (Comma-separated)" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,5"/>
-                    <TextBlock x:Name="lblMemberTypeError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
+                    <TextBox x:Name="txtSpecialization" Style="{StaticResource ModernTextBox}" Tag="e.g. Strength, HIIT, Yoga" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="lblSpecializationError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                    <TextBlock Text="Assigned Trainer (Optional)" Foreground="White" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="cmbTrainer" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15"/>
+                    <!-- Status -->
+                    <StackPanel Margin="0,0,0,15">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Status" Foreground="White"/>
+                            <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
+                        </StackPanel>
+                        <ComboBox x:Name="cmbStatus" Style="{StaticResource ModernComboBox}">
+                            <ComboBoxItem Content="Active" IsSelected="True"/>
+                            <ComboBoxItem Content="Inactive"/>
+                        </ComboBox>
+                    </StackPanel>
 
+                    <!-- Photo Upload -->
                     <TextBlock Text="Photo" Foreground="White" Margin="0,0,0,5"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <Border Width="80" Height="80" Background="#1a1a1a" CornerRadius="10" BorderBrush="#333" BorderThickness="1">
@@ -119,7 +133,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="btnRegister" Content="Register" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Register_Click"/>
+                <Button x:Name="btnSave" Content="Save" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Save_Click"/>
                 <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click"/>
             </Grid>
         </Grid>
