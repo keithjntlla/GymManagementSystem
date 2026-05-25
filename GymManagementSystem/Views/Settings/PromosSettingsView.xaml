@@ -1,0 +1,250 @@
+<UserControl x:Class="GymManagementSystem.Views.Settings.PromosSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GymManagementSystem"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <Style x:Key="ModernToggleSwitch" TargetType="ToggleButton">
+            <Setter Property="Width" Value="54"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid SnapsToDevicePixels="True">
+                            <!-- Background Track -->
+                            <Border x:Name="Track" Background="#333333" CornerRadius="13" BorderBrush="#444444" BorderThickness="1">
+                                <Grid>
+                                    <TextBlock x:Name="txtActive" Text="ON" Foreground="White" FontSize="9" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="7,0,0,0" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="#888888" FontSize="9" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,7,0" Visibility="Visible"/>
+                                </Grid>
+                            </Border>
+                            <!-- Thumb Indicator -->
+                            <Border x:Name="Thumb" Background="White" CornerRadius="11" Width="22" Height="22" HorizontalAlignment="Left" Margin="2,0,2,0" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                                </Border.Effect>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="#00a651"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="#00c860"/>
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="txtActive" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="txtInactive" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="0,10,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header & Filter Row -->
+        <Grid Grid.Row="0" Margin="0,0,0,25">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Promotional Campaigns &amp; Promo Codes" Foreground="White" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <TextBox x:Name="txtSearch" 
+                     Grid.Column="1"
+                     Style="{StaticResource ModernTextBox}"
+                     Width="250" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
+                     Tag="Search Promo Codes..." 
+                     TextChanged="Filter_Changed"/>
+
+            <Button Grid.Column="2" 
+                    Style="{StaticResource ModernGradientButton}"
+                    Height="40"
+                    VerticalAlignment="Center"
+                    Click="AddPromo_Click">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal" Margin="10,0">
+                        <TextBlock Text="+" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Create Promo Code" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+        </Grid>
+
+        <!-- Active Promos Table -->
+        <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
+            <DataGrid x:Name="dgPromos" 
+                      Style="{StaticResource ModernDataGrid}"
+                      AutoGenerateColumns="False" 
+                      CanUserAddRows="False"
+                      RowHeaderWidth="0">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Code" Width="1.2*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding PromoCode}" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Campaign Name" Width="1.8*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding PromoName}" Foreground="#AAA" FontSize="14" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Discount Value" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#2b1a3d">
+                                    <TextBlock Text="{Binding DiscountValueDisplay}" FontSize="13" FontWeight="Bold" Foreground="#B176F0" VerticalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Validity Period" Width="2*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DateRangeDisplay}" Foreground="#AAA" FontSize="13" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Status" Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="10" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#1a1a1c" BorderBrush="{Binding StatusColor}" BorderThickness="1">
+                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Bold" Foreground="{Binding StatusColor}" VerticalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Active" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ToggleButton Style="{StaticResource ModernToggleSwitch}" 
+                                              IsChecked="{Binding IsActive}" 
+                                              Click="StatusToggle_Click"
+                                              VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Actions" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Click="EditPromo_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,15,0" ToolTip="Edit Config">
+                                        <TextBlock Text="" FontFamily="Segoe UI Symbol" Foreground="#ff9800" FontSize="18"/>
+                                    </Button>
+                                    <Button Click="ArchivePromo_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Archive Promo">
+                                        <TextBlock Text="" FontFamily="Segoe UI Symbol" Foreground="#f44336" FontSize="18"/>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Archived Section -->
+        <Border Grid.Row="2" x:Name="ArchivedSection" Visibility="Collapsed" Margin="0,20,0,0">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,10">
+                    <TextBlock Text="Archived Promo Campaigns" Foreground="#888" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="These campaigns are hidden from checkout forms but preserved for financial history." Foreground="#555" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                </DockPanel>
+
+                <Border Background="#141416" CornerRadius="15" Padding="10">
+                    <DataGrid x:Name="dgArchivedPromos" 
+                              Style="{StaticResource ModernDataGrid}"
+                              AutoGenerateColumns="False" 
+                              CanUserAddRows="False"
+                              RowHeaderWidth="0"
+                              MaxHeight="220">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Code" Width="1.2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding PromoCode}" Foreground="#555" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                            <Border Background="#2a2a2a" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="ARCHIVED" Foreground="#555" FontSize="10" FontWeight="Bold"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Campaign Name" Width="1.8*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding PromoName}" Foreground="#555" FontSize="14" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Discount Value" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DiscountValueDisplay}" Foreground="#555" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Validity Period" Width="2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DateRangeDisplay}" Foreground="#555" FontSize="13" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Actions" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Click="RestorePromo_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Restore Campaign" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="↩" FontSize="16" Foreground="#4090f0" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Restore" Foreground="#4090f0" FontSize="12" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Information Notice -->
+        <Border Grid.Row="3" Background="#1e2533" CornerRadius="10" Padding="15" Margin="0,20,0,0">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ⓘ" Foreground="#4090f0" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                <TextBlock VerticalAlignment="Center">
+                    <Run Text="Note:" Foreground="#4090f0" FontWeight="Bold"/>
+                    <Run Text=" Promos can be applied during member registrations or payment checkouts, but cannot be combined with Member Tier Discounts (Student/Senior)." Foreground="#88aacc"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -150,6 +150,11 @@
                                     <!-- Divider line -->
                                     <Border BorderBrush="#333" BorderThickness="0,0,0,1" Margin="0,4,0,12"/>
 
+                                    <!-- Discount Category -->
+                                    <TextBlock Text="DISCOUNT STATUS" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <CheckBox x:Name="chkDiscountedOnly" Content="Discounted Only" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
+                                    <CheckBox x:Name="chkNoDiscount" Content="No Discount" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed" Margin="0,0,0,12"/>
+
                                     <!-- Plan Category -->
                                     <TextBlock Text="PLAN TYPE" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
                                     <StackPanel x:Name="spDynamicPlans"/>
@@ -170,7 +175,7 @@
                 </Grid>
             </Border>
 
-            <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,30" Grid.ColumnSpan="2">
+            <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,30" Grid.ColumnSpan="2">
                 <Border Style="{StaticResource SummaryCardStyle}" Background="#1a3a2a" BorderBrush="#26593f" Margin="0,0,8,0">
                     <StackPanel VerticalAlignment="Center">
                         <Border Width="40" Height="40" Background="#2a4a3a" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
@@ -190,7 +195,7 @@
                         <TextBlock x:Name="lblWalkInsCount" Text="0 transactions" Foreground="Gray" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a2a1a" BorderBrush="#5c4530" Margin="0,0,0,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a2a1a" BorderBrush="#5c4530" Margin="0,0,8,0">
                     <StackPanel VerticalAlignment="Center">
                         <Border Width="40" Height="40" Background="#4a3a2a" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                             <TextBlock Text="📄" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -198,6 +203,16 @@
                         <TextBlock Text="Subscriptions" Foreground="LightGray" FontSize="14"/>
                         <TextBlock x:Name="lblSubscriptions" Text="₱0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
                         <TextBlock x:Name="lblSubscriptionsCount" Text="0 transactions" Foreground="LightGray" FontSize="12" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource SummaryCardStyle}" Background="#2d1441" BorderBrush="#412b5c" Margin="0,0,0,0">
+                    <StackPanel VerticalAlignment="Center">
+                        <Border Width="40" Height="40" Background="#412b5c" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
+                            <TextBlock Text="🏷️" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Total Discounts" Foreground="LightGray" FontSize="14"/>
+                        <TextBlock x:Name="lblTotalDiscounts" Text="₱0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock x:Name="lblTotalDiscountsCount" Text="0 transactions" Foreground="LightGray" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>
@@ -224,11 +239,54 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Amount" 
-                                            Binding="{Binding TotalAmount, StringFormat=₱\{0:N0\}}" 
-                                            Width="*" 
-                                            Foreground="#4caf50" 
-                                            FontWeight="SemiBold"/>
+                        <DataGridTemplateColumn Header="Amount" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock x:Name="amountText" Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center">
+                                        <TextBlock.ToolTip>
+                                            <ToolTip Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Padding="0" HasDropShadow="True">
+                                                <ToolTip.Style>
+                                                    <Style TargetType="ToolTip">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasDiscount}" Value="False">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ToolTip.Style>
+                                                <Border Background="#1a1a1c" BorderBrush="#ff6b00" BorderThickness="1.5" CornerRadius="8" Padding="12">
+                                                    <StackPanel Width="220" Margin="2">
+                                                        <TextBlock Text="Savings Breakdown" Foreground="#ff6b00" FontWeight="Bold" FontSize="13" Margin="0,0,0,10"/>
+                                                        
+                                                        <Grid Margin="0,3">
+                                                            <TextBlock Text="Original Rate" Foreground="#aaa" FontSize="11"/>
+                                                            <TextBlock Text="{Binding SubtotalAmount, StringFormat=₱\{0:N2\}}" Foreground="White" FontSize="11" HorizontalAlignment="Right"/>
+                                                        </Grid>
+                                                        
+                                                        <Grid Margin="0,3">
+                                                            <TextBlock Text="{Binding DiscountDescription}" Foreground="#aaa" FontSize="11"/>
+                                                            <TextBlock Text="{Binding DiscountAmount, StringFormat=-₱\{0:N2\}}" Foreground="#ff4444" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Right"/>
+                                                        </Grid>
+                                                        
+                                                        <Border BorderBrush="#333" BorderThickness="0,1,0,0" Margin="0,8,0,8"/>
+                                                        
+                                                        <Grid Margin="0,3">
+                                                            <TextBlock Text="Net Paid" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#2ecc71" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Border>
+                                            </ToolTip>
+                                        </TextBlock.ToolTip>
+                                    </TextBlock>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding HasDiscount}" Value="True">
+                                            <Setter TargetName="amountText" Property="Foreground" Value="#ff9800"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
                         <DataGridTemplateColumn Header="Mode" Width="*">
                             <DataGridTemplateColumn.CellTemplate>

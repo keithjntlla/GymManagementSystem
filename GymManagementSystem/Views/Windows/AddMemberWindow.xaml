@@ -55,7 +55,7 @@
                         <TextBlock Text="Phone Number" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" Margin="0,0,0,5"/>
+                    <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" MaxLength="11" Margin="0,0,0,5"/>
                     <TextBlock x:Name="lblPhoneError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                     <Grid Margin="0,0,0,15">
@@ -71,8 +71,8 @@
                             </StackPanel>
                             <DatePicker x:Name="dpBirthday" 
                                         Style="{StaticResource ModernDatePicker}" 
-                                        Tag="DD/MM/YYYY" 
-                                        ToolTip="You can type the date directly using the DD/MM/YYYY format."
+                                        Tag="MM-DD-YYYY" 
+                                        ToolTip="You can type the date directly using the MM-DD-YYYY format."
                                         Padding="10"/>
                             <TextBlock x:Name="lblBirthdayError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
@@ -95,8 +95,23 @@
                         <TextBlock Text="Member Type Tier" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,5"/>
+                    <ComboBox x:Name="cmbMemberType" Style="{StaticResource ModernComboBox}" Margin="0,0,0,5" SelectionChanged="CmbMemberType_SelectionChanged"/>
                     <TextBlock x:Name="lblMemberTypeError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
+
+
+
+                    <!-- Student Verification Section -->
+                    <StackPanel x:Name="secStudentVerification" Visibility="Collapsed" Margin="0,0,0,15">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Student ID Expiry Date" Foreground="White"/>
+                            <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
+                        </StackPanel>
+                        <DatePicker x:Name="dpStudentExpiry" Style="{StaticResource ModernDatePicker}" Tag="MM-DD-YYYY" ToolTip="Input the student ID expiry date in MM-DD-YYYY format." Margin="0,0,0,5"/>
+                        <TextBlock x:Name="lblStudentExpiryError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="Student ID Verification Checklist" Foreground="#AAA" FontSize="12" FontWeight="SemiBold" Margin="0,5,0,5"/>
+                        <CheckBox x:Name="chkStudentIdPresented" Content="Student ID Card presented" Foreground="Gray" Margin="0,0,0,5"/>
+                    </StackPanel>
 
                     <TextBlock Text="Assigned Trainer (Optional)" Foreground="White" Margin="0,0,0,5"/>
                     <ComboBox x:Name="cmbTrainer" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15"/>

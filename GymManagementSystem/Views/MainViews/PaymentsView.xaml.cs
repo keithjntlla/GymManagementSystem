@@ -23,13 +23,14 @@ namespace GymManagementSystem.Views.MainViews
         private bool isAdvancePaymentMode = false;
         private bool isSelectingMemberFromCode = false;
         private List<GymPlan> _ratePlans = new List<GymPlan>();
+        private string appliedPromoCode = "";
 
         private ValidationHelper _validationHelper = null!;
 
         public PaymentsView()
         {
             InitializeComponent();
-            lblTransactionDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            lblTransactionDate.Text = DateTime.Now.ToString("MM-dd-yyyy");
             LoadDynamicRates();
             InitializeValidation();
         }
@@ -77,6 +78,9 @@ namespace GymManagementSystem.Views.MainViews
             }
 
             selectedMember = member;
+            appliedPromoCode = "";
+            if (txtPromoCode != null) txtPromoCode.Clear();
+            if (lblPromoStatus != null) lblPromoStatus.Visibility = Visibility.Collapsed;
             _validationHelper.ClearErrors();
 
             isSelectingMemberFromCode = true;
@@ -188,7 +192,8 @@ namespace GymManagementSystem.Views.MainViews
                                 PhotoPath = reader["PhotoPath"]?.ToString() ?? "",
                                 MemberType = reader["MemberType"] != DBNull.Value
                                     ? reader["MemberType"].ToString() ?? "Regular"
-                                    : "Regular"
+                                    : "Regular",
+                                StudentExpiryDate = reader["StudentExpiryDate"]?.ToString() ?? ""
                             };
 
                             if (reader["Birthday"] != DBNull.Value &&
@@ -295,19 +300,66 @@ namespace GymManagementSystem.Views.MainViews
         {
             double discountPct = 0;
             string allowedScope = "All";
+            string discountType = "Percentage";
+            double discountValue = 0;
+            bool isPromoApplied = false;
 
             if (selectedMember != null)
             {
-                var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
-                discountPct = fixedPct;
-                allowedScope = fixedScope;
+                if (!string.IsNullOrEmpty(appliedPromoCode))
+                {
+                    var (isValid, name, type, val, scope, error) = DatabaseHelper.ValidatePromoCode(appliedPromoCode, selectedMember.MemberID);
+                    if (isValid)
+                    {
+                        isPromoApplied = true;
+                        discountType = type;
+                        discountValue = val;
+                        allowedScope = scope;
+                        if (type == "Percentage")
+                        {
+                            discountPct = val;
+                        }
+                    }
+                }
+
+                if (!isPromoApplied)
+                {
+                    bool isStudentExpired = false;
+                    if (selectedMember.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrEmpty(selectedMember.StudentExpiryDate) &&
+                        DateTime.TryParse(selectedMember.StudentExpiryDate, out DateTime studentExpiryDate) &&
+                        DateTime.Today > studentExpiryDate.Date)
+                    {
+                        isStudentExpired = true;
+                    }
+
+                    if (!isStudentExpired)
+                    {
+                        var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
+                        discountPct = fixedPct;
+                        discountValue = fixedPct;
+                        allowedScope = fixedScope;
+                        discountType = "Percentage";
+                    }
+                }
             }
 
             foreach (GymPlan plan in _ratePlans)
             {
-                plan.ApplicableDiscountPercentage = IsPlanEligibleForDiscount(plan.PlanName, discountPct, allowedScope)
-                    ? discountPct
-                    : 0;
+                bool isEligible = IsPlanEligibleForDiscount(plan.PlanName, discountValue > 0 ? discountValue : discountPct, allowedScope);
+                
+                if (isEligible)
+                {
+                    plan.ApplicableDiscountType = discountType;
+                    plan.ApplicableDiscountValue = discountValue;
+                    plan.ApplicableDiscountPercentage = discountPct;
+                }
+                else
+                {
+                    plan.ApplicableDiscountType = "Percentage";
+                    plan.ApplicableDiscountValue = 0;
+                    plan.ApplicableDiscountPercentage = 0;
+                }
             }
 
             icRates.ItemsSource = null;
@@ -349,26 +401,72 @@ namespace GymManagementSystem.Views.MainViews
         {
             double subtotal = basePlanPrice * durationMultiplier;
             activeDiscountPercentage = 0;
+            double promoFixedDeduction = 0;
 
             if (selectedMember != null && !string.IsNullOrEmpty(selectedMembershipType))
             {
-                var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
+                bool isPromoApplied = false;
+                if (!string.IsNullOrEmpty(appliedPromoCode))
+                {
+                    var (isValid, name, type, val, scope, error) = DatabaseHelper.ValidatePromoCode(appliedPromoCode, selectedMember.MemberID);
+                    if (isValid && (scope == "All" || scope.Contains(selectedMembershipType)))
+                    {
+                        isPromoApplied = true;
+                        if (type == "FixedAmount")
+                        {
+                            promoFixedDeduction = val;
+                        }
+                        else
+                        {
+                            activeDiscountPercentage = val;
+                        }
+                    }
+                }
 
-                if (IsPlanEligibleForDiscount(selectedMembershipType, fixedPct, fixedScope))
-                    activeDiscountPercentage += fixedPct;
+                if (!isPromoApplied)
+                {
+                    bool isStudentExpired = false;
+                    if (selectedMember.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrEmpty(selectedMember.StudentExpiryDate) &&
+                        DateTime.TryParse(selectedMember.StudentExpiryDate, out DateTime studentExpiryDate) &&
+                        DateTime.Today > studentExpiryDate.Date)
+                    {
+                        isStudentExpired = true;
+                    }
+
+                    if (!isStudentExpired)
+                    {
+                        var (fixedPct, fixedScope) = DatabaseHelper.GetFixedDiscountConfig(selectedMember.MemberType);
+
+                        if (IsPlanEligibleForDiscount(selectedMembershipType, fixedPct, fixedScope))
+                            activeDiscountPercentage += fixedPct;
+                    }
+                }
             }
 
-            totalDiscountDeduction = subtotal * (activeDiscountPercentage / 100.0);
+            if (promoFixedDeduction > 0)
+            {
+                totalDiscountDeduction = promoFixedDeduction;
+            }
+            else
+            {
+                totalDiscountDeduction = subtotal * (activeDiscountPercentage / 100.0);
+            }
+
             totalAmount = subtotal - totalDiscountDeduction;
+            if (totalAmount < 0) totalAmount = 0;
 
             lblTotalAmount.Text = $"₱{totalAmount:N2}";
 
-            if (activeDiscountPercentage > 0)
+            if (totalDiscountDeduction > 0)
             {
                 lblOriginalSubtotal.Visibility = Visibility.Visible;
                 lblDiscountDeductionDisplay.Visibility = Visibility.Visible;
                 lblOriginalSubtotal.Text = $"₱{subtotal:N2}";
-                lblDiscountDeductionDisplay.Text = $"-₱{totalDiscountDeduction:N2} discount applied";
+                string discLabel = !string.IsNullOrEmpty(appliedPromoCode) && promoFixedDeduction > 0
+                    ? $"-₱{totalDiscountDeduction:N2} promo applied"
+                    : (!string.IsNullOrEmpty(appliedPromoCode) ? $"-₱{totalDiscountDeduction:N2} ({activeDiscountPercentage:0.##}%) promo applied" : $"-₱{totalDiscountDeduction:N2} discount applied");
+                lblDiscountDeductionDisplay.Text = discLabel;
             }
             else
             {
@@ -418,7 +516,7 @@ namespace GymManagementSystem.Views.MainViews
             {
                 newExpiry = baseDate.AddDays(totalDaysToAdd);
             }
-            lblNewExpiryDate.Text = newExpiry.ToString("yyyy-MM-dd");
+            lblNewExpiryDate.Text = newExpiry.ToString("MM-dd-yyyy");
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -657,14 +755,32 @@ namespace GymManagementSystem.Views.MainViews
 
             if (member.Birthday.HasValue)
             {
-                lblMemberBirthday.Text = member.Birthday.Value.ToString("yyyy-MM-dd");
+                lblMemberBirthday.Text = member.Birthday.Value.ToString("MM-dd-yyyy");
             }
             else
             {
                 lblMemberBirthday.Text = "N/A";
             }
 
-            lblMemberType.Text = member.MemberType.ToString();
+            bool isStudentExpired = false;
+            if (member.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrEmpty(member.StudentExpiryDate) &&
+                DateTime.TryParse(member.StudentExpiryDate, out DateTime studentExpiryDate) &&
+                DateTime.Today > studentExpiryDate.Date)
+            {
+                isStudentExpired = true;
+            }
+
+            if (isStudentExpired)
+            {
+                lblMemberType.Text = $"{member.MemberType} (Expired Verification)";
+                lblMemberType.Foreground = System.Windows.Media.Brushes.Red;
+            }
+            else
+            {
+                lblMemberType.Text = member.MemberType.ToString();
+                lblMemberType.Foreground = System.Windows.Media.Brushes.White;
+            }
 
             // ── FIXED: EXTRACT BASE PLAN AND MULTIPLIER SEPARATELY FOR DISPLAY ──
             if (!string.IsNullOrWhiteSpace(member.MembershipPlan) && member.MembershipPlan != "-")
@@ -692,7 +808,14 @@ namespace GymManagementSystem.Views.MainViews
             // Bind current active timeline expiry milestone parameter
             if (!string.IsNullOrWhiteSpace(member.ExpiryDate) && member.ExpiryDate != "-")
             {
-                lblCurrentExpiry.Text = member.ExpiryDate;
+                if (DateTime.TryParse(member.ExpiryDate, out DateTime exp))
+                {
+                    lblCurrentExpiry.Text = exp.ToString("MM-dd-yyyy");
+                }
+                else
+                {
+                    lblCurrentExpiry.Text = member.ExpiryDate;
+                }
             }
             else
             {
@@ -791,6 +914,19 @@ namespace GymManagementSystem.Views.MainViews
                     conn.Open();
                     using (var trans = conn.BeginTransaction())
                     {
+                        string dbExpiryDate = "-";
+                        if (!string.IsNullOrEmpty(lblNewExpiryDate.Text) && lblNewExpiryDate.Text != "-")
+                        {
+                            if (DateTime.TryParseExact(lblNewExpiryDate.Text, "MM-dd-yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsedExp))
+                            {
+                                dbExpiryDate = parsedExp.ToString("yyyy-MM-dd");
+                            }
+                            else if (DateTime.TryParse(lblNewExpiryDate.Text, out DateTime parsedAny))
+                            {
+                                dbExpiryDate = parsedAny.ToString("yyyy-MM-dd");
+                            }
+                        }
+
                         string paySql = @"INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate, DiscountAmount) 
                     VALUES (@id, @mname, @paid, @total, @change, @mode, @type, @date, @expiry, @discountAmount)";
                         using (var cmd = new SQLiteCommand(paySql, conn))
@@ -807,14 +943,34 @@ namespace GymManagementSystem.Views.MainViews
                             cmd.Parameters.AddWithValue("@type", formattedPlanDescription);
 
                             cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
-                            cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
+                            cmd.Parameters.AddWithValue("@expiry", dbExpiryDate);
                             cmd.ExecuteNonQuery();
+                        }
+
+                        int newPaymentId = 0;
+                        using (var cmd = new SQLiteCommand("SELECT last_insert_rowid()", conn))
+                        {
+                            newPaymentId = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                        }
+
+                        if (!string.IsNullOrEmpty(appliedPromoCode))
+                        {
+                            string promoSql = @"INSERT OR IGNORE INTO MemberPromos (MemberID, PromoCode, DateRedeemed, PaymentID) 
+                                                VALUES (@mid, @code, @date, @pid)";
+                            using (var cmd = new SQLiteCommand(promoSql, conn))
+                            {
+                                cmd.Parameters.AddWithValue("@mid", selectedMember!.MemberID);
+                                cmd.Parameters.AddWithValue("@code", appliedPromoCode.Trim());
+                                cmd.Parameters.AddWithValue("@date", DateTime.Today.ToString("yyyy-MM-dd"));
+                                cmd.Parameters.AddWithValue("@pid", newPaymentId);
+                                cmd.ExecuteNonQuery();
+                            }
                         }
 
                         string memberSql = "UPDATE Members SET Status = 'Active', ExpiryDate = @expiry WHERE MemberID = @mid";
                         using (var cmd = new SQLiteCommand(memberSql, conn))
                         {
-                            cmd.Parameters.AddWithValue("@expiry", lblNewExpiryDate.Text);
+                            cmd.Parameters.AddWithValue("@expiry", dbExpiryDate);
                             cmd.Parameters.AddWithValue("@mid", selectedMember!.MemberID);
                             cmd.ExecuteNonQuery();
                         }
@@ -853,6 +1009,9 @@ namespace GymManagementSystem.Views.MainViews
             lblMultiplierValue.Text = "1";
             txtSearch.Clear();
             txtAmountPaid.Clear();
+            appliedPromoCode = "";
+            if (txtPromoCode != null) txtPromoCode.Clear();
+            if (lblPromoStatus != null) lblPromoStatus.Visibility = Visibility.Collapsed;
             lblTotalAmount.Text = "₱0.00";
             lblAmountPaidDisplay.Text = "₱0.00";
             lblChange.Text = "₱0.00";
@@ -866,6 +1025,91 @@ namespace GymManagementSystem.Views.MainViews
             lblDiscountDeductionDisplay.Visibility = Visibility.Collapsed;
             RefreshRateDiscountBadges();
             _validationHelper?.ClearErrors();
+        }
+
+        private void ApplyPromo_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedMember == null)
+            {
+                lblPromoStatus.Visibility = Visibility.Visible;
+                lblPromoStatus.Foreground = System.Windows.Media.Brushes.Red;
+                lblPromoStatus.Text = "✕ Please select a member first.";
+                return;
+            }
+
+            if (selectedMember.MemberType.Equals("Senior", StringComparison.OrdinalIgnoreCase))
+            {
+                appliedPromoCode = "";
+                lblPromoStatus.Visibility = Visibility.Visible;
+                lblPromoStatus.Foreground = System.Windows.Media.Brushes.Red;
+                lblPromoStatus.Text = "✕ Promo codes cannot be applied to members with Senior membership discounts.";
+                RecalculateFinancialsAndDates();
+                RefreshRateDiscountBadges();
+                return;
+            }
+
+            if (selectedMember.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+            {
+                bool isStudentExpired = false;
+                if (!string.IsNullOrEmpty(selectedMember.StudentExpiryDate) &&
+                    DateTime.TryParse(selectedMember.StudentExpiryDate, out DateTime studentExpiryDate) &&
+                    DateTime.Today > studentExpiryDate.Date)
+                {
+                    isStudentExpired = true;
+                }
+
+                if (!isStudentExpired)
+                {
+                    appliedPromoCode = "";
+                    lblPromoStatus.Visibility = Visibility.Visible;
+                    lblPromoStatus.Foreground = System.Windows.Media.Brushes.Red;
+                    lblPromoStatus.Text = "✕ Promo codes cannot be applied to members with active Student membership discounts.";
+                    RecalculateFinancialsAndDates();
+                    RefreshRateDiscountBadges();
+                    return;
+                }
+            }
+
+            string code = txtPromoCode.Text.Trim();
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                appliedPromoCode = "";
+                lblPromoStatus.Visibility = Visibility.Visible;
+                lblPromoStatus.Foreground = System.Windows.Media.Brushes.Red;
+                lblPromoStatus.Text = "✕ Please enter a promo code first.";
+                RecalculateFinancialsAndDates();
+                RefreshRateDiscountBadges();
+                return;
+            }
+
+            var (isValid, name, type, val, scope, error) = DatabaseHelper.ValidatePromoCode(code, selectedMember.MemberID);
+            if (isValid)
+            {
+                appliedPromoCode = code;
+                lblPromoStatus.Visibility = Visibility.Visible;
+                lblPromoStatus.Foreground = (System.Windows.Media.Brush?)new System.Windows.Media.BrushConverter().ConvertFromString("#00a651") ?? System.Windows.Media.Brushes.Green;
+                string typeDesc = type == "FixedAmount" ? $"₱{val:N2} off" : $"{val:0.##}% off";
+                
+                string notice = "";
+                if (selectedMember.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase) || 
+                    selectedMember.MemberType.Equals("Senior", StringComparison.OrdinalIgnoreCase))
+                {
+                    notice = " (Member Tier Discount excluded)";
+                }
+                lblPromoStatus.Text = $"✓ Promo Code '{code}' applied! ({name} - {typeDesc}){notice}";
+                
+                RecalculateFinancialsAndDates();
+                RefreshRateDiscountBadges();
+            }
+            else
+            {
+                appliedPromoCode = "";
+                lblPromoStatus.Visibility = Visibility.Visible;
+                lblPromoStatus.Foreground = System.Windows.Media.Brushes.Red;
+                lblPromoStatus.Text = $"✕ {error}";
+                RecalculateFinancialsAndDates();
+                RefreshRateDiscountBadges();
+            }
         }
     }
 }

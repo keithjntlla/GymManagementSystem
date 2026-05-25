@@ -129,6 +129,36 @@ namespace GymManagementSystem.Views.MainViews
             _instructorsView?.Refresh();
         }
 
+        private void StatusToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Primitives.ToggleButton toggle && toggle.CommandParameter is Instructor instructor)
+            {
+                bool newIsChecked = toggle.IsChecked == true;
+                string newStatus = newIsChecked ? "Active" : "Inactive";
+
+                try
+                {
+                    using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                    {
+                        conn.Open();
+                        string sql = "UPDATE Instructors SET Status = @status WHERE InstructorID = @id";
+                        using (var cmd = new SQLiteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@status", newStatus);
+                            cmd.Parameters.AddWithValue("@id", instructor.InstructorID);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    LoadInstructors();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error updating instructor status: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    toggle.IsChecked = !newIsChecked;
+                }
+            }
+        }
+
         private void AddInstructor_Click(object sender, RoutedEventArgs e)
         {
             AddInstructorWindow addWin = new AddInstructorWindow();

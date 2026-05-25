@@ -38,5 +38,7 @@ namespace GymManagementSystem.Models
         // Assigned Instructor
         public string AssignedInstructorID { get; set; } = string.Empty;
         public string AssignedTrainerName { get; set; } = string.Empty;
+        public string DiscountCode { get; set; } = string.Empty;
+        public string StudentExpiryDate { get; set; } = string.Empty;
     }
 }

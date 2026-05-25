@@ -255,6 +255,10 @@ namespace GymManagementSystem.Views.Reports
             if (chkTypeRegular.IsChecked == true) wpChips.Children.Add(CreateChip("Regular", chkTypeRegular));
             if (chkTypeStudent.IsChecked == true) wpChips.Children.Add(CreateChip("Student", chkTypeStudent));
 
+            // Discount category
+            if (chkDiscountedOnly.IsChecked == true) wpChips.Children.Add(CreateChip("Discounted Only", chkDiscountedOnly));
+            if (chkNoDiscount.IsChecked == true) wpChips.Children.Add(CreateChip("No Discount", chkNoDiscount));
+
             // Dynamic types
             foreach (var chk in _dynamicTypeCheckBoxes)
             {
@@ -290,9 +294,10 @@ namespace GymManagementSystem.Views.Reports
                     conn.Open();
 
                     string sql = @"
-                        SELECT P.*, COALESCE(M.MemberType, 'Regular') AS MemberType 
+                        SELECT P.*, COALESCE(M.MemberType, 'Regular') AS MemberType, MP.PromoCode 
                         FROM Payments P
                         LEFT JOIN Members M ON P.MemberID = M.MemberID
+                        LEFT JOIN MemberPromos MP ON P.PaymentID = MP.PaymentID
                         WHERE P.DateOfTransaction BETWEEN @start AND @end
                           AND IFNULL(P.PaymentMode, '') <> 'Refund'
                           AND IFNULL(P.PaymentMode, '') <> 'Refunded'
@@ -322,6 +327,8 @@ namespace GymManagementSystem.Views.Reports
                                     PaymentMode = reader["PaymentMode"]?.ToString() ?? string.Empty,
                                     MembershipType = reader["MembershipType"]?.ToString() ?? string.Empty,
                                     DateOfTransaction = reader["DateOfTransaction"]?.ToString() ?? string.Empty,
+                                    DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDouble(reader["DiscountAmount"]) : 0,
+                                    PromoCode = reader["PromoCode"]?.ToString() ?? string.Empty
                                 };
 
                                 _allTransactions.Add(record);
@@ -346,6 +353,8 @@ namespace GymManagementSystem.Views.Reports
             int walkInCount = 0;
             double subscriptionRevenue = 0;
             int subscriptionCount = 0;
+            double totalDiscounts = 0;
+            int discountedCount = 0;
 
             // 1. Payment Mode Category (OR within category, active if any is checked)
             bool isModeFilterActive = chkModeCash.IsChecked == true || chkModeGCash.IsChecked == true;
@@ -371,6 +380,9 @@ namespace GymManagementSystem.Views.Reports
                     break;
                 }
             }
+
+            // 4. Discount Status Category (OR within category, active if any is checked)
+            bool isDiscountFilterActive = chkDiscountedOnly.IsChecked == true || chkNoDiscount.IsChecked == true;
 
             foreach (var record in _allTransactions)
             {
@@ -419,9 +431,24 @@ namespace GymManagementSystem.Views.Reports
                     if (!planMatched) continue;
                 }
 
+                // Discount Status Match
+                if (isDiscountFilterActive)
+                {
+                    bool discountMatched = false;
+                    if (chkDiscountedOnly.IsChecked == true && record.DiscountAmount > 0) discountMatched = true;
+                    if (chkNoDiscount.IsChecked == true && record.DiscountAmount <= 0) discountMatched = true;
+                    if (!discountMatched) continue;
+                }
+
                 Transactions.Add(record);
 
                 totalRevenue += record.TotalAmount;
+
+                if (record.DiscountAmount > 0)
+                {
+                    totalDiscounts += record.DiscountAmount;
+                    discountedCount++;
+                }
 
                 if (record.MembershipType.StartsWith("Daily", StringComparison.OrdinalIgnoreCase))
                 {
@@ -440,6 +467,8 @@ namespace GymManagementSystem.Views.Reports
             lblWalkInsCount.Text = $"{walkInCount} transactions";
             lblSubscriptions.Text = $"₱{subscriptionRevenue:N2}";
             lblSubscriptionsCount.Text = $"{subscriptionCount} transactions";
+            lblTotalDiscounts.Text = $"₱{totalDiscounts:N2}";
+            lblTotalDiscountsCount.Text = $"{discountedCount} transactions";
         }
 
         private void ExportCsv_Click(object sender, RoutedEventArgs e)
@@ -477,6 +506,8 @@ namespace GymManagementSystem.Views.Reports
                 if (chkModeGCash.IsChecked == true) activeFilters.Add("GCash");
                 if (chkTypeRegular.IsChecked == true) activeFilters.Add("Regular");
                 if (chkTypeStudent.IsChecked == true) activeFilters.Add("Student");
+                if (chkDiscountedOnly.IsChecked == true) activeFilters.Add("Discounted Only");
+                if (chkNoDiscount.IsChecked == true) activeFilters.Add("No Discount");
                 foreach (var chk in _dynamicTypeCheckBoxes)
                 {
                     if (chk.IsChecked == true) activeFilters.Add(chk.Content?.ToString() ?? "");
@@ -506,11 +537,12 @@ namespace GymManagementSystem.Views.Reports
                     writer.WriteLine($"Total Revenue,{Csv(lblTotalRevenue.Text)}");
                     writer.WriteLine($"Walk-in Revenue,{Csv($"{lblWalkIns.Text} ({lblWalkInsCount.Text})")}");
                     writer.WriteLine($"Subscription Revenue,{Csv($"{lblSubscriptions.Text} ({lblSubscriptionsCount.Text})")}");
+                    writer.WriteLine($"Total Discounts,{Csv($"{lblTotalDiscounts.Text} ({lblTotalDiscountsCount.Text})")}");
                     writer.WriteLine();
 
                     // 3. Report Data Block
                     writer.WriteLine("REPORT DATA");
-                    writer.WriteLine("Date,Member ID,Member Name,Member Type,Plan,Amount Paid,Total Amount,Payment Mode");
+                    writer.WriteLine("Date,Member ID,Member Name,Member Type,Plan,Amount Paid,Total Amount,Discount Amount,Promo Code,Payment Mode");
                     foreach (var transaction in Transactions)
                     {
                         writer.WriteLine(string.Join(",",
@@ -521,6 +553,8 @@ namespace GymManagementSystem.Views.Reports
                             Csv(transaction.MembershipType),
                             transaction.AmountPaid.ToString("F2", CultureInfo.InvariantCulture),
                             transaction.TotalAmount.ToString("F2", CultureInfo.InvariantCulture),
+                            transaction.DiscountAmount.ToString("F2", CultureInfo.InvariantCulture),
+                            Csv(transaction.PromoCode),
                             Csv(transaction.PaymentMode)));
                     }
                 }

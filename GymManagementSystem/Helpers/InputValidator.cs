@@ -110,14 +110,14 @@ namespace GymManagementSystem
             }
 
             string cleaned = input.Trim();
-            string format = "dd/MM/yyyy";
+            string[] formats = { "MM-dd-yyyy", "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
 
-            if (!DateTime.TryParseExact(cleaned, format, 
+            if (!DateTime.TryParseExact(cleaned, formats, 
                                         CultureInfo.InvariantCulture, 
                                         DateTimeStyles.None, 
                                         out DateTime parsedDate))
             {
-                return (false, "", "Birthday must strictly follow the DD/MM/YYYY format.");
+                return (false, "", "Birthday must follow the MM-DD-YYYY format.");
             }
 
             if (parsedDate >= DateTime.Today)
@@ -142,8 +142,8 @@ namespace GymManagementSystem
                 return (false, "", "Age cannot exceed 100 years.");
             }
 
-            // Return standardized string representation (yyyy-MM-dd) for SQLite
-            return (true, parsedDate.ToString("dd/MM/yyyy"), "");
+            // Return standardized string representation (MM-dd-yyyy)
+            return (true, parsedDate.ToString("MM-dd-yyyy"), "");
         }
 
         /// <summary>
@@ -521,14 +521,14 @@ namespace GymManagementSystem
             }
 
             string cleaned = input.Trim();
-            string format = "dd/MM/yyyy";
+            string[] formats = { "MM-dd-yyyy", "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
 
-            if (!DateTime.TryParseExact(cleaned, format, 
+            if (!DateTime.TryParseExact(cleaned, formats, 
                                         CultureInfo.InvariantCulture, 
                                         DateTimeStyles.None, 
                                         out DateTime parsedDate))
             {
-                return (false, "", "Birthday must strictly follow the DD/MM/YYYY format.");
+                return (false, "", "Birthday must follow the MM-DD-YYYY format.");
             }
 
             if (parsedDate >= DateTime.Today)
@@ -543,9 +543,9 @@ namespace GymManagementSystem
                 age--;
             }
 
-            if (age < 14)
+            if (age < 21)
             {
-                return (false, "", "Instructor must be at least 14 years old.");
+                return (false, "", "Instructor must be at least 21 years old.");
             }
 
             if (age > 100)
@@ -553,7 +553,7 @@ namespace GymManagementSystem
                 return (false, "", "Age cannot exceed 100 years.");
             }
 
-            return (true, parsedDate.ToString("dd/MM/yyyy"), "");
+            return (true, parsedDate.ToString("MM-dd-yyyy"), "");
         }
 
         /// <summary>

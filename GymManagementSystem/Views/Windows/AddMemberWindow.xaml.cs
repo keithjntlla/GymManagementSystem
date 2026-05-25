@@ -89,6 +89,14 @@ namespace GymManagementSystem.Views.Windows
                 catch { }
             }
 
+            // DiscountCode is now handled dynamically in Payment Processing instead of profile-saved
+            if (!string.IsNullOrEmpty(memberToEdit.StudentExpiryDate) && DateTime.TryParse(memberToEdit.StudentExpiryDate, out DateTime studentExpiry))
+            {
+                dpStudentExpiry.SelectedDate = studentExpiry;
+                chkStudentIdPresented.IsChecked = true;
+                secStudentVerification.Visibility = Visibility.Visible;
+            }
+
             InitializeValidation();
         }
 
@@ -118,9 +126,9 @@ namespace GymManagementSystem.Views.Windows
                 if (!isValid) return (false, cleaned, error);
 
                 string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "";
-                if (selectedType.Equals("Senior", StringComparison.OrdinalIgnoreCase))
+                if (selectedType.Equals("Senior", StringComparison.OrdinalIgnoreCase) && dpBirthday.SelectedDate != null)
                 {
-                    DateTime parsedDate = DateTime.ParseExact(cleaned, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                    DateTime parsedDate = dpBirthday.SelectedDate.Value;
                     int age = DateTime.Today.Year - parsedDate.Year;
                     if (parsedDate > DateTime.Today.AddYears(-age))
                     {
@@ -159,6 +167,23 @@ namespace GymManagementSystem.Views.Windows
                     }
                 }
                 return (true, cleaned, "");
+            });
+
+            _validationHelper.RegisterDatePicker(dpStudentExpiry, lblStudentExpiryError, input =>
+            {
+                string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "";
+                if (selectedType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(input))
+                    {
+                        return (false, "", "Student ID Expiry Date is required.");
+                    }
+                    if (dpStudentExpiry.SelectedDate.HasValue && dpStudentExpiry.SelectedDate.Value < DateTime.Today)
+                    {
+                        return (false, input, "Student ID has expired. Expiry date must be in the future.");
+                    }
+                }
+                return (true, input, "");
             });
         }
 
@@ -273,6 +298,8 @@ namespace GymManagementSystem.Views.Windows
                 return;
             }
 
+
+
             string cleanedFirst = txtFirstName.Text;
             string middleInitial = txtMiddleInitial.Text;
             string cleanedLast = txtLastName.Text;
@@ -281,7 +308,7 @@ namespace GymManagementSystem.Views.Windows
             string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
             string selectedTrainerId = cmbTrainer.SelectedValue?.ToString() ?? "";
 
-            DateTime parsedBirthday = DateTime.ParseExact(dpBirthday.Text, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+            DateTime parsedBirthday = dpBirthday.SelectedDate.Value;
             string birthdayStr = parsedBirthday.ToString("yyyy-MM-dd");
 
             if (DatabaseHelper.IsNameAndBirthdayDuplicate(cleanedFirst, cleanedLast, birthdayStr, isEditMode ? editMemberId : ""))
@@ -308,23 +335,16 @@ namespace GymManagementSystem.Views.Windows
                 }
             }
 
-            // Student ID verification prompt
+            // Student ID verification checklist
             if (selectedType.Equals("Student", StringComparison.OrdinalIgnoreCase))
             {
-                var promptResult = MessageBox.Show(
-                    "Have they already presented a Student ID?",
-                    "Student ID Verification Required",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (promptResult != MessageBoxResult.Yes)
+                if (chkStudentIdPresented.IsChecked != true)
                 {
                     MessageBox.Show(
-                        "A valid Student ID must be presented and verified to register as a Student member.",
-                        "Student ID Required",
+                        "Please complete the Student ID Verification Checklist before registering as a Student member.",
+                        "Verification Checklist Incomplete",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
-                    cmbMemberType.Focus();
                     return;
                 }
             }
@@ -367,8 +387,8 @@ namespace GymManagementSystem.Views.Windows
                 {
                     conn.Open();
                     string sql = @"INSERT INTO Members 
-                        (MemberID, FirstName, MiddleInitial, LastName, FullName, Phone, Gender, Birthday, MemberType, DateJoined, ExpiryDate, Status, PhotoPath, AssignedInstructorID) 
-                        VALUES (@id, @fName, @mi, @lName, @fullName, @phone, @gender, @bday, @type, @joined, @expiry, @status, @photo, @trainerId)";
+                        (MemberID, FirstName, MiddleInitial, LastName, FullName, Phone, Gender, Birthday, MemberType, DateJoined, ExpiryDate, Status, PhotoPath, AssignedInstructorID, DiscountCode, StudentExpiryDate) 
+                        VALUES (@id, @fName, @mi, @lName, @fullName, @phone, @gender, @bday, @type, @joined, @expiry, @status, @photo, @trainerId, @discountCode, @studentExpiry)";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
@@ -386,6 +406,14 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@status", status);
                         cmd.Parameters.AddWithValue("@photo", savedPhotoPath);
                         cmd.Parameters.AddWithValue("@trainerId", trainerId);
+                        cmd.Parameters.AddWithValue("@discountCode", "");
+                        string studentExpiryStr = "";
+                        if (memberType.Equals("Student", StringComparison.OrdinalIgnoreCase) && dpStudentExpiry.SelectedDate.HasValue)
+                        {
+                            studentExpiryStr = dpStudentExpiry.SelectedDate.Value.ToString("yyyy-MM-dd");
+                        }
+                        cmd.Parameters.AddWithValue("@studentExpiry", studentExpiryStr);
+
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -416,7 +444,9 @@ namespace GymManagementSystem.Views.Windows
                                Birthday = @bday,
                                MemberType = @type,
                                DateJoined = @joined,
-                               AssignedInstructorID = @trainerId
+                               AssignedInstructorID = @trainerId,
+                               DiscountCode = @discountCode,
+                               StudentExpiryDate = @studentExpiry
                            WHERE MemberID = @id";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
@@ -432,6 +462,14 @@ namespace GymManagementSystem.Views.Windows
                         // FIXED: Re-maps the untouched background timestamp parameters safely 
                         cmd.Parameters.AddWithValue("@joined", historicalJoinDate);
                         cmd.Parameters.AddWithValue("@trainerId", trainerId);
+                        cmd.Parameters.AddWithValue("@discountCode", "");
+                        string studentExpiryStr = "";
+                        if (memberType.Equals("Student", StringComparison.OrdinalIgnoreCase) && dpStudentExpiry.SelectedDate.HasValue)
+                        {
+                            studentExpiryStr = dpStudentExpiry.SelectedDate.Value.ToString("yyyy-MM-dd");
+                        }
+                        cmd.Parameters.AddWithValue("@studentExpiry", studentExpiryStr);
+                        
                         cmd.Parameters.AddWithValue("@id", editMemberId);
                         cmd.ExecuteNonQuery();
                     }
@@ -450,6 +488,24 @@ namespace GymManagementSystem.Views.Windows
         {
             this.DialogResult = false;
             this.Close();
+        }
+
+        private void CmbMemberType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (secStudentVerification == null) return;
+
+            string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "";
+            if (selectedType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+            {
+                secStudentVerification.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                secStudentVerification.Visibility = Visibility.Collapsed;
+                chkStudentIdPresented.IsChecked = false;
+                dpStudentExpiry.SelectedDate = null;
+            }
+
         }
 
         private string GenerateMemberID()

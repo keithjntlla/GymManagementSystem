@@ -26,9 +26,24 @@ namespace GymManagementSystem.Views.Windows
             txtMemberType.Text = member.MemberType;
             txtPhone.Text = string.IsNullOrWhiteSpace(member.Phone) ? "N/A" : member.Phone;
             txtGender.Text = string.IsNullOrWhiteSpace(member.Gender) ? "N/A" : member.Gender;
-            txtBirthday.Text = member.Birthday.HasValue ? member.Birthday.Value.ToString("yyyy-MM-dd") : "N/A";
-            txtDateJoined.Text = string.IsNullOrWhiteSpace(member.DateJoined) ? "N/A" : member.DateJoined;
-            txtExpiryDate.Text = string.IsNullOrWhiteSpace(member.ExpiryDate) ? "-" : member.ExpiryDate;
+            txtBirthday.Text = member.Birthday.HasValue ? member.Birthday.Value.ToString("MM-dd-yyyy") : "N/A";
+            if (DateTime.TryParse(member.DateJoined, out DateTime joinDate))
+            {
+                txtDateJoined.Text = joinDate.ToString("MM-dd-yyyy");
+            }
+            else
+            {
+                txtDateJoined.Text = string.IsNullOrWhiteSpace(member.DateJoined) ? "N/A" : member.DateJoined;
+            }
+
+            if (DateTime.TryParse(member.ExpiryDate, out DateTime expDate))
+            {
+                txtExpiryDate.Text = expDate.ToString("MM-dd-yyyy");
+            }
+            else
+            {
+                txtExpiryDate.Text = string.IsNullOrWhiteSpace(member.ExpiryDate) ? "-" : member.ExpiryDate;
+            }
 
             // 1.5. Calculate and display remaining days of current plan
             if (string.IsNullOrWhiteSpace(member.ExpiryDate) || member.ExpiryDate == "-")
@@ -113,6 +128,39 @@ namespace GymManagementSystem.Views.Windows
             else
             {
                 ellPhoto.Visibility = Visibility.Collapsed;
+            }
+
+            // 5. Populate and show Student Expiry Details if member is a Student
+            if (member.MemberType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+            {
+                secStudentExpiry.Visibility = Visibility.Visible;
+                if (!string.IsNullOrEmpty(member.StudentExpiryDate) && DateTime.TryParse(member.StudentExpiryDate, out DateTime studentExpiry))
+                {
+                    txtStudentExpiry.Text = studentExpiry.ToString("MM-dd-yyyy");
+                    if (DateTime.Today > studentExpiry.Date)
+                    {
+                        txtStudentStatus.Text = "EXPIRED ID CARD";
+                        brdStudentStatus.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B1214"));
+                        txtStudentStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff3333"));
+                    }
+                    else
+                    {
+                        txtStudentStatus.Text = "VERIFIED STUDENT";
+                        brdStudentStatus.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1a3d2b"));
+                        txtStudentStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4caf50"));
+                    }
+                }
+                else
+                {
+                    txtStudentExpiry.Text = "Not Verified";
+                    txtStudentStatus.Text = "UNVERIFIED";
+                    brdStudentStatus.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3a2010"));
+                    txtStudentStatus.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffcc00"));
+                }
+            }
+            else
+            {
+                secStudentExpiry.Visibility = Visibility.Collapsed;
             }
         }
 

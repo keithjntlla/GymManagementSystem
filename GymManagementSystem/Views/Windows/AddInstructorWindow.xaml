@@ -5,6 +5,44 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
+    <Window.Resources>
+        <Style x:Key="ModernToggleSwitch" TargetType="ToggleButton">
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid SnapsToDevicePixels="True">
+                            <!-- Background Track -->
+                            <Border x:Name="Track" Background="#333333" CornerRadius="15" BorderBrush="#444444" BorderThickness="1">
+                                <Grid>
+                                    <TextBlock x:Name="txtActive" Text="ON" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="Visible"/>
+                                </Grid>
+                            </Border>
+                            <!-- Thumb Indicator -->
+                            <Border x:Name="Thumb" Background="White" CornerRadius="13" Width="26" Height="26" HorizontalAlignment="Left" Margin="2,0,2,0" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                                </Border.Effect>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="#00a651"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="#00c860"/>
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="txtActive" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="txtInactive" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1">
         <Grid Margin="25">
             <Grid.RowDefinitions>
@@ -57,7 +95,7 @@
                         <TextBlock Text="Phone Number" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" Margin="0,0,0,5"/>
+                    <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" MaxLength="11" Margin="0,0,0,5"/>
                     <TextBlock x:Name="lblPhoneError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                     <!-- Birthday & Gender Grid -->
@@ -74,8 +112,8 @@
                             </StackPanel>
                             <DatePicker x:Name="dpBirthday" 
                                         Style="{StaticResource ModernDatePicker}" 
-                                        Tag="DD/MM/YYYY" 
-                                        ToolTip="You can type the date directly using the DD/MM/YYYY format."
+                                        Tag="MM-DD-YYYY" 
+                                        ToolTip="You can type the date directly using the MM-DD-YYYY format."
                                         Padding="10"/>
                             <TextBlock x:Name="lblBirthdayError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
@@ -96,22 +134,22 @@
 
                     <!-- Specializations -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                        <TextBlock Text="Specializations (Comma-separated)" Foreground="White"/>
+                        <TextBlock Text="Specialization" Foreground="White"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
-                    <TextBox x:Name="txtSpecialization" Style="{StaticResource ModernTextBox}" Tag="e.g. Strength, HIIT, Yoga" Margin="0,0,0,5"/>
+                    <ComboBox x:Name="cmbSpecialization" Style="{StaticResource ModernComboBox}" Margin="0,0,0,5"/>
                     <TextBlock x:Name="lblSpecializationError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                    <!-- Status -->
-                    <StackPanel Margin="0,0,0,15">
+                    <!-- Status Toggle -->
+                    <StackPanel Margin="0,0,0,20">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <TextBlock Text="Status" Foreground="White"/>
-                            <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
+                            <TextBlock Text="Instructor Status" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <ComboBox x:Name="cmbStatus" Style="{StaticResource ModernComboBox}">
-                            <ComboBoxItem Content="Active" IsSelected="True"/>
-                            <ComboBoxItem Content="Inactive"/>
-                        </ComboBox>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <ToggleButton x:Name="tglStatus" Style="{StaticResource ModernToggleSwitch}" IsChecked="True"/>
+                            <TextBlock x:Name="lblStatusText" Text="Active" Foreground="White" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Photo Upload -->

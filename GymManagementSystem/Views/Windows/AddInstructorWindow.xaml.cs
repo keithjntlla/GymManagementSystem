@@ -20,6 +20,8 @@ namespace GymManagementSystem.Views.Windows
         {
             InitializeComponent();
             isEditMode = false;
+            SetupStatusToggle();
+            LoadSpecializationOptions();
             InitializeValidation();
         }
 
@@ -32,11 +34,22 @@ namespace GymManagementSystem.Views.Windows
             lblTitle.Text = "Edit Instructor";
             btnSave.Content = "Update";
 
+            SetupStatusToggle();
+            LoadSpecializationOptions();
+
             txtFirstName.Text = instructorToEdit.FirstName;
             txtMiddleInitial.Text = instructorToEdit.MiddleInitial;
             txtLastName.Text = instructorToEdit.LastName;
             txtPhone.Text = instructorToEdit.Phone;
-            txtSpecialization.Text = instructorToEdit.Specialization;
+
+            if (!string.IsNullOrEmpty(instructorToEdit.Specialization))
+            {
+                if (!cmbSpecialization.Items.Contains(instructorToEdit.Specialization))
+                {
+                    cmbSpecialization.Items.Add(instructorToEdit.Specialization);
+                }
+                cmbSpecialization.SelectedItem = instructorToEdit.Specialization;
+            }
 
             dpBirthday.SelectedDate = instructorToEdit.Birthday;
 
@@ -49,14 +62,8 @@ namespace GymManagementSystem.Views.Windows
                 }
             }
 
-            foreach (ComboBoxItem item in cmbStatus.Items)
-            {
-                if (item.Content?.ToString() == instructorToEdit.Status)
-                {
-                    item.IsSelected = true;
-                    break;
-                }
-            }
+            tglStatus.IsChecked = instructorToEdit.Status == "Active";
+            lblStatusText.Text = instructorToEdit.Status;
 
             if (!string.IsNullOrEmpty(instructorToEdit.PhotoPath) && File.Exists(instructorToEdit.PhotoPath))
             {
@@ -69,6 +76,37 @@ namespace GymManagementSystem.Views.Windows
             }
 
             InitializeValidation();
+        }
+
+        private void SetupStatusToggle()
+        {
+            tglStatus.Checked += (s, e) => lblStatusText.Text = "Active";
+            tglStatus.Unchecked += (s, e) => lblStatusText.Text = "Inactive";
+        }
+
+        private void LoadSpecializationOptions()
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT Name FROM Specializations ORDER BY Name ASC";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        cmbSpecialization.Items.Clear();
+                        while (reader.Read())
+                        {
+                            cmbSpecialization.Items.Add(reader["Name"]?.ToString() ?? "");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading specialization options: " + ex.Message, "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void InitializeValidation()
@@ -93,7 +131,7 @@ namespace GymManagementSystem.Views.Windows
 
             _validationHelper.RegisterDatePicker(dpBirthday, lblBirthdayError, InputValidator.ValidateInstructorBirthday);
             _validationHelper.RegisterComboBox(cmbGender, lblGenderError, InputValidator.ValidateGender);
-            _validationHelper.RegisterTextBox(txtSpecialization, lblSpecializationError, InputValidator.ValidateSpecialization);
+            _validationHelper.RegisterComboBox(cmbSpecialization, lblSpecializationError, InputValidator.ValidateSpecialization);
         }
 
         private void UploadPhoto_Click(object sender, RoutedEventArgs e)
@@ -236,8 +274,8 @@ namespace GymManagementSystem.Views.Windows
                         cmd.Parameters.AddWithValue("@mi", txtMiddleInitial.Text.Trim());
                         cmd.Parameters.AddWithValue("@ln", cleanedLast);
                         cmd.Parameters.AddWithValue("@phone", txtPhone.Text.Trim());
-                        cmd.Parameters.AddWithValue("@spec", txtSpecialization.Text.Trim());
-                        cmd.Parameters.AddWithValue("@status", (cmbStatus.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Active");
+                        cmd.Parameters.AddWithValue("@spec", cmbSpecialization.SelectedItem?.ToString() ?? "");
+                        cmd.Parameters.AddWithValue("@status", tglStatus.IsChecked == true ? "Active" : "Inactive");
                         cmd.Parameters.AddWithValue("@photo", finalPhotoPath);
                         cmd.Parameters.AddWithValue("@bday", birthdayStr);
                         cmd.Parameters.AddWithValue("@gender", (cmbGender.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Male");

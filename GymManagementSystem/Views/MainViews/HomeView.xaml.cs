@@ -206,27 +206,47 @@ namespace GymManagementSystem.Views.MainViews
                     lblPendingRegistrationsCount.Text = pendingList.Count.ToString();
 
                     // Load Recent Transactions
-                    using (var cmd = new SQLiteCommand(@"SELECT MemberName, MembershipType, TotalAmount, AmountPaid, DateOfTransaction, PaymentMode
-                        FROM Payments
-                        WHERE IFNULL(PaymentMode, '') <> 'Refunded'
-                          AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'
-                        ORDER BY PaymentID DESC LIMIT 5", conn))
-                    using (var reader = cmd.ExecuteReader())
+                    string sevenDaysAgo = DateTime.Today.AddDays(-7).ToString("yyyy-MM-dd");
+                    using (var cmd = new SQLiteCommand(@"
+                        SELECT P.PaymentID, P.MemberID, P.MemberName, P.MembershipType, P.TotalAmount, P.AmountPaid, 
+                               P.DateOfTransaction, P.PaymentMode, P.DiscountAmount,
+                               COALESCE(M.MemberType, 'Regular') AS MemberType, MP.PromoCode
+                        FROM Payments P
+                        LEFT JOIN Members M ON P.MemberID = M.MemberID
+                        LEFT JOIN MemberPromos MP ON P.PaymentID = MP.PaymentID
+                        WHERE IFNULL(P.PaymentMode, '') <> 'Refunded'
+                          AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
+                          AND Date(P.DateOfTransaction) >= Date(@sevenDaysAgo)
+                        ORDER BY P.PaymentID DESC LIMIT 10", conn))
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@sevenDaysAgo", sevenDaysAgo);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            double netCost = reader["TotalAmount"] != DBNull.Value
-                                ? Convert.ToDouble(reader["TotalAmount"])
-                                : Convert.ToDouble(reader["AmountPaid"] ?? 0);
-
-                            RecentTransactionsList.Add(new PaymentRecord
+                            while (reader.Read())
                             {
-                                MemberName = reader["MemberName"]?.ToString() ?? "",
-                                MembershipType = reader["MembershipType"]?.ToString() ?? "",
-                                TotalAmount = netCost,
-                                DateOfTransaction = reader["DateOfTransaction"]?.ToString() ?? "",
-                                PaymentMode = reader["PaymentMode"]?.ToString() ?? ""
-                            });
+                                double netCost = reader["TotalAmount"] != DBNull.Value
+                                    ? Convert.ToDouble(reader["TotalAmount"])
+                                    : Convert.ToDouble(reader["AmountPaid"] ?? 0);
+
+                                string rawDate = reader["DateOfTransaction"]?.ToString() ?? "";
+                                string formattedDate = rawDate;
+                                if (DateTime.TryParse(rawDate, out DateTime parsedTxDate))
+                                {
+                                    formattedDate = parsedTxDate.ToString("MM-dd-yyyy");
+                                }
+
+                                RecentTransactionsList.Add(new PaymentRecord
+                                {
+                                    MemberName = reader["MemberName"]?.ToString() ?? "",
+                                    MembershipType = reader["MembershipType"]?.ToString() ?? "",
+                                    TotalAmount = netCost,
+                                    DateOfTransaction = formattedDate,
+                                    PaymentMode = reader["PaymentMode"]?.ToString() ?? "",
+                                    DiscountAmount = reader["DiscountAmount"] != DBNull.Value ? Convert.ToDouble(reader["DiscountAmount"]) : 0,
+                                    PromoCode = reader["PromoCode"]?.ToString() ?? string.Empty,
+                                    MemberType = reader["MemberType"]?.ToString() ?? "Regular"
+                                });
+                            }
                         }
                     }
                     dgRecentTransactions.ItemsSource = RecentTransactionsList;

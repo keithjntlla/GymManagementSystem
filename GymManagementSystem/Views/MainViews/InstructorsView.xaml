@@ -21,6 +21,42 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="ModernToggleSwitch" TargetType="ToggleButton">
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid SnapsToDevicePixels="True">
+                            <!-- Background Track -->
+                            <Border x:Name="Track" Background="#333333" CornerRadius="15" BorderBrush="#444444" BorderThickness="1">
+                                <Grid>
+                                    <TextBlock x:Name="txtActive" Text="ON" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="Visible"/>
+                                </Grid>
+                            </Border>
+                            <!-- Thumb Indicator -->
+                            <Border x:Name="Thumb" Background="White" CornerRadius="13" Width="26" Height="26" HorizontalAlignment="Left" Margin="2,0,2,0" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                                </Border.Effect>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="#00a651"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="#00c860"/>
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="txtActive" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="txtInactive" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="0,20,0,0">
@@ -213,58 +249,31 @@
                     <DataGridTemplateColumn Header="Status" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse Width="8" Height="8" Margin="0,0,8,0">
-                                        <Ellipse.Style>
-                                            <Style TargetType="Ellipse">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
-                                                        <Setter Property="Fill" Value="#00ff00"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Status}" Value="Inactive">
-                                                        <Setter Property="Fill" Value="#ff3333"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Ellipse.Style>
-                                    </Ellipse>
-                                    <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
-                                </StackPanel>
+                                <ToggleButton x:Name="btnStatusToggle" 
+                                              Style="{StaticResource ModernToggleSwitch}" 
+                                              IsChecked="{Binding IsActive, Mode=OneWay}" 
+                                              Click="StatusToggle_Click"
+                                              CommandParameter="{Binding}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Actions" Width="120">
+                    <DataGridTemplateColumn Header="Actions" Width="80">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Grid VerticalAlignment="Center">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="40"/>
-                                        <ColumnDefinition Width="40"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Button Grid.Column="0" Content="✎" Foreground="#ff6b00" FontSize="18" Cursor="Hand" 
-                                            Click="EditInstructor_Click" CommandParameter="{Binding}">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="Transparent" BorderThickness="0">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-
-                                    <Button Grid.Column="1" Content="🗑" Foreground="#ff3333" FontSize="18" Cursor="Hand" 
-                                            Click="DeleteInstructor_Click" CommandParameter="{Binding}">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="Transparent" BorderThickness="0">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-                                </Grid>
+                                <Button Content="✎" Foreground="#ff6b00" FontSize="18" Cursor="Hand" 
+                                        Click="EditInstructor_Click" CommandParameter="{Binding}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="Transparent" BorderThickness="0">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

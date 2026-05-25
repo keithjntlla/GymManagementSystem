@@ -13,9 +13,17 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
+            <!-- Tab Selection Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                <RadioButton x:Name="tabMembers" Content="Member Reports" Tag="👤" IsChecked="True" Style="{StaticResource TabButtonStyle}" Click="TabMembers_Click"/>
+                <RadioButton x:Name="tabInstructors" Content="Instructor Reports" Tag="🏋️" Style="{StaticResource TabButtonStyle}" Click="TabInstructors_Click"/>
+            </StackPanel>
+
+            <!-- Filters Bar -->
+            <Border Grid.Row="1" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
                 <DockPanel>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
                         <Button x:Name="btnPrevDay" Content="‹" Style="{StaticResource NavButtonStyle}" Click="BtnPrevDay_Click" Margin="0,0,8,0"/>
@@ -26,7 +34,7 @@
                         <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="8,0" Width="240" Height="36" Margin="0,0,8,0">
                             <DockPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
-                                <TextBox x:Name="txtAttendanceSearch" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" FontSize="13" VerticalAlignment="Center" Tag="Search name or type..." TextChanged="TxtAttendanceSearch_TextChanged">
+                                <TextBox x:Name="txtAttendanceSearch" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" FontSize="13" VerticalAlignment="Center" Tag="Search name..." TextChanged="TxtAttendanceSearch_TextChanged">
                                     <TextBox.Style>
                                         <Style TargetType="TextBox">
                                             <Setter Property="Template">
@@ -56,13 +64,25 @@
                             </DockPanel>
                         </Border>
 
+                        <!-- Member Plan Filter -->
                         <ComboBox x:Name="cbPlanFilter" 
-                                  Width="150" 
+                                  Width="160" 
                                   Height="36" 
                                   Margin="0,0,8,0"
                                   Style="{StaticResource ModernComboBox}"
                                   SelectionChanged="FilterPlan_SelectionChanged">
                             <ComboBoxItem Content="All Plans" IsSelected="True"/>
+                        </ComboBox>
+
+                        <!-- Instructor Specialization Filter (Hidden by default) -->
+                        <ComboBox x:Name="cbSpecializationFilter" 
+                                  Width="160" 
+                                  Height="36" 
+                                  Margin="0,0,8,0"
+                                  Visibility="Collapsed"
+                                  Style="{StaticResource ModernComboBox}"
+                                  SelectionChanged="FilterSpecialization_SelectionChanged">
+                            <ComboBoxItem Content="All Specs" IsSelected="True"/>
                         </ComboBox>
 
                         <Button x:Name="btnRefreshAttendance" Style="{StaticResource IconButtonStyle}" Click="BtnRefreshAttendance_Click" ToolTip="Refresh">
@@ -75,14 +95,15 @@
                 </DockPanel>
             </Border>
 
-            <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
+            <!-- Summary Cards -->
+            <UniformGrid Grid.Row="2" Columns="2" Margin="0,0,0,15">
                 <Border Style="{StaticResource SummaryCardStyle}" Background="#1a2a4a" BorderBrush="#2b4273" Margin="0,0,8,0">
                     <DockPanel VerticalAlignment="Center">
                         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                            <TextBlock Text="Total Visitors Today" Foreground="#8899bb" FontSize="13"/>
+                            <TextBlock x:Name="lblTotalVisitorsTitle" Text="Total Visitors Today" Foreground="#8899bb" FontSize="13"/>
                             <TextBlock x:Name="lblTotalVisitors" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Border Width="48" Height="48" Background="#2a3a5a" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="brdVisitorsIcon" Width="48" Height="48" Background="#2a3a5a" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <TextBlock Text="👥" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </DockPanel>
@@ -100,39 +121,78 @@
                 </Border>
             </UniformGrid>
 
-            <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
-                <DataGrid x:Name="dgAttendanceReport" 
-                          Style="{StaticResource ModernDataGrid}"
-                          IsReadOnly="True"
-                          RowHeaderWidth="0"
-                          RowHeight="52" 
-                          FontSize="14"
-                          VerticalScrollBarVisibility="Disabled"
-                          HorizontalScrollBarVisibility="Disabled">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time of Entry" Binding="{Binding CheckInTime}" Width="1.2*"/>
-                        <DataGridTextColumn Header="Time Out" Binding="{Binding CheckOutTime}" Width="1.2*"/>
-                        <DataGridTextColumn Header="Member Name" Binding="{Binding Name}" Width="2*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+            <!-- Report Grids -->
+            <Grid Grid.Row="3" Margin="0,0,0,10">
+                <!-- MEMBER DATA GRID -->
+                <Border x:Name="brdMemberGrid" Background="#141416" CornerRadius="15" Padding="10" Visibility="Visible">
+                    <DataGrid x:Name="dgAttendanceReport" 
+                              Style="{StaticResource ModernDataGrid}"
+                              IsReadOnly="True"
+                              RowHeaderWidth="0"
+                              RowHeight="52" 
+                              FontSize="14"
+                              VerticalScrollBarVisibility="Disabled"
+                              HorizontalScrollBarVisibility="Disabled">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Time of Entry" Binding="{Binding CheckInTime}" Width="1.2*"/>
+                            <DataGridTextColumn Header="Time Out" Binding="{Binding CheckOutTime}" Width="1.2*"/>
+                            <DataGridTextColumn Header="Member Name" Binding="{Binding Name}" Width="2*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                        <DataGridTemplateColumn Header="Membership Plan" Width="1.5*">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ContentControl Content="{Binding MembershipType}" 
-                                                    Style="{StaticResource MembershipPlanBadge}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Border>
+                            <DataGridTemplateColumn Header="Membership Plan" Width="1.5*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ContentControl Content="{Binding MembershipType}" 
+                                                        Style="{StaticResource MembershipPlanBadge}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- INSTRUCTOR DATA GRID -->
+                <Border x:Name="brdInstructorGrid" Background="#141416" CornerRadius="15" Padding="10" Visibility="Collapsed">
+                    <DataGrid x:Name="dgInstructorAttendanceReport" 
+                              Style="{StaticResource ModernDataGrid}"
+                              IsReadOnly="True"
+                              RowHeaderWidth="0"
+                              RowHeight="52" 
+                              FontSize="14"
+                              VerticalScrollBarVisibility="Disabled"
+                              HorizontalScrollBarVisibility="Disabled">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Time of Entry" Binding="{Binding CheckInTime}" Width="1.2*"/>
+                            <DataGridTextColumn Header="Time Out" Binding="{Binding CheckOutTime}" Width="1.2*"/>
+                            <DataGridTextColumn Header="Instructor Name" Binding="{Binding Name}" Width="2*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Specialization" Binding="{Binding Specialization}" Width="1.8*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="LightBlue"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
         </Grid>
     </ScrollViewer>
 </UserControl>

@@ -13,5 +13,7 @@ namespace GymManagementSystem.Models
         public double OriginalAmount { get; set; }
         public double RefundAmount { get; set; }
         public string ProcessedBy { get; set; } = string.Empty;
+        public string RefundReason { get; set; } = string.Empty;
+        public string RefundNotes { get; set; } = string.Empty;
     }
 }

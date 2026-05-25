@@ -94,6 +94,20 @@ namespace GymManagementSystem.Views.Windows
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
+                    
+                    // Verify if new password matches old password
+                    string verifySql = "SELECT Password FROM Users WHERE UserID = @id";
+                    using (var verifyCmd = new SQLiteCommand(verifySql, conn))
+                    {
+                        verifyCmd.Parameters.AddWithValue("@id", _userId);
+                        string currentHashed = verifyCmd.ExecuteScalar()?.ToString() ?? "";
+                        if (hashed == currentHashed)
+                        {
+                            MessageBox.Show("New password cannot be the same as your old password.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
+                    }
+
                     string sql = "UPDATE Users SET Password = @pass, MustChangePassword = 0 WHERE UserID = @id";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {

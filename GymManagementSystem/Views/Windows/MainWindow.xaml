@@ -5,6 +5,9 @@
         WindowStartupLocation="CenterScreen" Background="#1a191b">
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Main sidebar nav button style -->
         <Style x:Key="MenuButtonStyle" TargetType="RadioButton">
             <Setter Property="Height" Value="50"/>
             <Setter Property="Foreground" Value="Gray"/>
@@ -71,6 +74,85 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Settings toggle button (not a RadioButton so it doesn't join the group) -->
+        <Style x:Key="SettingsToggleStyle" TargetType="Button">
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                CornerRadius="10" Margin="10,2">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" Margin="15,0">
+                                    <TextBlock Text="" FontFamily="Segoe UI Symbol"
+                                               VerticalAlignment="Center" Margin="0,0,15,0" FontSize="18"
+                                               Foreground="{TemplateBinding Foreground}"/>
+                                    <TextBlock Text="Settings" VerticalAlignment="Center"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontWeight="{TemplateBinding FontWeight}"/>
+                                </StackPanel>
+                                <TextBlock x:Name="chevron" Text="›" FontSize="18"
+                                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           Margin="0,0,18,0"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           RenderTransformOrigin="0.5,0.5">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform x:Name="chevronRotate" Angle="0"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#333"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Sub-menu item buttons -->
+        <Style x:Key="SubMenuButtonStyle" TargetType="RadioButton">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Foreground" Value="#999"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="GroupName" Value="SidebarGroup"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Margin="20,1,10,1">
+                            <StackPanel Orientation="Horizontal" Margin="15,0">
+                                <TextBlock x:Name="icon" Text="{TemplateBinding Tag}"
+                                           VerticalAlignment="Center" Margin="0,0,10,0" FontSize="15"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2a2a2e"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#252528"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -122,7 +204,26 @@
                 <StackPanel Grid.Row="2" Margin="10,0,10,25">
                     <Separator Background="#222" Margin="15,15"/>
                     <RadioButton x:Name="btnNavReports" Content="Reports" Style="{StaticResource MenuButtonStyle}" Click="NavReports_Click"/>
-                    <RadioButton x:Name="btnNavSettings" Content="Settings" Style="{StaticResource MenuButtonStyle}" Click="NavSettings_Click"/>
+
+                    <!-- Settings expandable section -->
+                    <Button x:Name="btnSettingsToggle"
+                            Style="{StaticResource SettingsToggleStyle}"
+                            Click="NavSettingsToggle_Click"/>
+
+                    <!-- Settings sub-menu (collapsed by default) -->
+                    <StackPanel x:Name="SettingsSubMenu" Visibility="Collapsed">
+                        <RadioButton x:Name="btnNavServicesAndPricing"
+                                     Content="Services &amp; Pricing"
+                                     Tag="💲"
+                                     Style="{StaticResource SubMenuButtonStyle}"
+                                     Click="NavServicesPricing_Click"/>
+                        <RadioButton x:Name="btnNavSystem"
+                                     Content="System"
+                                     Tag="🖥️"
+                                     Style="{StaticResource SubMenuButtonStyle}"
+                                     Click="NavSystem_Click"/>
+                    </StackPanel>
+
                     <RadioButton Content="Log Out" 
                                  Style="{StaticResource MenuButtonStyle}" 
                                  Click="Logout_Click"/>

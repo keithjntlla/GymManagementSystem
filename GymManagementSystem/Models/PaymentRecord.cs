@@ -15,6 +15,24 @@ namespace GymManagementSystem.Models
         public string PaymentMode { get; set; } = string.Empty;
         public string MembershipType { get; set; } = string.Empty;
         public string DateOfTransaction { get; set; } = string.Empty;
+        public double DiscountAmount { get; set; }
+        public string PromoCode { get; set; } = string.Empty;
+
+        public bool HasDiscount => DiscountAmount > 0;
+        public double SubtotalAmount => TotalAmount + DiscountAmount;
+
+        public string DiscountDescription
+        {
+            get
+            {
+                if (DiscountAmount <= 0) return string.Empty;
+                if (!string.IsNullOrEmpty(PromoCode))
+                {
+                    return $"Promo ({PromoCode})";
+                }
+                return $"{MemberType} Discount";
+            }
+        }
 
         public bool IsRefundTransaction =>
             PaymentMode.Equals("Refund", StringComparison.OrdinalIgnoreCase) ||

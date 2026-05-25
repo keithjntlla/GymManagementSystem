@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="GymManagementSystem.Views.Reports.ReportsView"
+<UserControl x:Class="GymManagementSystem.Views.Reports.ReportsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -24,6 +24,7 @@
             <RadioButton Content="Attendance"  Tag="📊" Style="{StaticResource TabButtonStyle}" Click="TabAttendance_Click"/>
             <RadioButton x:Name="rbTabExpirations" Content="Expirations" Tag="⏰" Style="{StaticResource TabButtonStyle}" Click="TabExpirations_Click"/>
             <RadioButton Content="Refunds"     Tag="↩" Style="{StaticResource TabButtonStyle}" Click="TabRefunds_Click"/>
+            <RadioButton Content="Discounts"   Tag="🏷️" Style="{StaticResource TabButtonStyle}" Click="TabDiscounts_Click"/>
         </StackPanel>
         <Separator Grid.Row="1" VerticalAlignment="Bottom" Background="#333"/>
 

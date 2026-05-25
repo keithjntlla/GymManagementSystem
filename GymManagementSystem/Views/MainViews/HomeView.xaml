@@ -381,8 +381,47 @@
                             <DataGridTemplateColumn Header="Amount" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock x:Name="amountText" Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="amountText" Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center">
+                                            <TextBlock.ToolTip>
+                                                <ToolTip Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Padding="0" HasDropShadow="True">
+                                                    <ToolTip.Style>
+                                                        <Style TargetType="ToolTip">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasDiscount}" Value="False">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ToolTip.Style>
+                                                    <Border Background="#1a1a1c" BorderBrush="#ff6b00" BorderThickness="1.5" CornerRadius="8" Padding="12">
+                                                        <StackPanel Width="220" Margin="2">
+                                                            <TextBlock Text="Savings Breakdown" Foreground="#ff6b00" FontWeight="Bold" FontSize="13" Margin="0,0,0,10"/>
+                                                            
+                                                            <Grid Margin="0,3">
+                                                                <TextBlock Text="Original Rate" Foreground="#aaa" FontSize="11"/>
+                                                                <TextBlock Text="{Binding SubtotalAmount, StringFormat=₱\{0:N2\}}" Foreground="White" FontSize="11" HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                            
+                                                            <Grid Margin="0,3">
+                                                                <TextBlock Text="{Binding DiscountDescription}" Foreground="#aaa" FontSize="11"/>
+                                                                <TextBlock Text="{Binding DiscountAmount, StringFormat=-₱\{0:N2\}}" Foreground="#ff4444" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                            
+                                                            <Border BorderBrush="#333" BorderThickness="0,1,0,0" Margin="0,8,0,8"/>
+                                                            
+                                                            <Grid Margin="0,3">
+                                                                <TextBlock Text="Net Paid" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                                                <TextBlock Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#2ecc71" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </ToolTip>
+                                            </TextBlock.ToolTip>
+                                        </TextBlock>
                                         <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding HasDiscount}" Value="True">
+                                                <Setter TargetName="amountText" Property="Foreground" Value="#ff9800"/>
+                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding IsRefundTransaction}" Value="True">
                                                 <Setter TargetName="amountText" Property="Foreground" Value="#EF4444"/>
                                             </DataTrigger>

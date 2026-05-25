@@ -72,7 +72,9 @@ namespace GymManagementSystem.Views.Windows
 
                     // 2. Fetch trailing advanced payment records
                     string queueSql = @"
-                SELECT PaymentID, MembershipType, DateOfTransaction, NewExpiryDate, TotalAmount
+                SELECT PaymentID, MembershipType, DateOfTransaction, NewExpiryDate, TotalAmount,
+                       COALESCE(RefundReason, '') AS RefundReason,
+                       COALESCE(RefundNotes, '')  AS RefundNotes
                 FROM Payments 
                 WHERE MemberID = @mid
                   AND Date(NewExpiryDate) >= Date('now')
@@ -171,11 +173,46 @@ namespace GymManagementSystem.Views.Windows
         {
             if (sender is Button btn && btn.CommandParameter is int paymentId)
             {
-                var result = MessageBox.Show(
-                    "Are you sure you want to refund this advanced plan payment?\n\nThis will remove the plan from the queue and log a negative financial reversal record.",
-                    "Confirm Advanced Refund", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                // Gather the plan details first so the dialog can show them
+                double previewAmount = 0;
+                string previewPlan = "";
+                try
+                {
+                    using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                    {
+                        conn.Open();
+                        string previewSql = "SELECT TotalAmount, MembershipType FROM Payments WHERE PaymentID = @pid";
+                        using (var cmd = new SQLiteCommand(previewSql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@pid", paymentId);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    previewAmount = Convert.ToDouble(reader["TotalAmount"]);
+                                    previewPlan = reader["MembershipType"]?.ToString() ?? "Plan";
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading plan details: " + ex.Message);
+                    return;
+                }
 
-                if (result != MessageBoxResult.Yes) return;
+                // Open refund reason dialog — user must pick a reason to proceed
+                var reasonWindow = new RefundReasonWindow(previewPlan, previewAmount)
+                {
+                    Owner = this
+                };
+                bool? dialogResult = reasonWindow.ShowDialog();
+                if (dialogResult != true || string.IsNullOrWhiteSpace(reasonWindow.SelectedReason))
+                    return;
+
+                string refundReason = reasonWindow.SelectedReason;
+                string refundNotes  = reasonWindow.Notes;
 
                 try
                 {
@@ -211,12 +248,16 @@ namespace GymManagementSystem.Views.Windows
                             // 2. Keep the original queued payment for audit, but mark it so it no longer behaves as a queued plan.
                             string markRefundedSql = @"
                                 UPDATE Payments
-                                SET PaymentMode = 'Refunded',
-                                    MembershipType = @refundedType
+                                SET PaymentMode   = 'Refunded',
+                                    MembershipType = @refundedType,
+                                    RefundReason   = @reason,
+                                    RefundNotes    = @notes
                                 WHERE PaymentID = @pid";
                             using (var cmd = new SQLiteCommand(markRefundedSql, conn))
                             {
                                 cmd.Parameters.AddWithValue("@refundedType", $"[REFUNDED] {planType}");
+                                cmd.Parameters.AddWithValue("@reason", refundReason);
+                                cmd.Parameters.AddWithValue("@notes", refundNotes);
                                 cmd.Parameters.AddWithValue("@pid", paymentId);
                                 cmd.ExecuteNonQuery();
                             }
@@ -262,8 +303,8 @@ namespace GymManagementSystem.Views.Windows
 
                             // 4. Record the negative reversal audit logging event record entry line item
                             string refundLogSql = @"
-                                INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate, DiscountAmount, ProcessedBy) 
-                                VALUES (@mid, @mname, 0, @amt, 0, 'Refund', @type, @date, @expiry, 0, @processedBy)";
+                                INSERT INTO Payments (MemberID, MemberName, AmountPaid, TotalAmount, Change, PaymentMode, MembershipType, DateOfTransaction, NewExpiryDate, DiscountAmount, ProcessedBy, RefundReason, RefundNotes) 
+                                VALUES (@mid, @mname, 0, @amt, 0, 'Refund', @type, @date, @expiry, 0, @processedBy, @reason, @notes)";
                             using (var cmd = new SQLiteCommand(refundLogSql, conn))
                             {
                                 cmd.Parameters.AddWithValue("@mid", memberId);
@@ -273,6 +314,8 @@ namespace GymManagementSystem.Views.Windows
                                 cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
                                 cmd.Parameters.AddWithValue("@expiry", newMaxExpiry);
                                 cmd.Parameters.AddWithValue("@processedBy", processedBy);
+                                cmd.Parameters.AddWithValue("@reason", refundReason);
+                                cmd.Parameters.AddWithValue("@notes", refundNotes);
                                 cmd.ExecuteNonQuery();
                             }
 

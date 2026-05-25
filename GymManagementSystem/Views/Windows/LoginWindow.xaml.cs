@@ -99,24 +99,9 @@ namespace GymManagementSystem.Views.Windows
                     return;
                 }
 
-                if (CurrentUser?.MustChangePassword == true)
-                {
-                    this.Hide();
 
-                    var changePassWin = new ChangePasswordWindow(CurrentUser.UserID);
-                    bool? result = changePassWin.ShowDialog();
 
-                    if (result != true)
-                    {
-                        this.Show();
-                        MessageBox.Show("You must set a new password to continue.", "Password Change Required");
-                        return;
-                    }
-
-                    CurrentUser.MustChangePassword = false;
-                }
-
-                MessageBox.Show($"Welcome back, {CurrentUser?.Username}!", "Login Success");
+                MessageBox.Show($"Welcome, {CurrentUser?.Username}!", "Login Success");
                 OpenDashboard();
             }
             else

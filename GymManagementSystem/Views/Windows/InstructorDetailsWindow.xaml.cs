@@ -25,8 +25,15 @@ namespace GymManagementSystem.Views.Windows
             txtInstructorID.Text = instructor.InstructorID;
             txtPhone.Text = string.IsNullOrWhiteSpace(instructor.Phone) ? "N/A" : instructor.Phone;
             txtGender.Text = string.IsNullOrWhiteSpace(instructor.Gender) ? "N/A" : instructor.Gender;
-            txtBirthday.Text = instructor.Birthday.HasValue ? instructor.Birthday.Value.ToString("yyyy-MM-dd") : "N/A";
-            txtDateJoined.Text = string.IsNullOrWhiteSpace(instructor.DateHired) ? "N/A" : instructor.DateHired;
+            txtBirthday.Text = instructor.Birthday.HasValue ? instructor.Birthday.Value.ToString("MM-dd-yyyy") : "N/A";
+            if (DateTime.TryParse(instructor.DateHired, out DateTime hiredDate))
+            {
+                txtDateJoined.Text = hiredDate.ToString("MM-dd-yyyy");
+            }
+            else
+            {
+                txtDateJoined.Text = string.IsNullOrWhiteSpace(instructor.DateHired) ? "N/A" : instructor.DateHired;
+            }
             txtClientsCount.Text = $"{instructor.ClientCount} Clients";
 
             // 2. Color-code Status Badge

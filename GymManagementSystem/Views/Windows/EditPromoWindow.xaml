@@ -1,0 +1,112 @@
+<Window x:Class="GymManagementSystem.Views.Windows.EditPromoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Manage Promo Code" Height="680" Width="420"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+
+    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="270" Opacity="0.5" ShadowDepth="2"/>
+        </Border.Effect>
+        <Grid Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Area -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock x:Name="lblTitle" Text="Create Promo Code" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
+            </DockPanel>
+
+            <!-- Input Fields Scrollable -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,5,0">
+                    <TextBlock Text="Promo Code (e.g., SUMMER30)" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                    <TextBox x:Name="txtPromoCode" Style="{StaticResource ModernTextBox}" Margin="0,0,0,2"/>
+                    <TextBlock x:Name="lblPromoCodeError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
+
+                    <TextBlock Text="Campaign / Promo Name" Foreground="White" Margin="0,5,0,5" FontWeight="SemiBold"/>
+                    <TextBox x:Name="txtPromoName" Style="{StaticResource ModernTextBox}" Margin="0,0,0,2"/>
+                    <TextBlock x:Name="lblPromoNameError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
+
+                    <Grid Margin="0,5,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Discount Type" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <ComboBox x:Name="cmbDiscountType" Style="{StaticResource ModernComboBox}" Height="38" SelectionChanged="DiscountType_SelectionChanged">
+                                <ComboBoxItem Content="Percentage" IsSelected="True"/>
+                                <ComboBoxItem Content="Fixed Amount"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock x:Name="lblDiscountValHeader" Text="Discount Value (%)" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <TextBox x:Name="txtDiscountValue" Style="{StaticResource ModernTextBox}" Height="38"/>
+                            <TextBlock x:Name="lblDiscountValueError" Foreground="#FF4444" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,5,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Start Date" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <DatePicker x:Name="dpStartDate" Style="{StaticResource ModernDatePicker}" Tag="MM-DD-YYYY" ToolTip="Input start date in MM-DD-YYYY format." Height="38"/>
+                            <TextBlock x:Name="lblStartDateError" Foreground="#FF4444" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="End Date" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <DatePicker x:Name="dpEndDate" Style="{StaticResource ModernDatePicker}" Tag="MM-DD-YYYY" ToolTip="Input end date in MM-DD-YYYY format." Height="38"/>
+                            <TextBlock x:Name="lblEndDateError" Foreground="#FF4444" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <CheckBox x:Name="chkAllRates" Content="Apply to all membership rates" Foreground="White" IsChecked="True" Checked="ChkAllRates_Changed" Unchecked="ChkAllRates_Changed" Margin="0,5,0,10" FontWeight="SemiBold"/>
+
+                    <TextBlock Text="Select Applicable Rates:" Foreground="White" Margin="0,5,0,5" FontWeight="SemiBold"/>
+                    <Border Background="#1a1a1a" BorderBrush="#333" BorderThickness="1" Height="100" CornerRadius="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="icMembershipRates" Margin="5">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding PlanName}" Tag="{Binding PlanName}" Foreground="LightGray" Margin="5,3" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Buttons -->
+            <Grid Grid.Row="2" Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="btnSave" Content="Save" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Save_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

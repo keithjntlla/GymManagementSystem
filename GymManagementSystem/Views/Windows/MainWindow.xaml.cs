@@ -93,7 +93,9 @@ namespace GymManagementSystem.Views.Windows
             MainFrame.Content = new ReportsView();
         }
 
-        private void NavSettings_Click(object sender, RoutedEventArgs e)
+        private bool _settingsExpanded = false;
+
+        private void NavSettingsToggle_Click(object sender, RoutedEventArgs e)
         {
             if (LoginWindow.CurrentUser?.Role != "Administrator")
             {
@@ -101,7 +103,21 @@ namespace GymManagementSystem.Views.Windows
                                 "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            _settingsExpanded = !_settingsExpanded;
+            SettingsSubMenu.Visibility = _settingsExpanded
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+        }
+
+        private void NavServicesPricing_Click(object sender, RoutedEventArgs e)
+        {
             MainFrame.Content = new SettingsView();
+        }
+
+        private void NavSystem_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new SystemSettingsView();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)

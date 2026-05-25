@@ -19,6 +19,13 @@ namespace GymManagementSystem.Models
         public DateTime? Birthday { get; set; }
         public string Specialization { get; set; } = string.Empty;
         public string Status { get; set; } = "Active";
+
+        public bool IsActive
+        {
+            get => Status == "Active";
+            set => Status = value ? "Active" : "Inactive";
+        }
+
         public string PhotoPath { get; set; } = string.Empty;
         public string DateHired { get; set; } = string.Empty; // Mapped to default Date Joined internally
 

@@ -25,15 +25,16 @@ namespace GymManagementSystem.Views.Reports
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private DatePicker StartDatePicker => (DatePicker)FindName("dpStart");
-        private DatePicker EndDatePicker => (DatePicker)FindName("dpEnd");
-        private ComboBox PlanFilterComboBox => (ComboBox)FindName("cbPlanFilter");
+        private DatePicker EndDatePicker   => (DatePicker)FindName("dpEnd");
+        private ComboBox PlanFilterComboBox   => (ComboBox)FindName("cbPlanFilter");
+        private ComboBox ReasonFilterComboBox => (ComboBox)FindName("cbReasonFilter");
 
         public RefundReportsView()
         {
             InitializeComponent();
             DataContext = this;
             StartDatePicker.SelectedDate = DateTime.Now.AddMonths(-1);
-            EndDatePicker.SelectedDate = DateTime.Now;
+            EndDatePicker.SelectedDate   = DateTime.Now;
             LoadPlanFilterComboBox();
             LoadRefundTransactions();
         }
@@ -85,9 +86,9 @@ namespace GymManagementSystem.Views.Reports
             if (StartDatePicker.SelectedDate == null || EndDatePicker.SelectedDate == null) return;
 
             string startDate = StartDatePicker.SelectedDate.Value.ToString("yyyy-MM-dd");
-            string endDate = EndDatePicker.SelectedDate.Value.ToString("yyyy-MM-dd");
-            string planFilter = (PlanFilterComboBox.SelectedItem as ComboBoxItem)?.Content.ToString()
-                                ?? "All Plans";
+            string endDate   = EndDatePicker.SelectedDate.Value.ToString("yyyy-MM-dd");
+            string planFilter   = (PlanFilterComboBox.SelectedItem   as ComboBoxItem)?.Content?.ToString() ?? "All Plans";
+            string reasonFilter = (ReasonFilterComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All Reasons";
 
             RefundTransactions.Clear();
             TotalRefundsAmount = 0;
@@ -99,7 +100,9 @@ namespace GymManagementSystem.Views.Reports
                     conn.Open();
                     var sql = @"
                         SELECT PaymentID, MemberID, MemberName, TotalAmount, MembershipType, DateOfTransaction,
-                               COALESCE(ProcessedBy, 'System') as ProcessedBy
+                               COALESCE(ProcessedBy, 'System')  AS ProcessedBy,
+                               COALESCE(RefundReason, '')        AS RefundReason,
+                               COALESCE(RefundNotes,  '')        AS RefundNotes
                         FROM Payments
                         WHERE DateOfTransaction BETWEEN @start AND @end
                           AND (
@@ -111,49 +114,51 @@ namespace GymManagementSystem.Views.Reports
                     if (planFilter != "All Plans")
                         sql += " AND MembershipType LIKE @plan";
 
+                    if (reasonFilter != "All Reasons")
+                        sql += " AND COALESCE(RefundReason, '') = @reason";
+
                     sql += " ORDER BY Date(DateOfTransaction) ASC, PaymentID ASC";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@start", startDate);
-                        cmd.Parameters.AddWithValue("@end", endDate);
-                        if (planFilter != "All Plans")
-                            cmd.Parameters.AddWithValue("@plan", "%" + planFilter + "%");
+                        cmd.Parameters.AddWithValue("@end",   endDate);
+                        if (planFilter   != "All Plans")    cmd.Parameters.AddWithValue("@plan",   "%" + planFilter + "%");
+                        if (reasonFilter != "All Reasons")  cmd.Parameters.AddWithValue("@reason", reasonFilter);
 
                         using (var reader = cmd.ExecuteReader())
                         {
-                        var refunds = new List<RefundTransaction>();
-                        int refundNumber = 1;
+                            var refunds = new List<RefundTransaction>();
+                            int refundNumber = 1;
 
-                        while (reader.Read())
-                        {
-                            double rawAmount = reader["TotalAmount"] != DBNull.Value
-                                ? Convert.ToDouble(reader["TotalAmount"])
-                                : 0;
-                            double refundAmount = Math.Abs(rawAmount);
-
-                            var refund = new RefundTransaction
+                            while (reader.Read())
                             {
-                                RefundId = $"RF-{refundNumber:D5}",
-                                MemberId = reader["MemberID"]?.ToString() ?? string.Empty,
-                                MemberName = reader["MemberName"]?.ToString() ?? string.Empty,
-                                PlanName = CleanPlanName(reader["MembershipType"]?.ToString() ?? string.Empty),
-                                OriginalAmount = refundAmount,
-                                RefundAmount = refundAmount,
-                                ProcessedBy = reader["ProcessedBy"]?.ToString() ?? "System"
-                            };
+                                double rawAmount    = reader["TotalAmount"] != DBNull.Value ? Convert.ToDouble(reader["TotalAmount"]) : 0;
+                                double refundAmount = Math.Abs(rawAmount);
 
-                            SetRefundDate(refund, reader["DateOfTransaction"]?.ToString() ?? string.Empty);
+                                var refund = new RefundTransaction
+                                {
+                                    RefundId     = $"RF-{refundNumber:D5}",
+                                    MemberId     = reader["MemberID"]?.ToString()     ?? string.Empty,
+                                    MemberName   = reader["MemberName"]?.ToString()   ?? string.Empty,
+                                    PlanName     = CleanPlanName(reader["MembershipType"]?.ToString() ?? string.Empty),
+                                    OriginalAmount = refundAmount,
+                                    RefundAmount = refundAmount,
+                                    ProcessedBy  = reader["ProcessedBy"]?.ToString()  ?? "System",
+                                    RefundReason = reader["RefundReason"]?.ToString() ?? string.Empty,
+                                    RefundNotes  = reader["RefundNotes"]?.ToString()  ?? string.Empty
+                                };
 
-                            refunds.Add(refund);
-                            TotalRefundsAmount += refundAmount;
-                            refundNumber++;
-                        }
+                                SetRefundDate(refund, reader["DateOfTransaction"]?.ToString() ?? string.Empty);
 
-                        for (int i = refunds.Count - 1; i >= 0; i--)
-                        {
-                            RefundTransactions.Add(refunds[i]);
-                        }
+                                refunds.Add(refund);
+                                TotalRefundsAmount += refundAmount;
+                                refundNumber++;
+                            }
+
+                            // Newest first
+                            for (int i = refunds.Count - 1; i >= 0; i--)
+                                RefundTransactions.Add(refunds[i]);
                         }
                     }
                 }
@@ -170,31 +175,25 @@ namespace GymManagementSystem.Views.Reports
 
         private static string CleanPlanName(string planName)
         {
-            const string refundPrefix = "[REFUND]";
+            const string refundPrefix   = "[REFUND]";
             const string refundedPrefix = "[REFUNDED]";
-            if (planName.StartsWith(refundPrefix, StringComparison.OrdinalIgnoreCase))
-            {
+            if (planName.StartsWith(refundPrefix,   StringComparison.OrdinalIgnoreCase))
                 return planName.Substring(refundPrefix.Length).Trim();
-            }
             if (planName.StartsWith(refundedPrefix, StringComparison.OrdinalIgnoreCase))
-            {
                 return planName.Substring(refundedPrefix.Length).Trim();
-            }
-
             return string.IsNullOrWhiteSpace(planName) ? "Refund" : planName;
         }
 
         private static void SetRefundDate(RefundTransaction refund, string rawDate)
         {
-            if (DateTime.TryParse(rawDate, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
+            if (DateTime.TryParse(rawDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
             {
-                refund.FormattedDate = parsedDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                refund.FormattedDate = parsedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 refund.FormattedTime = rawDate.Contains(":")
                     ? parsedDate.ToString("hh:mm tt", CultureInfo.InvariantCulture)
                     : string.Empty;
                 return;
             }
-
             refund.FormattedDate = rawDate;
             refund.FormattedTime = string.Empty;
         }
@@ -210,8 +209,8 @@ namespace GymManagementSystem.Views.Reports
 
             var dialog = new SaveFileDialog
             {
-                Title = "Export Refund Report",
-                Filter = "CSV files (*.csv)|*.csv",
+                Title    = "Export Refund Report",
+                Filter   = "CSV files (*.csv)|*.csv",
                 FileName = $"refund-report-{DateTime.Now:yyyyMMdd}.csv"
             };
 
@@ -220,14 +219,15 @@ namespace GymManagementSystem.Views.Reports
             try
             {
                 var gymProfile = DatabaseHelper.GetGymProfile();
-                string gymName = gymProfile.ContainsKey("GymName") ? gymProfile["GymName"] : "Gym";
-                string gymAddress = gymProfile.ContainsKey("Address") ? gymProfile["Address"] : "";
-                string gymContact = gymProfile.ContainsKey("ContactNumber") ? gymProfile["ContactNumber"] : "";
-                string gymEmail = gymProfile.ContainsKey("Email") ? gymProfile["Email"] : "";
+                string gymName    = gymProfile.ContainsKey("GymName")       ? gymProfile["GymName"]       : "Gym";
+                string gymAddress = gymProfile.ContainsKey("Address")        ? gymProfile["Address"]        : "";
+                string gymContact = gymProfile.ContainsKey("ContactNumber")  ? gymProfile["ContactNumber"]  : "";
+                string gymEmail   = gymProfile.ContainsKey("Email")          ? gymProfile["Email"]          : "";
 
-                string startDate = StartDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? "N/A";
-                string endDate = EndDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? "N/A";
-                string planFilter = (PlanFilterComboBox.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "All Plans";
+                string startDate    = StartDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? "N/A";
+                string endDate      = EndDatePicker.SelectedDate?.ToString("yyyy-MM-dd")   ?? "N/A";
+                string planFilter   = (PlanFilterComboBox.SelectedItem   as ComboBoxItem)?.Content?.ToString() ?? "All Plans";
+                string reasonFilter = (ReasonFilterComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All Reasons";
 
                 using (var writer = new StreamWriter(dialog.FileName))
                 {
@@ -245,13 +245,14 @@ namespace GymManagementSystem.Views.Reports
                     writer.WriteLine($"Date Generated,{Csv(DateTime.Now.ToString("yyyy-MM-dd hh:mm tt"))}");
                     writer.WriteLine($"Filter Period,{Csv($"{startDate} to {endDate}")}");
                     writer.WriteLine($"Plan Filter,{Csv(planFilter)}");
+                    writer.WriteLine($"Reason Filter,{Csv(reasonFilter)}");
                     writer.WriteLine($"Total Refunded Amount,{Csv($"₱{TotalRefundsAmount:N2}")}");
                     writer.WriteLine($"Total Refund Transactions,{Csv(TotalRefundsCount.ToString())}");
                     writer.WriteLine();
 
                     // 3. Report Data Block
                     writer.WriteLine("REPORT DATA");
-                    writer.WriteLine("Refund ID,Date,Time,Member ID,Member Name,Plan,Original Amount,Refund Amount,Processed By");
+                    writer.WriteLine("Refund ID,Date,Time,Member ID,Member Name,Plan,Reason,Notes,Original Amount,Refund Amount,Processed By");
 
                     foreach (var refund in RefundTransactions)
                     {
@@ -262,8 +263,10 @@ namespace GymManagementSystem.Views.Reports
                             Csv(refund.MemberId),
                             Csv(refund.MemberName),
                             Csv(refund.PlanName),
+                            Csv(refund.RefundReason),
+                            Csv(refund.RefundNotes),
                             refund.OriginalAmount.ToString("F2", CultureInfo.InvariantCulture),
-                            refund.RefundAmount.ToString("F2", CultureInfo.InvariantCulture),
+                            refund.RefundAmount.ToString("F2",   CultureInfo.InvariantCulture),
                             Csv(refund.ProcessedBy)));
                     }
                 }

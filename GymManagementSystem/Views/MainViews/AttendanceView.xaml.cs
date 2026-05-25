@@ -16,16 +16,20 @@ namespace GymManagementSystem.Views.MainViews
     public partial class AttendanceView : UserControl
     {
         public ObservableCollection<AttendanceRecord> TodayAttendance { get; set; } = new ObservableCollection<AttendanceRecord>();
+        public ObservableCollection<InstructorAttendanceRecord> TodayInstructorAttendance { get; set; } = new ObservableCollection<InstructorAttendanceRecord>();
         private DispatcherTimer _alertTimer;
         private DispatcherTimer _clockTimer;
         private ObservableCollection<Member> _searchResults = new ObservableCollection<Member>();
+        private ObservableCollection<Instructor> _instructorSearchResults = new ObservableCollection<Instructor>();
         private Member? _selectedMember = null;
+        private Instructor? _selectedInstructor = null;
 
         public AttendanceView()
         {
             InitializeComponent();
             this.DataContext = this;
             LoadTodayAttendance();
+            LoadTodayInstructorAttendance();
             txtMemberSearch.Focus();
 
             _alertTimer = new DispatcherTimer();
@@ -45,8 +49,14 @@ namespace GymManagementSystem.Views.MainViews
 
         private void UpdateLiveTime()
         {
-            lblLiveDate.Text = DateTime.Now.ToString("dddd, MMMM d, yyyy");
-            lblLiveTime.Text = DateTime.Now.ToString("hh:mm tt").ToUpper();
+            string dateStr = DateTime.Now.ToString("dddd, MMMM d, yyyy");
+            string timeStr = DateTime.Now.ToString("hh:mm tt").ToUpper();
+
+            if (lblLiveDate != null) lblLiveDate.Text = dateStr;
+            if (lblLiveTime != null) lblLiveTime.Text = timeStr;
+
+            if (lblLiveDateInst != null) lblLiveDateInst.Text = dateStr;
+            if (lblLiveTimeInst != null) lblLiveTimeInst.Text = timeStr;
         }
 
         private void TxtMemberSearch_GotFocus(object sender, RoutedEventArgs e)
@@ -587,6 +597,447 @@ namespace GymManagementSystem.Views.MainViews
                 }
                 LoadTodayAttendance();
                 ShowAlert("Check-out Successful!", "#1e3a2a");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error logging check-out: " + ex.Message);
+            }
+        }
+
+        // --- TAB NAVIGATION METHODS ---
+        private void TabMembers_Click(object sender, RoutedEventArgs e)
+        {
+            gridMembers.Visibility = Visibility.Visible;
+            gridInstructors.Visibility = Visibility.Collapsed;
+            txtMemberSearch.Focus();
+        }
+
+        private void TabInstructors_Click(object sender, RoutedEventArgs e)
+        {
+            gridMembers.Visibility = Visibility.Collapsed;
+            gridInstructors.Visibility = Visibility.Visible;
+            txtInstructorSearch.Focus();
+        }
+
+        // --- INSTRUCTOR ATTENDANCE METHODS ---
+        private void TxtInstructorSearch_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtInstructorSearch.Text == (string)txtInstructorSearch.Tag)
+            {
+                txtInstructorSearch.Text = "";
+                txtInstructorSearch.Foreground = Brushes.White;
+            }
+        }
+
+        private void TxtInstructorSearch_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtInstructorSearch.Text))
+            {
+                txtInstructorSearch.Text = (string)txtInstructorSearch.Tag;
+                txtInstructorSearch.Foreground = Brushes.Gray;
+            }
+        }
+
+        private void TxtInstructorSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (lstInstructorSearchResults.SelectedItem is Instructor selectedInstructor)
+                    PreviewInstructor(selectedInstructor);
+                else
+                    PreviewInstructorByIdentifier(txtInstructorSearch.Text.Trim());
+                e.Handled = true;
+            }
+        }
+
+        private void TxtInstructorSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string query = txtInstructorSearch.Text.Trim();
+            if (query.Length >= 1 && query != (string)txtInstructorSearch.Tag)
+                SearchInstructors(query);
+            else
+            {
+                popInstructorSearch.IsOpen = false;
+                ClearInstructorPreview();
+            }
+        }
+
+        private void SearchInstructors(string query)
+        {
+            _instructorSearchResults.Clear();
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT * FROM Instructors WHERE Status = 'Active' AND ((FirstName || ' ' || LastName) LIKE @query OR InstructorID LIKE @query) LIMIT 10";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@query", "%" + query + "%");
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                _instructorSearchResults.Add(new Instructor
+                                {
+                                    InstructorID = reader["InstructorID"]?.ToString() ?? string.Empty,
+                                    FirstName = reader["FirstName"]?.ToString() ?? "",
+                                    MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                    LastName = reader["LastName"]?.ToString() ?? "",
+                                    Phone = reader["Phone"]?.ToString() ?? string.Empty,
+                                    Gender = reader["Gender"]?.ToString() ?? string.Empty,
+                                    Specialization = reader["Specialization"]?.ToString() ?? string.Empty,
+                                    Status = reader["Status"]?.ToString() ?? "Active",
+                                    PhotoPath = reader["PhotoPath"]?.ToString() ?? string.Empty
+                                });
+                            }
+                        }
+                    }
+                }
+                lstInstructorSearchResults.ItemsSource = _instructorSearchResults;
+                popInstructorSearch.IsOpen = _instructorSearchResults.Count > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Search error: " + ex.Message);
+            }
+        }
+
+        private void LstInstructorSearchResults_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lstInstructorSearchResults.SelectedItem is Instructor instructor)
+            {
+                panelNoInstructorAttendance.Visibility = Visibility.Collapsed;
+                brdInstructorStatusIndicator.Visibility = Visibility.Visible;
+                brdInstructorProfile.Visibility = Visibility.Visible;
+                btnInstructorCheckIn.Visibility = Visibility.Visible;
+
+                popInstructorSearch.IsOpen = false;
+                txtInstructorSearch.Text = instructor.FullName;
+                txtInstructorSearch.Foreground = Brushes.White;
+
+                PreviewInstructor(instructor);
+            }
+        }
+
+        private void PreviewInstructor(Instructor instructor)
+        {
+            _selectedInstructor = instructor;
+            DisplayInstructorMiniProfile(instructor);
+
+            if (instructor.Status != "Active")
+            {
+                UpdateInstructorStatusIndicator("Instructor Inactive", "✕", Colors.White, "#ff3333");
+                btnInstructorCheckIn.Visibility = Visibility.Collapsed;
+            }
+            else if (IsInstructorAlreadyTimedIn(instructor.InstructorID))
+            {
+                UpdateInstructorStatusIndicator("Already Clocked In", "✕", Colors.White, "#ff3333");
+                btnInstructorCheckIn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                UpdateInstructorStatusIndicator("Ready to Clock In", "✓", Color.FromRgb(47, 205, 112), "#1e3a2a");
+                btnInstructorCheckIn.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void PreviewInstructorByIdentifier(string identifier)
+        {
+            if (string.IsNullOrWhiteSpace(identifier)) return;
+            Instructor? instructor = GetInstructorByIdentifier(identifier);
+            if (instructor == null)
+            {
+                UpdateInstructorStatusIndicator("No Instructor Found", "?", Colors.Yellow, "#ffcc00");
+                DisplayInstructorMiniProfile(null);
+                btnInstructorCheckIn.Visibility = Visibility.Collapsed;
+                _selectedInstructor = null;
+            }
+            else
+            {
+                PreviewInstructor(instructor);
+            }
+        }
+
+        private Instructor? GetInstructorByIdentifier(string identifier)
+        {
+            Instructor? instructor = null;
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT * FROM Instructors WHERE InstructorID = @identifier OR (FirstName || ' ' || LastName) LIKE @identifier";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@identifier", identifier);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                instructor = new Instructor
+                                {
+                                    InstructorID = reader["InstructorID"]?.ToString() ?? string.Empty,
+                                    FirstName = reader["FirstName"]?.ToString() ?? "",
+                                    MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
+                                    LastName = reader["LastName"]?.ToString() ?? "",
+                                    Phone = reader["Phone"]?.ToString() ?? string.Empty,
+                                    Gender = reader["Gender"]?.ToString() ?? string.Empty,
+                                    Specialization = reader["Specialization"]?.ToString() ?? string.Empty,
+                                    Status = reader["Status"]?.ToString() ?? "Active",
+                                    PhotoPath = reader["PhotoPath"]?.ToString() ?? string.Empty
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Database error: " + ex.Message);
+            }
+            return instructor;
+        }
+
+        private bool IsInstructorAlreadyTimedIn(string instructorId)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"SELECT COUNT(*) FROM InstructorAttendance 
+                                   WHERE InstructorID = @instructorId 
+                                   AND CheckInDate = @today 
+                                   AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@instructorId", instructorId);
+                        cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
+                        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error checking duplicate check-in: " + ex.Message);
+                return false;
+            }
+        }
+
+        private void btnInstructorCheckIn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedInstructor == null) return;
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Are you sure you want to clock in {_selectedInstructor.FullName}?",
+                "Confirm Clock-in",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                ProcessInstructorCheckIn(_selectedInstructor);
+            }
+        }
+
+        private void ProcessInstructorCheckIn(Instructor instructor)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "INSERT INTO InstructorAttendance (InstructorID, CheckInTime, CheckInDate, CheckOutTime) VALUES (@instructorId, @checkInTime, @checkInDate, NULL)";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@instructorId", instructor.InstructorID);
+                        cmd.Parameters.AddWithValue("@checkInTime", DateTime.Now.ToString("hh:mm tt").ToUpper());
+                        cmd.Parameters.AddWithValue("@checkInDate", DateTime.Now.ToString("yyyy-MM-dd"));
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                ShowAlert("Clock-in Successful!", "#1e3a2a");
+                LoadTodayInstructorAttendance();
+
+                _selectedInstructor = null;
+                txtInstructorSearch.Clear();
+
+                panelNoInstructorAttendance.Visibility = Visibility.Visible;
+                brdInstructorStatusIndicator.Visibility = Visibility.Collapsed;
+                brdInstructorProfile.Visibility = Visibility.Collapsed;
+                btnInstructorCheckIn.Visibility = Visibility.Collapsed;
+
+                txtInstructorSearch.Focus();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error logging attendance: " + ex.Message);
+            }
+        }
+
+        private void ClearInstructorPreview()
+        {
+            _selectedInstructor = null;
+            btnInstructorCheckIn.Visibility = Visibility.Collapsed;
+            DisplayInstructorMiniProfile(null);
+            ResetInstructorStatusIndicator();
+        }
+
+        private void DisplayInstructorMiniProfile(Instructor? instructor)
+        {
+            if (instructor != null)
+            {
+                brdInstructorProfile.Visibility = Visibility.Visible;
+                lblInstructorName.Text = instructor.FullName;
+                lblInstructorSpec.Text = instructor.Specialization;
+                lblInstructorStatus.Text = instructor.Status;
+                
+                if (instructor.Status == "Active")
+                {
+                    lblInstructorStatus.Foreground = Brushes.LightGreen;
+                }
+                else
+                {
+                    lblInstructorStatus.Foreground = Brushes.Red;
+                }
+
+                if (!string.IsNullOrEmpty(instructor.PhotoPath) && File.Exists(instructor.PhotoPath))
+                {
+                    try { imgInstructorProfilePicture.Source = new BitmapImage(new Uri(instructor.PhotoPath)); }
+                    catch { imgInstructorProfilePicture.Source = null; }
+                }
+                else
+                {
+                    imgInstructorProfilePicture.Source = null;
+                }
+            }
+            else
+            {
+                brdInstructorProfile.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UpdateInstructorStatusIndicator(string message, string icon, Color iconColor, string bgColorHex)
+        {
+            brdInstructorStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
+            txtInstructorStatusIcon.Text = icon;
+            txtInstructorStatusMessage.Text = message;
+            txtInstructorStatusIcon.Foreground = new SolidColorBrush(iconColor);
+            txtInstructorStatusMessage.Foreground = Brushes.White;
+        }
+
+        private void ResetInstructorStatusIndicator()
+        {
+            brdInstructorStatusIndicator.Visibility = Visibility.Collapsed;
+            panelNoInstructorAttendance.Visibility = Visibility.Visible;
+            DisplayInstructorMiniProfile(null);
+        }
+
+        private void LoadTodayInstructorAttendance()
+        {
+            TodayInstructorAttendance.Clear();
+            int totalInstructors = 0;
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"
+                        SELECT  A.AttendanceID, A.CheckInTime, A.CheckOutTime,
+                                I.InstructorID, I.FirstName, I.MiddleInitial, I.LastName, I.Specialization
+                        FROM InstructorAttendance A
+                        JOIN Instructors I ON A.InstructorID = I.InstructorID
+                        WHERE A.CheckInDate = @today
+                        ORDER BY A.CheckInTime DESC";
+
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string firstName = reader["FirstName"]?.ToString() ?? "";
+                                string mi = reader["MiddleInitial"]?.ToString() ?? "";
+                                string lastName = reader["LastName"]?.ToString() ?? "";
+                                string fullName = string.IsNullOrWhiteSpace(mi)
+                                    ? $"{firstName} {lastName}"
+                                    : $"{firstName} {mi}. {lastName}";
+
+                                TodayInstructorAttendance.Add(new InstructorAttendanceRecord
+                                {
+                                    AttendanceID = Convert.ToInt32(reader["AttendanceID"] ?? 0),
+                                    InstructorID = reader["InstructorID"]?.ToString() ?? string.Empty,
+                                    Name = fullName,
+                                    Specialization = reader["Specialization"]?.ToString() ?? string.Empty,
+                                    CheckInTime = DateTime.TryParse(reader["CheckInTime"]?.ToString(), out DateTime checkInTime)
+                                        ? checkInTime.ToString("hh:mm tt").ToUpper() : string.Empty,
+                                    CheckOutTime = reader["CheckOutTime"]?.ToString() ?? string.Empty
+                                });
+                                totalInstructors++;
+                            }
+                        }
+                    }
+                }
+                dgInstructorAttendanceLog.ItemsSource = TodayInstructorAttendance;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading today's instructor attendance: " + ex.Message);
+            }
+            lblTotalInstructors.Text = $"Total: {totalInstructors} instructors";
+        }
+
+        private void InstructorTimeOut_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button?.CommandParameter is int attendanceId)
+            {
+                InstructorAttendanceRecord? recordToCheck = null;
+                foreach (var record in TodayInstructorAttendance)
+                {
+                    if (record.AttendanceID == attendanceId)
+                    {
+                        recordToCheck = record;
+                        break;
+                    }
+                }
+
+                if (recordToCheck != null && !string.IsNullOrEmpty(recordToCheck.CheckOutTime))
+                {
+                    MessageBox.Show("This instructor has already timed out for this session.",
+                                    "Action Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                MessageBoxResult result = MessageBox.Show(
+                    "Are you sure you want to check this instructor out?",
+                    "Confirm Clock-out", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                    ProcessInstructorCheckOut(attendanceId);
+            }
+        }
+
+        private void ProcessInstructorCheckOut(int attendanceId)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "UPDATE InstructorAttendance SET CheckOutTime = @checkOutTime WHERE AttendanceID = @attendanceId";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@checkOutTime", DateTime.Now.ToString("hh:mm tt").ToUpper());
+                        cmd.Parameters.AddWithValue("@attendanceId", attendanceId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                LoadTodayInstructorAttendance();
+                ShowAlert("Clock-out Successful!", "#1e3a2a");
             }
             catch (Exception ex)
             {

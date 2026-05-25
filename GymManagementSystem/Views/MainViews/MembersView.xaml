@@ -310,7 +310,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
+                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" Width="120"/>
 
                     <DataGridTemplateColumn Header="Status" Width="120">
                         <DataGridTemplateColumn.CellTemplate>

@@ -248,7 +248,9 @@ namespace GymManagementSystem.Views.MainViews
                                     MembershipPlan = reader["ActivePlans"]?.ToString() ?? "-",
                                     PhotoPath = reader["PhotoPath"]?.ToString() ?? "",
                                     AssignedInstructorID = reader["AssignedInstructorID"]?.ToString() ?? "",
-                                    AssignedTrainerName = reader["AssignedTrainerName"]?.ToString() ?? "-"
+                                    AssignedTrainerName = reader["AssignedTrainerName"]?.ToString() ?? "-",
+                                    DiscountCode = reader["DiscountCode"]?.ToString() ?? "",
+                                    StudentExpiryDate = reader["StudentExpiryDate"]?.ToString() ?? ""
                                 };
 
                                 if (reader["DateJoined"] != DBNull.Value && DateTime.TryParse(reader["DateJoined"].ToString(), out DateTime joinDate))
@@ -264,7 +266,7 @@ namespace GymManagementSystem.Views.MainViews
                                 string dynamicExpiry = reader["CurrentPlanExpiry"]?.ToString() ?? "-";
                                 if (dynamicExpiry != "-" && DateTime.TryParse(dynamicExpiry, out DateTime expiryDate))
                                 {
-                                    member.ExpiryDate = expiryDate.ToString("yyyy-MM-dd");
+                                    member.ExpiryDate = expiryDate.ToString("MM-dd-yyyy");
 
                                     // ── NEW FIX: RE-EVALUATE STATUS BASED ON NEW DEVICE DATE ──
                                     // Since gym logic tracking runs until the calendar day turns over,
@@ -601,6 +603,8 @@ namespace GymManagementSystem.Views.MainViews
                     Status = memberToEdit.Status,
                     PhotoPath = memberToEdit.PhotoPath,
                     AssignedInstructorID = memberToEdit.AssignedInstructorID,
+                    DiscountCode = memberToEdit.DiscountCode,
+                    StudentExpiryDate = memberToEdit.StudentExpiryDate,
                     MembershipPlan = memberToEdit.MembershipPlan.Contains(",")
                         ? memberToEdit.MembershipPlan.Split(',')[0]
                         : memberToEdit.MembershipPlan

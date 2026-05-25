@@ -180,15 +180,57 @@ namespace GymManagementSystem
             DateHired TEXT NOT NULL
         );";
                 using (var cmd = new SQLiteCommand(instructorsTable, conn)) cmd.ExecuteNonQuery();
+
+                // 10. Specializations Table
+                string specializationsTable = @"CREATE TABLE IF NOT EXISTS Specializations (
+            SpecializationID INTEGER PRIMARY KEY AUTOINCREMENT,
+            Name TEXT UNIQUE NOT NULL
+        );";
+                using (var cmd = new SQLiteCommand(specializationsTable, conn)) cmd.ExecuteNonQuery();
+
+                // Seed default specializations if empty
+                string checkSpecs = "SELECT COUNT(*) FROM Specializations";
+                using (var cmd = new SQLiteCommand(checkSpecs, conn))
+                {
+                    if (Convert.ToInt32(cmd.ExecuteScalar() ?? 0) == 0)
+                    {
+                        string seedSpecs = @"INSERT INTO Specializations (Name) VALUES 
+                        ('Strength & Conditioning'),
+                        ('Cardio & Weight Loss'),
+                        ('Yoga & Pilates'),
+                        ('HIIT'),
+                        ('Zumba & Dance'),
+                        ('Bodybuilding'),
+                        ('Nutrition & Dietetics'),
+                        ('CrossFit'),
+                        ('Physical Therapy & Rehab')";
+                        using (var seedCmd = new SQLiteCommand(seedSpecs, conn)) seedCmd.ExecuteNonQuery();
+                    }
+                }
+
+                // 11. Instructor Attendance Table
+                string instructorAttendanceTable = @"CREATE TABLE IF NOT EXISTS InstructorAttendance (
+                    AttendanceID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    InstructorID TEXT,
+                    CheckInTime TEXT,
+                    CheckInDate TEXT,
+                    CheckOutTime TEXT,
+                    FOREIGN KEY(InstructorID) REFERENCES Instructors(InstructorID)
+                );";
+                using (var cmd = new SQLiteCommand(instructorAttendanceTable, conn)) cmd.ExecuteNonQuery();
             }
 
             MigrateUsersTable();
             MigratePaymentsTableForDiscounts();
             MigratePaymentsTableForRefundProcessing();
+            MigratePaymentsTableForRefundReason();
             MigrateMemberNotificationsTable();
             MigrateGymProfileTableForCapacity();
             MigrateMembersTableForInstructors();
             MigrateInstructorsTable();
+            MigrateMembersTableForDiscountAndStudent();
+            MigratePromosTableForNewFields();
+            CreateMemberPromosTable();
         }
 
         private static void MigrateInstructorsTable()
@@ -246,6 +288,205 @@ namespace GymManagementSystem
                     string alter = "ALTER TABLE Members ADD COLUMN AssignedInstructorID TEXT";
                     using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
                 }
+            }
+        }
+
+        private static void MigrateMembersTableForDiscountAndStudent()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasDiscountCode = false;
+                bool hasStudentExpiryDate = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Members)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string colName = reader["name"]?.ToString() ?? "";
+                        if (colName == "DiscountCode") hasDiscountCode = true;
+                        if (colName == "StudentExpiryDate") hasStudentExpiryDate = true;
+                    }
+                }
+
+                if (!hasDiscountCode)
+                {
+                    string alter = "ALTER TABLE Members ADD COLUMN DiscountCode TEXT";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasStudentExpiryDate)
+                {
+                    string alter = "ALTER TABLE Members ADD COLUMN StudentExpiryDate TEXT";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void MigratePromosTableForNewFields()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasDiscountType = false;
+                bool hasDiscountValue = false;
+                bool hasIsActive = false;
+                bool hasIsArchived = false;
+
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Promos)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string colName = reader["name"]?.ToString() ?? "";
+                        if (colName == "DiscountType") hasDiscountType = true;
+                        if (colName == "DiscountValue") hasDiscountValue = true;
+                        if (colName == "IsActive") hasIsActive = true;
+                        if (colName == "IsArchived") hasIsArchived = true;
+                    }
+                }
+
+                if (!hasDiscountType)
+                {
+                    string alter = "ALTER TABLE Promos ADD COLUMN DiscountType TEXT NOT NULL DEFAULT 'Percentage'";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasDiscountValue)
+                {
+                    string alter = "ALTER TABLE Promos ADD COLUMN DiscountValue REAL NOT NULL DEFAULT 0";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                    
+                    // Legacy migration: copy Percentage column values to DiscountValue
+                    string copy = "UPDATE Promos SET DiscountValue = Percentage";
+                    using (var cmd = new SQLiteCommand(copy, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasIsActive)
+                {
+                    string alter = "ALTER TABLE Promos ADD COLUMN IsActive INTEGER DEFAULT 1";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasIsArchived)
+                {
+                    string alter = "ALTER TABLE Promos ADD COLUMN IsArchived INTEGER DEFAULT 0";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void CreateMemberPromosTable()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = @"CREATE TABLE IF NOT EXISTS MemberPromos (
+                    MemberID TEXT,
+                    PromoCode TEXT,
+                    DateRedeemed TEXT,
+                    PaymentID INTEGER,
+                    PRIMARY KEY(MemberID, PromoCode)
+                );";
+                using (var cmd = new SQLiteCommand(sql, conn)) cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static bool HasMemberUsedPromo(string memberId, string code)
+        {
+            if (string.IsNullOrWhiteSpace(memberId) || string.IsNullOrWhiteSpace(code)) return false;
+            try
+            {
+                using (var conn = new SQLiteConnection(ConnectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT COUNT(*) FROM MemberPromos WHERE MemberID = @mid AND UPPER(PromoCode) = UPPER(@code)";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@mid", memberId);
+                        cmd.Parameters.AddWithValue("@code", code);
+                        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                    }
+                }
+            }
+            catch { return false; }
+        }
+
+        public static void RecordPromoUsage(string memberId, string code, int paymentId)
+        {
+            if (string.IsNullOrWhiteSpace(memberId) || string.IsNullOrWhiteSpace(code)) return;
+            try
+            {
+                using (var conn = new SQLiteConnection(ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"INSERT OR IGNORE INTO MemberPromos (MemberID, PromoCode, DateRedeemed, PaymentID) 
+                                   VALUES (@mid, @code, @date, @pid)";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@mid", memberId);
+                        cmd.Parameters.AddWithValue("@code", code.Trim());
+                        cmd.Parameters.AddWithValue("@date", DateTime.Today.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@pid", paymentId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        public static (bool isValid, string name, string type, double val, string scope, string error) ValidatePromoCode(string code, string memberId)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return (false, "", "", 0, "", "Promo code cannot be empty.");
+
+            try
+            {
+                using (var conn = new SQLiteConnection(ConnectionString))
+                {
+                    conn.Open();
+                    string sql = @"SELECT * FROM Promos WHERE UPPER(PromoCode) = UPPER(@code)";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@code", code.Trim());
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                string name = reader["PromoName"]?.ToString() ?? "";
+                                string type = reader["DiscountType"]?.ToString() ?? "Percentage";
+                                double val = Convert.ToDouble(reader["DiscountValue"] ?? 0);
+                                string scope = reader["ApplicableRates"]?.ToString() ?? "All";
+                                int isActive = reader["IsActive"] != DBNull.Value ? Convert.ToInt32(reader["IsActive"]) : 1;
+                                int isArchived = reader["IsArchived"] != DBNull.Value ? Convert.ToInt32(reader["IsArchived"]) : 0;
+                                string startStr = reader["StartDate"]?.ToString() ?? "";
+                                string endStr = reader["EndDate"]?.ToString() ?? "";
+
+                                if (isActive == 0 || isArchived == 1)
+                                    return (false, "", "", 0, "", "This promo code is currently inactive or archived.");
+
+                                if (DateTime.TryParse(startStr, out DateTime startDate) && DateTime.Today < startDate.Date)
+                                    return (false, "", "", 0, "", $"This promo is not active yet. It starts on {startDate:MM-dd-yyyy}.");
+
+                                if (DateTime.TryParse(endStr, out DateTime endDate) && DateTime.Today > endDate.Date)
+                                    return (false, "", "", 0, "", "This promo code has expired.");
+
+                                // Check single-use
+                                if (!string.IsNullOrEmpty(memberId))
+                                {
+                                    if (HasMemberUsedPromo(memberId, code))
+                                        return (false, "", "", 0, "", "This promo code has already been redeemed by this member.");
+                                }
+
+                                return (true, name, type, val, scope, "");
+                            }
+                            else
+                            {
+                                return (false, "", "", 0, "", "Invalid promo code. Code does not exist.");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, "", "", 0, "", "Error validating promo code: " + ex.Message);
             }
         }
 
@@ -394,6 +635,35 @@ namespace GymManagementSystem
         }
 
 
+        private static void MigratePaymentsTableForRefundReason()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasReasonCol = false;
+                bool hasNotesCol = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(Payments)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string colName = reader["name"]?.ToString() ?? "";
+                        if (colName == "RefundReason") hasReasonCol = true;
+                        if (colName == "RefundNotes")  hasNotesCol  = true;
+                    }
+                }
+                if (!hasReasonCol)
+                {
+                    string alter = "ALTER TABLE Payments ADD COLUMN RefundReason TEXT DEFAULT ''";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasNotesCol)
+                {
+                    string alter = "ALTER TABLE Payments ADD COLUMN RefundNotes TEXT DEFAULT ''";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
         public static void MigrateUsersTable()
         {

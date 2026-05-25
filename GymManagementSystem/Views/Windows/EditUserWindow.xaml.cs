@@ -39,15 +39,13 @@ namespace GymManagementSystem.Views.Windows
                 }
             }
 
+            secCurrentPassword.Visibility = Visibility.Visible;
             if (_isSelfEdit)
             {
-                // Self-editing: require current password to save changes
-                secCurrentPassword.Visibility = Visibility.Visible;
                 cbRole.IsEnabled = false; // Block self-demotion
             }
             else
             {
-                secCurrentPassword.Visibility = Visibility.Collapsed;
                 cbRole.IsEnabled = true;
             }
         }
@@ -69,41 +67,38 @@ namespace GymManagementSystem.Views.Windows
                 return (true, cleaned, "");
             });
 
-            // Current password validation (only active/checked if self-edit)
-            if (_isSelfEdit)
-            {
-                _validationHelper.RegisterField(
-                    pbCurrentPassword,
-                    lblCurrentPasswordError,
-                    () =>
+            // Current password validation (always active/checked)
+            _validationHelper.RegisterField(
+                pbCurrentPassword,
+                lblCurrentPasswordError,
+                () =>
+                {
+                    string currentPwd = chkShowPasswords.IsChecked == true ? txtCurrentPasswordVisible.Text : pbCurrentPassword.Password;
+                    if (string.IsNullOrEmpty(currentPwd))
                     {
-                        string currentPwd = chkShowPasswords.IsChecked == true ? txtCurrentPasswordVisible.Text : pbCurrentPassword.Password;
-                        if (string.IsNullOrEmpty(currentPwd))
-                        {
-                            var redBrush = new SolidColorBrush(Color.FromRgb(255, 68, 68));
-                            pbCurrentPassword.BorderBrush = redBrush;
-                            txtCurrentPasswordVisible.BorderBrush = redBrush;
-                            return (false, "", "Current password is required to save changes.");
-                        }
-
-                        // Validate against database
-                        if (!VerifyCurrentPassword(currentPwd))
-                        {
-                            var redBrush = new SolidColorBrush(Color.FromRgb(255, 68, 68));
-                            pbCurrentPassword.BorderBrush = redBrush;
-                            txtCurrentPasswordVisible.BorderBrush = redBrush;
-                            return (false, "", "Incorrect current password. Please try again.");
-                        }
-
-                        var grayBrush = new SolidColorBrush(Color.FromRgb(51, 51, 51));
-                        pbCurrentPassword.BorderBrush = grayBrush;
-                        txtCurrentPasswordVisible.BorderBrush = grayBrush;
-                        return (true, currentPwd, "");
+                        var redBrush = new SolidColorBrush(Color.FromRgb(255, 68, 68));
+                        pbCurrentPassword.BorderBrush = redBrush;
+                        txtCurrentPasswordVisible.BorderBrush = redBrush;
+                        return (false, "", "Current password is required to save changes.");
                     }
-                );
 
-                txtCurrentPasswordVisible.LostFocus += (s, e) => { _validationHelper.ValidateAll(); };
-            }
+                    // Validate against database
+                    if (!VerifyCurrentPassword(currentPwd))
+                    {
+                        var redBrush = new SolidColorBrush(Color.FromRgb(255, 68, 68));
+                        pbCurrentPassword.BorderBrush = redBrush;
+                        txtCurrentPasswordVisible.BorderBrush = redBrush;
+                        return (false, "", "Incorrect current password. Please try again.");
+                    }
+
+                    var grayBrush = new SolidColorBrush(Color.FromRgb(51, 51, 51));
+                    pbCurrentPassword.BorderBrush = grayBrush;
+                    txtCurrentPasswordVisible.BorderBrush = grayBrush;
+                    return (true, currentPwd, "");
+                }
+            );
+
+            txtCurrentPasswordVisible.LostFocus += (s, e) => { _validationHelper.ValidateAll(); };
 
             // New password validation (optional)
             _validationHelper.RegisterField(
@@ -119,6 +114,15 @@ namespace GymManagementSystem.Views.Windows
                         pbNewPassword.BorderBrush = grayBrush;
                         txtNewPasswordVisible.BorderBrush = grayBrush;
                         return (true, "", "");
+                    }
+
+                    string currentPwd = chkShowPasswords.IsChecked == true ? txtCurrentPasswordVisible.Text : pbCurrentPassword.Password;
+                    if (newPwd == currentPwd)
+                    {
+                        var redBrush = new SolidColorBrush(Color.FromRgb(255, 68, 68));
+                        pbNewPassword.BorderBrush = redBrush;
+                        txtNewPasswordVisible.BorderBrush = redBrush;
+                        return (false, "", "New password cannot be the same as your old password.");
                     }
 
                     var (isValid, cleaned, error) = InputValidator.ValidatePassword(newPwd);
@@ -209,12 +213,9 @@ namespace GymManagementSystem.Views.Windows
         private void TogglePassword_Checked(object sender, RoutedEventArgs e)
         {
             // Sync pb to txt and swap visibility
-            if (_isSelfEdit)
-            {
-                txtCurrentPasswordVisible.Text = pbCurrentPassword.Password;
-                pbCurrentPassword.Visibility = Visibility.Collapsed;
-                txtCurrentPasswordVisible.Visibility = Visibility.Visible;
-            }
+            txtCurrentPasswordVisible.Text = pbCurrentPassword.Password;
+            pbCurrentPassword.Visibility = Visibility.Collapsed;
+            txtCurrentPasswordVisible.Visibility = Visibility.Visible;
 
             txtNewPasswordVisible.Text = pbNewPassword.Password;
             pbNewPassword.Visibility = Visibility.Collapsed;
@@ -230,12 +231,9 @@ namespace GymManagementSystem.Views.Windows
         private void TogglePassword_Unchecked(object sender, RoutedEventArgs e)
         {
             // Sync txt to pb and swap visibility
-            if (_isSelfEdit)
-            {
-                pbCurrentPassword.Password = txtCurrentPasswordVisible.Text;
-                txtCurrentPasswordVisible.Visibility = Visibility.Collapsed;
-                pbCurrentPassword.Visibility = Visibility.Visible;
-            }
+            pbCurrentPassword.Password = txtCurrentPasswordVisible.Text;
+            txtCurrentPasswordVisible.Visibility = Visibility.Collapsed;
+            pbCurrentPassword.Visibility = Visibility.Visible;
 
             pbNewPassword.Password = txtNewPasswordVisible.Text;
             txtNewPasswordVisible.Visibility = Visibility.Collapsed;

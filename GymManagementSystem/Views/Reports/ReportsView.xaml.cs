@@ -1,4 +1,4 @@
-﻿using GymManagementSystem.Views;
+using GymManagementSystem.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -42,5 +42,10 @@ public partial class ReportsView : UserControl
     private void TabRefunds_Click(object sender, RoutedEventArgs e)
     {
         ReportsFrame.Content = new RefundReportsView();
+    }
+
+    private void TabDiscounts_Click(object sender, RoutedEventArgs e)
+    {
+        ReportsFrame.Content = new DiscountReportsView();
     }
 }
