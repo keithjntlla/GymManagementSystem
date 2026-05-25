@@ -119,7 +119,7 @@ namespace GymManagementSystem.Views.Windows
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    string sql = "SELECT UserID, Username, Role, Status, MustChangePassword FROM Users WHERE Username = @username AND Password = @password";
+                    string sql = "SELECT UserID, Username, Role, Status FROM Users WHERE Username = @username AND Password = @password";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
@@ -135,8 +135,7 @@ namespace GymManagementSystem.Views.Windows
                                     UserID = reader["UserID"].ToString() ?? "",
                                     Username = reader["Username"].ToString() ?? "",
                                     Role = reader["Role"].ToString() ?? "",
-                                    Status = reader["Status"].ToString() ?? "Active",
-                                    MustChangePassword = Convert.ToInt32(reader["MustChangePassword"]) == 1
+                                    Status = reader["Status"].ToString() ?? "Active"
                                 };
                                 return true;
                             }

@@ -10,9 +10,8 @@ using GymManagementSystem.Models;
 
 namespace GymManagementSystem.Views.Windows
 {
-    public partial class EditDiscountWindow : Window, INotifyPropertyChanged
+    public partial class EditDiscountWindow : Window
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
         private readonly bool _isEditMode;
         public FixedDiscount ViewModel { get; private set; }
         public ObservableCollection<RateSelectionWrapper> AvailableRates { get; set; } = new ObservableCollection<RateSelectionWrapper>();

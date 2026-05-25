@@ -13,11 +13,35 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Tab Selection Header -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-            <RadioButton x:Name="tabMembers" Content="Member Attendance" Tag="👤" IsChecked="True" Style="{StaticResource TabButtonStyle}" Click="TabMembers_Click"/>
-            <RadioButton x:Name="tabInstructors" Content="Instructor Attendance" Tag="🏋️" Style="{StaticResource TabButtonStyle}" Click="TabInstructors_Click"/>
-        </StackPanel>
+        <!-- Header & Toggle Switch -->
+        <Grid Grid.Row="0" Margin="0,0,0,30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Attendance" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <!-- Segmented Control: Members | Instructors -->
+            <Border Grid.Column="1"
+                    Background="#1a1a1c" 
+                    BorderBrush="#333" BorderThickness="1"
+                    CornerRadius="10" 
+                    Height="36"
+                    VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="3">
+                    <RadioButton x:Name="tabMembers"
+                                 Content="👤  Members"
+                                 IsChecked="True"
+                                 Style="{StaticResource SegmentedButtonStyle}"
+                                 Click="TabMembers_Click"/>
+                    <RadioButton x:Name="tabInstructors"
+                                 Content="🏋️  Instructors"
+                                 Style="{StaticResource SegmentedButtonStyle}"
+                                 Click="TabInstructors_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <!-- Content Area -->
         <Grid Grid.Row="1">

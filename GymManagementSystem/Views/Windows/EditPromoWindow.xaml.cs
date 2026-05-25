@@ -220,8 +220,8 @@ namespace GymManagementSystem.Views.Windows
             string name = txtPromoName.Text.Trim();
             string discType = (cmbDiscountType.SelectedItem as ComboBoxItem)?.Content?.ToString() == "Fixed Amount" ? "FixedAmount" : "Percentage";
             double val = Convert.ToDouble(txtDiscountValue.Text.Trim());
-            string start = dpStartDate.SelectedDate.Value.ToString("yyyy-MM-dd");
-            string end = dpEndDate.SelectedDate.Value.ToString("yyyy-MM-dd");
+            string start = (dpStartDate.SelectedDate ?? DateTime.Today).ToString("yyyy-MM-dd");
+            string end = (dpEndDate.SelectedDate ?? DateTime.Today.AddMonths(1)).ToString("yyyy-MM-dd");
 
             string scope = "All";
             if (chkAllRates.IsChecked != true)

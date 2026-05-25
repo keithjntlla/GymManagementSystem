@@ -47,6 +47,12 @@
                             <Trigger Property="Content" Value="Settings">
                                 <Setter TargetName="icon" Property="Text" Value=""/>
                             </Trigger>
+                            <Trigger Property="Content" Value="Services &amp; Pricing">
+                                <Setter TargetName="icon" Property="Text" Value="💲"/>
+                            </Trigger>
+                            <Trigger Property="Content" Value="System">
+                                <Setter TargetName="icon" Property="Text" Value="🖥️"/>
+                            </Trigger>
 
                             <Trigger Property="Content" Value="Log Out">
                                 <Setter TargetName="icon" Property="Text" Value=""/>
@@ -214,13 +220,11 @@
                     <StackPanel x:Name="SettingsSubMenu" Visibility="Collapsed">
                         <RadioButton x:Name="btnNavServicesAndPricing"
                                      Content="Services &amp; Pricing"
-                                     Tag="💲"
-                                     Style="{StaticResource SubMenuButtonStyle}"
+                                     Style="{StaticResource MenuButtonStyle}"
                                      Click="NavServicesPricing_Click"/>
                         <RadioButton x:Name="btnNavSystem"
                                      Content="System"
-                                     Tag="🖥️"
-                                     Style="{StaticResource SubMenuButtonStyle}"
+                                     Style="{StaticResource MenuButtonStyle}"
                                      Click="NavSystem_Click"/>
                     </StackPanel>
 

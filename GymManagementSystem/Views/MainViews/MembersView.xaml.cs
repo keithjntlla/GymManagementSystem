@@ -38,7 +38,7 @@ namespace GymManagementSystem.Views.MainViews
             {
                 if (chk.IsChecked == true)
                 {
-                    string name = chk.Content?.ToString();
+                    string? name = chk.Content?.ToString();
                     if (!string.IsNullOrEmpty(name)) checkedTypes.Add(name);
                 }
             }
@@ -95,7 +95,7 @@ namespace GymManagementSystem.Views.MainViews
             {
                 if (chk.IsChecked == true)
                 {
-                    string name = chk.Content?.ToString();
+                    string? name = chk.Content?.ToString();
                     if (!string.IsNullOrEmpty(name)) checkedPlans.Add(name);
                 }
             }

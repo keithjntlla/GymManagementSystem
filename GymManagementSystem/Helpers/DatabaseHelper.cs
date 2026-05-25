@@ -27,8 +27,7 @@ namespace GymManagementSystem
             Password TEXT NOT NULL,
             Role TEXT,
             Status TEXT DEFAULT 'Active',
-            CreatedDate TEXT,
-            MustChangePassword INTEGER NOT NULL DEFAULT 0
+            CreatedDate TEXT
         );";
                 using (var cmd = new SQLiteCommand(usersTable, conn)) cmd.ExecuteNonQuery();
 
@@ -38,8 +37,8 @@ namespace GymManagementSystem
                     int userCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
                     if (userCount == 0)
                     {
-                        string insertUsersSql = @"INSERT INTO Users (UserID, Username, Password, Role, Status, CreatedDate, MustChangePassword) 
-                    VALUES ('USR001', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Administrator', 'Active', @date, 1)";
+                        string insertUsersSql = @"INSERT INTO Users (UserID, Username, Password, Role, Status, CreatedDate) 
+                    VALUES ('USR001', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'Administrator', 'Active', @date)";
                         using (var insertCmd = new SQLiteCommand(insertUsersSql, conn))
                         {
                             insertCmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -220,7 +219,6 @@ namespace GymManagementSystem
                 using (var cmd = new SQLiteCommand(instructorAttendanceTable, conn)) cmd.ExecuteNonQuery();
             }
 
-            MigrateUsersTable();
             MigratePaymentsTableForDiscounts();
             MigratePaymentsTableForRefundProcessing();
             MigratePaymentsTableForRefundReason();
@@ -231,6 +229,47 @@ namespace GymManagementSystem
             MigrateMembersTableForDiscountAndStudent();
             MigratePromosTableForNewFields();
             CreateMemberPromosTable();
+            AutoCheckOutOldSessions();
+        }
+
+        private static void AutoCheckOutOldSessions()
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(ConnectionString))
+                {
+                    conn.Open();
+                    string todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+
+                    // 1. Auto checkout old member sessions
+                    string memberSql = @"
+                        UPDATE Attendance 
+                        SET CheckOutTime = '10:00 PM' 
+                        WHERE CheckInDate < @today 
+                          AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                    using (var cmd = new SQLiteCommand(memberSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", todayStr);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 2. Auto checkout old instructor sessions
+                    string instructorSql = @"
+                        UPDATE InstructorAttendance 
+                        SET CheckOutTime = '10:00 PM' 
+                        WHERE CheckInDate < @today 
+                          AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                    using (var cmd = new SQLiteCommand(instructorSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", todayStr);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error running auto-checkout: " + ex.Message);
+            }
         }
 
         private static void MigrateInstructorsTable()
@@ -665,33 +704,7 @@ namespace GymManagementSystem
             }
         }
 
-        public static void MigrateUsersTable()
-        {
-            using (var conn = new SQLiteConnection(ConnectionString))
-            {
-                conn.Open();
-                bool hasMustChange = false;
-                using (var cmd = new SQLiteCommand("PRAGMA table_info(Users)", conn))
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        if (reader["name"]?.ToString() == "MustChangePassword")
-                        {
-                            hasMustChange = true;
-                            break;
-                        }
-                    }
-                }
 
-                if (!hasMustChange)
-                {
-                    string alter = "ALTER TABLE Users ADD COLUMN MustChangePassword INTEGER NOT NULL DEFAULT 0";
-                    using (var cmd = new SQLiteCommand(alter, conn))
-                        cmd.ExecuteNonQuery();
-                }
-            }
-        }
 
         public static void RestoreDefaultProfile()
         {

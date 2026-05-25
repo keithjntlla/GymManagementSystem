@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,6 +12,5 @@ namespace GymManagementSystem.Models
         public string Role { get; set; } = "";     // "Administrator" or "Staff"
         public string CreatedDate { get; set; } = ""; 
         public string Status { get; set; } = "Active"; // "Active" or "Inactive"
-        public bool MustChangePassword { get; set; } = false;
     }
 }

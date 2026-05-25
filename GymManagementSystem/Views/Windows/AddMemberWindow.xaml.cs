@@ -222,7 +222,7 @@ namespace GymManagementSystem.Views.Windows
         {
             var trainersList = new List<Instructor>
             {
-                new Instructor { InstructorID = "", FirstName = "[ None ]", LastName = "" }
+                new Instructor { InstructorID = "", FirstName = "[ None ]", LastName = "", Specialization = "No Trainer Assigned", ClientCount = 0 }
             };
 
             try
@@ -230,7 +230,12 @@ namespace GymManagementSystem.Views.Windows
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    using (var cmd = new SQLiteCommand("SELECT InstructorID, FirstName, MiddleInitial, LastName FROM Instructors WHERE Status = 'Active'", conn))
+                    string sql = @"
+                        SELECT InstructorID, FirstName, MiddleInitial, LastName, Specialization,
+                               (SELECT COUNT(*) FROM Members WHERE AssignedInstructorID = Instructors.InstructorID AND Status = 'Active') AS ActiveClientsCount
+                        FROM Instructors 
+                        WHERE Status = 'Active'";
+                    using (var cmd = new SQLiteCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -240,7 +245,9 @@ namespace GymManagementSystem.Views.Windows
                                 InstructorID = reader["InstructorID"]?.ToString() ?? "",
                                 FirstName = reader["FirstName"]?.ToString() ?? "",
                                 MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
-                                LastName = reader["LastName"]?.ToString() ?? ""
+                                LastName = reader["LastName"]?.ToString() ?? "",
+                                Specialization = reader["Specialization"]?.ToString() ?? "General",
+                                ClientCount = reader["ActiveClientsCount"] != DBNull.Value ? Convert.ToInt32(reader["ActiveClientsCount"]) : 0
                             };
                             trainersList.Add(trainer);
                         }
@@ -253,7 +260,6 @@ namespace GymManagementSystem.Views.Windows
             }
 
             cmbTrainer.ItemsSource = trainersList;
-            cmbTrainer.DisplayMemberPath = "FullName";
             cmbTrainer.SelectedValuePath = "InstructorID";
             cmbTrainer.SelectedIndex = 0;
         }
@@ -308,7 +314,7 @@ namespace GymManagementSystem.Views.Windows
             string selectedType = cmbMemberType.SelectedValue?.ToString() ?? "Regular";
             string selectedTrainerId = cmbTrainer.SelectedValue?.ToString() ?? "";
 
-            DateTime parsedBirthday = dpBirthday.SelectedDate.Value;
+            DateTime parsedBirthday = dpBirthday.SelectedDate ?? DateTime.Today;
             string birthdayStr = parsedBirthday.ToString("yyyy-MM-dd");
 
             if (DatabaseHelper.IsNameAndBirthdayDuplicate(cleanedFirst, cleanedLast, birthdayStr, isEditMode ? editMemberId : ""))
@@ -332,6 +338,26 @@ namespace GymManagementSystem.Views.Windows
                 {
                     txtFirstName.Focus();
                     return;
+                }
+            }
+
+            // Trainer capacity soft limit check
+            if (cmbTrainer.SelectedItem is Instructor selectedTrainer && !string.IsNullOrEmpty(selectedTrainer.InstructorID))
+            {
+                if (selectedTrainer.ClientCount >= 10)
+                {
+                    MessageBoxResult capacityResult = MessageBox.Show(
+                        $"Trainer {selectedTrainer.FullName} is currently at capacity ({selectedTrainer.ClientCount} active clients).\n\n" +
+                        "Are you sure you want to assign this trainer anyway?",
+                        "Trainer Capacity Warning",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+                    
+                    if (capacityResult != MessageBoxResult.Yes)
+                    {
+                        cmbTrainer.Focus();
+                        return;
+                    }
                 }
             }
 
