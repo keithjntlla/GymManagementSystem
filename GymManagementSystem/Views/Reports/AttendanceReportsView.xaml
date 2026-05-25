@@ -13,25 +13,45 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Tab Selection Header -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                <RadioButton x:Name="tabMembers" Content="Member Reports" Tag="👤" IsChecked="True" Style="{StaticResource TabButtonStyle}" Click="TabMembers_Click"/>
-                <RadioButton x:Name="tabInstructors" Content="Instructor Reports" Tag="🏋️" Style="{StaticResource TabButtonStyle}" Click="TabInstructors_Click"/>
-            </StackPanel>
-
             <!-- Filters Bar -->
-            <Border Grid.Row="1" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
-                <DockPanel>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
+            <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
+                <DockPanel LastChildFill="False">
+
+                    <!-- Date Navigator (Left) -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left" Margin="0,0,12,0">
                         <Button x:Name="btnPrevDay" Content="‹" Style="{StaticResource NavButtonStyle}" Click="BtnPrevDay_Click" Margin="0,0,8,0"/>
                         <DatePicker x:Name="dpAttendanceDate" Width="160" Style="{StaticResource ModernDatePicker}" SelectedDateChanged="DpAttendanceDate_SelectedDateChanged"/>
                         <Button x:Name="btnNextDay" Content="›" Style="{StaticResource NavButtonStyle}" Click="BtnNextDay_Click" Margin="8,0,0,0"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="8,0" Width="240" Height="36" Margin="0,0,8,0">
+
+                    <!-- Segmented Control: Members | Instructors -->
+                    <Border DockPanel.Dock="Left"
+                            Background="#1a1a1c" 
+                            BorderBrush="#333" BorderThickness="1"
+                            CornerRadius="10" 
+                            Height="36"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal" Margin="3">
+                            <RadioButton x:Name="tabMembers"
+                                         Content="👤  Members"
+                                         IsChecked="True"
+                                         Style="{StaticResource SegmentedButtonStyle}"
+                                         Click="TabMembers_Click"/>
+                            <RadioButton x:Name="tabInstructors"
+                                         Content="🏋️  Instructors"
+                                         Style="{StaticResource SegmentedButtonStyle}"
+                                         Click="TabInstructors_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right-side controls -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right">
+
+                        <!-- Search Bar -->
+                        <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="8,0" Width="220" Height="36" Margin="0,0,8,0">
                             <DockPanel VerticalAlignment="Center">
                                 <TextBlock Text="🔍" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
                                 <TextBox x:Name="txtAttendanceSearch" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" FontSize="13" VerticalAlignment="Center" Tag="Search name..." TextChanged="TxtAttendanceSearch_TextChanged">
@@ -66,7 +86,7 @@
 
                         <!-- Member Plan Filter -->
                         <ComboBox x:Name="cbPlanFilter" 
-                                  Width="160" 
+                                  Width="150" 
                                   Height="36" 
                                   Margin="0,0,8,0"
                                   Style="{StaticResource ModernComboBox}"
@@ -76,7 +96,7 @@
 
                         <!-- Instructor Specialization Filter (Hidden by default) -->
                         <ComboBox x:Name="cbSpecializationFilter" 
-                                  Width="160" 
+                                  Width="150" 
                                   Height="36" 
                                   Margin="0,0,8,0"
                                   Visibility="Collapsed"
@@ -92,11 +112,12 @@
                             <TextBlock Text="Export CSV" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
                         </Button>
                     </StackPanel>
+
                 </DockPanel>
             </Border>
 
             <!-- Summary Cards -->
-            <UniformGrid Grid.Row="2" Columns="2" Margin="0,0,0,15">
+            <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
                 <Border Style="{StaticResource SummaryCardStyle}" Background="#1a2a4a" BorderBrush="#2b4273" Margin="0,0,8,0">
                     <DockPanel VerticalAlignment="Center">
                         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
@@ -122,7 +143,7 @@
             </UniformGrid>
 
             <!-- Report Grids -->
-            <Grid Grid.Row="3" Margin="0,0,0,10">
+            <Grid Grid.Row="2" Margin="0,0,0,10">
                 <!-- MEMBER DATA GRID -->
                 <Border x:Name="brdMemberGrid" Background="#141416" CornerRadius="15" Padding="10" Visibility="Visible">
                     <DataGrid x:Name="dgAttendanceReport" 

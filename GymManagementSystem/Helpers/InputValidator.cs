@@ -394,9 +394,9 @@ namespace GymManagementSystem
                 return (false, "", "Discount percentage must be a valid number.");
             }
 
-            if (val < 0 || val > 100)
+            if (val < 0 || val > 50)
             {
-                return (false, "", "Discount percentage must be between 0 and 100.");
+                return (false, "", "Discount percentage must be between 0 and 50.");
             }
 
             return (true, val.ToString("0.##"), "");

@@ -59,7 +59,7 @@ namespace GymManagementSystem.Views.MainViews
                 {
                     return (false, input, "Please select a member first.");
                 }
-                if (totalAmount <= 0)
+                if (string.IsNullOrEmpty(selectedMembershipType))
                 {
                     return (false, input, "Please select a membership rate.");
                 }
@@ -384,6 +384,19 @@ namespace GymManagementSystem.Views.MainViews
         private void BtnMultiplier_Increment_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(selectedMembershipType)) return;
+
+            if (!string.IsNullOrEmpty(appliedPromoCode))
+            {
+                MessageBox.Show("Multipliers cannot be adjusted when a promo code is applied.", "Promo Active", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (durationMultiplier >= 12)
+            {
+                MessageBox.Show("Maximum duration multiplier cap reached (12).", "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             durationMultiplier++;
             lblMultiplierValue.Text = durationMultiplier.ToString();
             RecalculateFinancialsAndDates();
@@ -392,6 +405,13 @@ namespace GymManagementSystem.Views.MainViews
         private void BtnMultiplier_Decrement_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(selectedMembershipType) || durationMultiplier <= 1) return;
+
+            if (!string.IsNullOrEmpty(appliedPromoCode))
+            {
+                MessageBox.Show("Multipliers cannot be adjusted when a promo code is applied.", "Promo Active", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             durationMultiplier--;
             lblMultiplierValue.Text = durationMultiplier.ToString();
             RecalculateFinancialsAndDates();
@@ -1086,6 +1106,9 @@ namespace GymManagementSystem.Views.MainViews
             if (isValid)
             {
                 appliedPromoCode = code;
+                durationMultiplier = 1;
+                if (lblMultiplierValue != null) lblMultiplierValue.Text = "1";
+                
                 lblPromoStatus.Visibility = Visibility.Visible;
                 lblPromoStatus.Foreground = (System.Windows.Media.Brush?)new System.Windows.Media.BrushConverter().ConvertFromString("#00a651") ?? System.Windows.Media.Brushes.Green;
                 string typeDesc = type == "FixedAmount" ? $"₱{val:N2} off" : $"{val:0.##}% off";
