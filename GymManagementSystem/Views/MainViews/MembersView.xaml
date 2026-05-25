@@ -1,0 +1,398 @@
+<UserControl x:Class="GymManagementSystem.Views.MainViews.MembersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GymManagementSystem"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000">
+
+    <UserControl.Resources>
+        <Style x:Key="PopupCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <BulletDecorator Background="Transparent" Cursor="Hand">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="Border" 
+                                        Width="16" Height="16" 
+                                        CornerRadius="3" 
+                                        Background="#141416" 
+                                        BorderBrush="#333" 
+                                        BorderThickness="1"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center">
+                                    <Path x:Name="CheckMark" 
+                                          Width="10" Height="8" 
+                                          SnapsToDevicePixels="True" 
+                                          Fill="#ff6b00" 
+                                          Stretch="Fill" 
+                                          Data="M 0 4 L 3 7 L 9 1 C 9 1 9 1 9 1 Z" 
+                                          Visibility="Collapsed"/>
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter HorizontalAlignment="Left" 
+                                              VerticalAlignment="Center" 
+                                              Margin="8,0,0,0"/>
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#ff6b00"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#ff6b00"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="0,20,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <TextBox x:Name="txtSearch" 
+             Grid.Column="1"
+             Style="{StaticResource ModernTextBox}"
+             Width="250" Height="40" Margin="0,0,15,0" VerticalAlignment="Center"
+             Tag="Search Name or ID..." 
+             TextChanged="Filter_Changed"/>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                <Button x:Name="btnFilter" 
+                        Click="FilterButton_Click" 
+                        Content="Filter ▾" 
+                        Background="#1a1a1c"
+                        Foreground="White"
+                        BorderBrush="#333"
+                        BorderThickness="1"
+                        Width="90" Height="40" 
+                        Margin="0,0,15,0"
+                        VerticalAlignment="Center"
+                        Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="5">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#2a2a2c"/>
+                                    <Setter Property="BorderBrush" Value="#ff6b00"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                
+                <Popup x:Name="popFilter" PlacementTarget="{Binding ElementName=btnFilter}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+                    <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="15" Width="200" Margin="0,5,0,0">
+                        <StackPanel>
+                            <!-- Status Category -->
+                            <TextBlock Text="STATUS" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <CheckBox x:Name="chkStatusActive" Content="Active" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
+                            <CheckBox x:Name="chkStatusPending" Content="Pending" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
+                            <CheckBox x:Name="chkStatusExpired" Content="Expired" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed" Margin="0,0,0,12"/>
+
+                            <!-- Member Type Category -->
+                            <TextBlock Text="MEMBER TYPE" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <CheckBox x:Name="chkTypeRegular" Content="Regular" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
+                            <CheckBox x:Name="chkTypeStudent" Content="Student" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
+                            <StackPanel x:Name="spDynamicTypes"/>
+                            
+                            <!-- Divider line -->
+                            <Border BorderBrush="#333" BorderThickness="0,0,0,1" Margin="0,4,0,12"/>
+
+                            <!-- Plan Category -->
+                            <TextBlock Text="PLAN" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <StackPanel x:Name="spDynamicPlans"/>
+                            <CheckBox x:Name="chkPlanNone" Content="None" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+                
+                <WrapPanel x:Name="wpChips" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <Button Grid.Column="3" 
+            x:Name="btnRefreshAttendance" 
+            Style="{StaticResource IconButtonStyle}" 
+            Width="40" Height="40" Margin="0,0,15,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="Refresh_Click" 
+            ToolTip="Refresh">
+                <Viewbox Width="18" Height="18">
+                    <Path Fill="White" 
+                  Data="M19,8l-2.6,2.6C17.6,11.9,18,13.4,18,15c0,3.3-2.7,6-6,6s-6-2.7-6-6s2.7-6,6-6v3l5-4l-5-4v3c-4.4,0-8,3.6-8,8 s3.6,8,8,8s8-3.6,8-8C20,12.3,19.6,10,19,8z"/>
+                </Viewbox>
+            </Button>
+
+            <Button Grid.Column="4" 
+            Style="{StaticResource ModernGradientButton}"
+            Height="40"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Click="AddMember_Click">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal" Margin="20,0">
+                        <TextBlock Text="+" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Add Member" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+        </Grid>
+
+        <!-- Active, Pending & Expired Summary Cards -->
+        <UniformGrid Grid.Row="1" Columns="3" Height="110" Margin="0,0,0,20">
+            <!-- Active Members Card -->
+            <Border Background="#111a30" BorderBrush="#1c2a4e" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Active Members" Foreground="#8a99ad" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblActiveCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Pending Members Card -->
+            <Border Background="#3a2010" BorderBrush="#5c351a" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Pending Members" Foreground="#d29e74" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblPendingCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Expired Members Card -->
+            <Border Background="#2b0d0e" BorderBrush="#4a1618" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Expired Members" Foreground="#d08587" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblExpiredCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </UniformGrid>
+
+        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
+            <DataGrid x:Name="dgMembers" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
+
+                <DataGrid.Resources>
+                    <local:StringToCollectionConverter x:Key="StringToCollectionConverter"/>
+
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1a1a1c"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Member ID" Binding="{Binding MemberID}" Width="100"/>
+                    <DataGridTemplateColumn Header="Full Name" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding FullName}" 
+                                        Click="MemberName_Click" 
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <TextBlock x:Name="txtBtn" Text="{TemplateBinding Content}" 
+                                                       Foreground="White" 
+                                                       FontWeight="SemiBold"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="txtBtn" Property="Foreground" Value="#ff6b00"/>
+                                                    <Setter TargetName="txtBtn" Property="TextDecorations" Value="Underline"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="120"/>
+
+                    <DataGridTextColumn Header="Member Type" Binding="{Binding MemberType}" Width="120"/>
+
+                    <DataGridTextColumn Header="Assigned Trainer" Binding="{Binding AssignedTrainerName}" Width="140"/>
+
+                    <DataGridTemplateColumn Header="Current Plan" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <DataTemplate.Resources>
+                                    <local:PlanNameSplitterConverter x:Key="PlanSplitter"/>
+                                </DataTemplate.Resources>
+
+                                <ItemsControl ItemsSource="{Binding MembershipPlan, Converter={StaticResource StringToCollectionConverter}}"
+                          HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <ContentControl Content="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=0}" 
+                                            Style="{StaticResource MembershipPlanBadge}" 
+                                            VerticalAlignment="Center"/>
+
+                                                <Button Margin="6,0,0,0" VerticalAlignment="Center" Cursor="Hand"
+                                    Click="QueueBadge_Click" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGridRow}}">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="brdBadge" Background="#e67e22" CornerRadius="10" Padding="6,2">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock x:Name="txtMultiplier" Text="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=1}" 
+                                                           Foreground="White" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <DataTrigger Binding="{Binding Converter={StaticResource PlanSplitter}, ConverterParameter=1}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="brdBadge" Property="Background" Value="#d35400"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
+
+                    <DataGridTemplateColumn Header="Status" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                        <Setter Property="Fill" Value="#00ff00"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                        <Setter Property="Fill" Value="#ffcc00"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Expired">
+                                                        <Setter Property="Fill" Value="#ff3333"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Actions" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="₱" FontSize="18" Cursor="Hand" 
+                                            Click="PayMember_Click" CommandParameter="{Binding}" ToolTip="Process Payment">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Foreground" Value="#4a90e2"/>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+
+                                    <Button Grid.Column="1" Content="✎" Foreground="#ff6b00" FontSize="18" Cursor="Hand" 
+                                            Click="EditMember_Click" CommandParameter="{Binding MemberID}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" Content="🗑" Foreground="#ff3333" FontSize="18" Cursor="Hand" 
+                                            Click="DeleteMember_Click" CommandParameter="{Binding MemberID}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

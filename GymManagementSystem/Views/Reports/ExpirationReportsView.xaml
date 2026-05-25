@@ -1,0 +1,254 @@
+<UserControl x:Class="GymManagementSystem.Views.Reports.ExpirationReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GymManagementSystem.Views.Reports"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1000">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid x:Name="ExpirationsReportGrid" Margin="0,20,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="20" Margin="0,0,0,15">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                        <TextBlock Text="Showing active members expiring within 7 days" Foreground="#666" FontSize="11" Margin="0,0,0,8"/>
+                        <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1"
+                                CornerRadius="8" Padding="10,0" Height="40">
+                            <DockPanel VerticalAlignment="Center">
+                                <TextBlock Text="🔍" FontSize="14" Foreground="Gray"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" DockPanel.Dock="Left"/>
+                                <TextBox x:Name="txtExpirationSearch" Background="Transparent"
+                                         BorderThickness="0" Foreground="White" CaretBrush="White"
+                                         FontSize="13" VerticalAlignment="Center"
+                                         Tag="Search by member name..."
+                                         TextChanged="TxtExpirationSearch_TextChanged">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="TextBox">
+                                                        <Grid>
+                                                            <ScrollViewer x:Name="PART_ContentHost"
+                                                                          Background="Transparent"
+                                                                          VerticalAlignment="Center"/>
+                                                            <TextBlock Foreground="Gray" FontSize="13"
+                                                                       VerticalAlignment="Center"
+                                                                       IsHitTestVisible="False"
+                                                                       Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Style="{StaticResource ModernGradientButton}"
+                            Padding="18,10"
+                            VerticalAlignment="Bottom"
+                            Click="ExportCsv_Click">
+                        <TextBlock Text="Export CSV" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a1020" BorderBrush="#5a2035" Margin="0,0,8,0">
+                    <DockPanel VerticalAlignment="Center">
+                        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Critical Count (72 Hours)" Foreground="#cc7788" FontSize="13"/>
+                            <TextBlock x:Name="lblCriticalCount" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                            <TextBlock Text="Expiring within 3 days" Foreground="#885566" FontSize="12" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource SummaryCardIconButtonStyle}"
+                                Background="#5a1a30"
+                                ToolTip="Notify members"
+                                Click="NotifyCritical_Click"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="🔔" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </DockPanel>
+                </Border>
+
+                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a2010" BorderBrush="#5c3826" Margin="8,0,0,0">
+                    <DockPanel VerticalAlignment="Center">
+                        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Pending Renewals" Foreground="#cc9966" FontSize="13"/>
+                            <TextBlock x:Name="lblPendingRenewals" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                            <TextBlock Text="Already expired members" Foreground="#886644" FontSize="12" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource SummaryCardIconButtonStyle}"
+                                Background="#5a3010"
+                                ToolTip="View expired members"
+                                Click="ViewExpiredMembers_Click"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="👥" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </DockPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
+                <DataGrid x:Name="dgExpirations" 
+                          Style="{StaticResource ModernDataGrid}"
+                          IsReadOnly="True"
+                          RowHeaderWidth="0"
+                          RowHeight="56" 
+                          FontSize="14"
+                          VerticalScrollBarVisibility="Disabled"
+                          HorizontalScrollBarVisibility="Disabled">
+
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UrgencyLevel}" Value="Expired">
+                                    <Setter Property="Background" Value="#1f0a0a"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
+                                    <Setter Property="Background" Value="#291407"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
+                                    <Setter Property="Background" Value="#1a1500"/>
+                                </DataTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#252528"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Member Name" Width="1.6*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse x:Name="UrgencyDot" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center" Fill="Transparent"/>
+                                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding DaysRemaining}" Value="0">
+                                            <Setter TargetName="UrgencyDot" Property="Fill" Value="#ff4060"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Phone Number" Binding="{Binding Phone}" Width="1.2*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#aaaaaa"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Header="Plan Type" Width="1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ContentControl Content="{Binding PlanType}" 
+                                                    Style="{StaticResource MembershipPlanBadge}"
+                                                    VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" Width="1*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#aaaaaa"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Header="Days Remaining" Width="1.4*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel VerticalAlignment="Center" Margin="0,4,0,4">
+                                        <TextBlock x:Name="DaysLabel" Text="{Binding DaysRemainingLabel}" FontWeight="SemiBold" FontSize="13" Foreground="#aaaaaa" Margin="0,0,0,4"/>
+                                        <Border x:Name="ProgressTrack" Height="5" CornerRadius="3" Background="#2a2a2c" Visibility="Visible">
+                                            <Border x:Name="ProgressFill" HorizontalAlignment="Left" CornerRadius="3" Background="#4090f0" Width="{Binding ProgressWidth}"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
+                                            <Setter TargetName="DaysLabel"    Property="Foreground" Value="#ff6b00"/>
+                                            <Setter TargetName="ProgressFill" Property="Background" Value="#ff6b00"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
+                                            <Setter TargetName="DaysLabel" Property="Foreground" Value="#ffcc00"/>
+                                            <Setter TargetName="ProgressFill" Property="Background" Value="#ffcc00"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="Last Notified" Width="1.1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding LastNotifiedLabel}" Foreground="#777" FontSize="12"
+                                               VerticalAlignment="Center" FontStyle="Italic"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="Actions" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="₱" FontSize="18" Cursor="Hand"
+                                            Click="PayMember_Click" CommandParameter="{Binding}" ToolTip="Process Payment">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent" BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Foreground" Value="#4a90e2"/>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

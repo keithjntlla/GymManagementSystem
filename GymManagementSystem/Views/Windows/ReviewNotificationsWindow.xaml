@@ -1,0 +1,85 @@
+<Window x:Class="GymManagementSystem.Views.Windows.ReviewNotificationsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Review Notifications" Height="560" Width="520"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+
+    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                <StackPanel DockPanel.Dock="Left">
+                    <TextBlock Text="Review Notifications" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="Select members to notify regarding their upcoming expiration."
+                               Foreground="#888" FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+                <Button Content="✕" DockPanel.Dock="Right" HorizontalAlignment="Right"
+                        Background="Transparent" Foreground="Gray" BorderThickness="0"
+                        FontSize="18" Click="Cancel_Click"/>
+            </DockPanel>
+
+            <Border Grid.Row="1" Background="#1a1a1c" CornerRadius="10" BorderBrush="#333" BorderThickness="1">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <ItemsControl x:Name="itemsMembers">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#141416" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  IsEnabled="{Binding CanNotify}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0"
+                                                  Foreground="White"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding FullName}" Foreground="White"
+                                                           FontWeight="SemiBold" FontSize="14"/>
+                                                <TextBlock Text="{Binding NotifiedStatusLabel}" Foreground="#666"
+                                                           FontSize="11" Margin="8,2,0,0"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                <Border CornerRadius="6" Padding="6,3" Background="#3d2800"
+                                                        Margin="0,0,8,0">
+                                                    <TextBlock Text="{Binding DaysRemainingLabel}"
+                                                               Foreground="#ff9800" FontSize="11" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding ExpiryDate}" Foreground="#777"
+                                                           FontSize="11" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <Grid Grid.Row="2" Margin="0,18,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Content="Cancel" Grid.Column="0" Margin="0,0,8,0" Padding="0,12"
+                        Background="#1a1a1a" Foreground="White" BorderBrush="#333"
+                        Click="Cancel_Click"/>
+                <Button x:Name="btnSend" Grid.Column="1" Margin="8,0,0,0" Padding="0,12"
+                        Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0"
+                        Click="Send_Click"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

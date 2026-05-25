@@ -1,0 +1,423 @@
+<UserControl x:Class="GymManagementSystem.Views.MainViews.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GymManagementSystem"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,10,15,10">
+
+        <TextBlock Text="Dashboard Overview" Foreground="White" FontSize="28" FontWeight="Bold"/>
+        <TextBlock x:Name="txtWelcomeMessage" FontSize="16" Text="Welcome back! Here's what's happening today." Foreground="Gray" Margin="0,4,0,12"/>
+
+        <TextBlock Text="MEMBERS &amp; ATTENDANCE" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+        <Grid Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Column 0: Today's Check-ins Card -->
+            <Border Grid.Column="0" Background="#1a3d2b" BorderBrush="#26593f" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="📋" FontSize="26" Foreground="#4caf50"/>
+                    <TextBlock Text="Today's Check-ins" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTodayCheckIns" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Column 1: Occupancy Meter Card -->
+            <Border Grid.Column="1" Background="#142622" BorderBrush="#22423c" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="🏋️" FontSize="26" Foreground="#26c6a6"/>
+                    <TextBlock Text="Gym Occupancy" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="lblCurrentlyIn" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                            <TextBlock Text="/" Foreground="#666" FontSize="20" Margin="4,0,4,0" VerticalAlignment="Bottom"/>
+                            <TextBlock x:Name="lblMaxCapacity" Text="100" Foreground="#aaa" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Column 2: Inline Check-in/Out Box -->
+            <Border Grid.Column="2" Background="#162238" BorderBrush="#263b5e" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="INLINE ATTENDANCE CHECK-IN/CHECKOUT" Foreground="#85a3d0" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+                    
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <Grid>
+                                <TextBox x:Name="txtInlineSearch" Style="{StaticResource ModernTextBox}" 
+                                         Tag="Type Member Name/ID..." 
+                                         KeyDown="TxtInlineSearch_KeyDown"
+                                         TextChanged="TxtInlineSearch_TextChanged"
+                                         GotFocus="TxtInlineSearch_GotFocus"
+                                         LostFocus="TxtInlineSearch_LostFocus"
+                                         HorizontalAlignment="Stretch" Margin="0,0,10,0"/>
+                                
+                                <Popup x:Name="popInlineSearch" PlacementTarget="{Binding ElementName=txtInlineSearch}" Placement="Bottom" IsOpen="False" StaysOpen="False" Width="{Binding ElementName=txtInlineSearch, Path=ActualWidth}">
+                                    <Border Background="#222" BorderBrush="#333" BorderThickness="1" CornerRadius="0,0,10,10">
+                                        <ListBox x:Name="lstInlineSearchResults" Background="Transparent" BorderThickness="0" MaxHeight="200" 
+                                                 SelectionChanged="LstInlineSearchResults_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                    <Setter Property="Padding" Value="10,6"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#222"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="10,5">
+                                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="14" Foreground="White"/>
+                                                        <TextBlock Text="{Binding MemberID}" Foreground="Gray" FontSize="12"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                            
+                            <!-- Inline Alert Bar -->
+                            <Border x:Name="brdInlineAlert" CornerRadius="6" Padding="8,4" Margin="0,8,10,0" Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock x:Name="txtInlineAlertIcon" Text="✓" FontWeight="Bold" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="txtInlineAlertMessage" Text="Check-in Successful!" Foreground="White" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <Button x:Name="btnCollectPaymentLink" Content="[Collect Payment]" Click="BtnCollectPaymentLink_Click" Background="Transparent" BorderThickness="0" Foreground="#ff9800" Cursor="Hand" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="Collapsed">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" x:Name="btnInlineCheck" Content="Check" Click="BtnInlineCheck_Click" 
+                                Width="80" Height="40" VerticalAlignment="Center" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#263b5e" BorderBrush="#3f5a8a" BorderThickness="1" CornerRadius="8" x:Name="border">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#334e7c"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <TextBlock Text="REVENUE &amp; GROWTH" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+        <UniformGrid Columns="3" Margin="0,0,0,12">
+            <!-- Today's Revenue Card -->
+            <Border Background="#143d26" BorderBrush="#1e5938" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="💰" FontSize="26" Foreground="#4caf50"/>
+                    <TextBlock Text="Today's Revenue" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTodayRevenue" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Monthly Revenue Card -->
+            <Border Background="#1a3520" BorderBrush="#254d2f" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="📈" FontSize="26" Foreground="#81c784"/>
+                    <TextBlock Text="Monthly Revenue" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblMonthlyRevenue" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <!-- New Members Card -->
+            <Border Background="#3d2614" BorderBrush="#59391e" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="🌟" FontSize="26" Foreground="#ff9800"/>
+                    <TextBlock Text="New Members This Month" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblNewMembers" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Grid Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="1.6*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <!-- Expiring Soon Section -->
+                <StackPanel x:Name="ExpiringSoonSection" Margin="0,0,0,20">
+                    <DockPanel Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <TextBlock Text="⚠️ EXPIRING SOON" Foreground="#EF4444" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock x:Name="lblExpiringSubscriptions" Text="0" Foreground="#EF4444" FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
+                            <TextBlock Text=" members in the next 3 days" Foreground="#555" FontSize="11"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Border Background="#141416" CornerRadius="14" Padding="5">
+                        <Grid>
+                            <DataGrid x:Name="dgExpiringSoon" 
+                                      Style="{StaticResource ModernDataGrid}"
+                                      IsReadOnly="True"
+                                      RowHeaderWidth="0"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      HorizontalScrollBarVisibility="Disabled">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Member" Binding="{Binding FullName}" Width="1.9*"/>
+                                    <DataGridTextColumn Header="Expiry" Binding="{Binding ExpiryDate}" Width="1.2*"/>
+
+                                    <DataGridTemplateColumn Header="Status" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" Padding="6,3" Background="#3B1214" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding DaysLeft}" Foreground="#EF4444" FontSize="11" FontWeight="Bold"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Actions" Width="115">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Button Content="₱" FontSize="18" Cursor="Hand" Margin="0,0,8,0"
+                                            Click="PayMember_Click" CommandParameter="{Binding}" ToolTip="Process Payment">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="Transparent" BorderThickness="0">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Foreground" Value="#4a90e2"/>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+                                                    <Button Content="🔔" FontSize="14" Cursor="Hand"
+                                            Click="NotifyMember_Click" CommandParameter="{Binding}" ToolTip="Notify member">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="Transparent" BorderThickness="0">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Foreground" Value="#ff6b00"/>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Button HorizontalAlignment="Right" 
+                    VerticalAlignment="Top" 
+                    Margin="0,6,10,0" 
+                    Cursor="Hand"
+                    Click="ViewExpirationReport_Click" 
+                    ToolTip="View full report">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="Transparent" Padding="4">
+                                            <TextBlock Text="→" FontSize="14" Foreground="#888">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- Pending Registrations Section -->
+                <StackPanel x:Name="PendingRegistrationsSection">
+                    <DockPanel Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <TextBlock Text="⏳ PENDING REGISTRATIONS" Foreground="#ff9800" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock x:Name="lblPendingRegistrationsCount" Text="0" Foreground="#ff9800" FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
+                            <TextBlock Text=" members require initial payment" Foreground="#555" FontSize="11"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Border Background="#141416" CornerRadius="14" Padding="5">
+                        <DataGrid x:Name="dgPendingRegistrations" 
+                                  Style="{StaticResource ModernDataGrid}"
+                                  IsReadOnly="True"
+                                  RowHeaderWidth="0"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Member" Binding="{Binding FullName}" Width="2*"/>
+                                <DataGridTextColumn Header="Joined" Binding="{Binding DateJoined}" Width="1.2*"/>
+
+                                <DataGridTemplateColumn Header="Actions" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="₱" FontSize="18" Cursor="Hand" HorizontalAlignment="Center"
+                                                    Click="CollectPendingPayment_Click" CommandParameter="{Binding}" ToolTip="Collect Payment">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="Transparent" BorderThickness="0">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Foreground" Value="#ff9800"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Foreground" Value="#ffb74d"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="RECENT TRANSACTIONS" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+                <Border Background="#141416" CornerRadius="14" Padding="5">
+                    <DataGrid x:Name="dgRecentTransactions" 
+                              Style="{StaticResource ModernDataGrid}"
+                              IsReadOnly="True"
+                              RowHeaderWidth="0"
+                              VerticalScrollBarVisibility="Disabled"
+                              HorizontalScrollBarVisibility="Disabled">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Member" Binding="{Binding MemberName}" Width="1.3*"/>
+
+                            <DataGridTemplateColumn Header="Plan" Width="1.2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <ContentControl x:Name="normalPlanBadge"
+                                                            Content="{Binding DisplayMembershipType}"
+                                                            Style="{StaticResource MembershipPlanBadge}"/>
+                                            <Border x:Name="refundPlanBadge"
+                                                    CornerRadius="6"
+                                                    Padding="8,3"
+                                                    Background="#2A2A2E"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="Collapsed">
+                                                <TextBlock Text="{Binding DisplayMembershipType}"
+                                                           Foreground="#8A8A93"
+                                                           FontSize="11"
+                                                           FontWeight="Bold"
+                                                           TextDecorations="Strikethrough"/>
+                                            </Border>
+                                        </Grid>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding IsRefundTransaction}" Value="True">
+                                                <Setter TargetName="normalPlanBadge" Property="Visibility" Value="Collapsed"/>
+                                                <Setter TargetName="refundPlanBadge" Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Amount" Width="1.2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock x:Name="amountText" Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#4caf50" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding IsRefundTransaction}" Value="True">
+                                                <Setter TargetName="amountText" Property="Foreground" Value="#EF4444"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Date" Binding="{Binding DateOfTransaction}" Width="1.2*"/>
+
+                            <DataGridTemplateColumn Header="Mode" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border x:Name="modeBorder" CornerRadius="6" Padding="6,3" Background="#1a2b1a" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock x:Name="modeText" Text="{Binding PaymentMode}" Foreground="#81c784" FontSize="11"/>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="GCash">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="#0d1f3d"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="#4a90e2"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="Refund">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="#3B1214"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="#EF4444"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
