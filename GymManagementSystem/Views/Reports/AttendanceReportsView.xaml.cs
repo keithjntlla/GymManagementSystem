@@ -32,7 +32,7 @@ namespace GymManagementSystem.Views.Reports
 
             dgAttendanceReport.ItemsSource = FilteredAttendanceRecords;
             dpAttendanceDate.SelectedDate = DateTime.Now;
-            LoadPlanFilterComboBox();
+            LoadPlanFilterComboBox();   //
             LoadAttendanceData();
         }
 
