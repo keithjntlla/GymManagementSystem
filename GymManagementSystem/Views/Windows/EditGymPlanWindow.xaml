@@ -5,7 +5,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
-    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1" Margin="10">
+    <Border Background="{DynamicResource ThemeCardBg}" CornerRadius="15" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" Margin="10">
         <Border.Effect>
             <DropShadowEffect BlurRadius="15" Direction="270" Opacity="0.5" ShadowDepth="2"/>
         </Border.Effect>
@@ -17,24 +17,24 @@
             </Grid.RowDefinitions>
 
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBlock Text="{Binding WindowTitle}" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
+                <TextBlock Text="{Binding WindowTitle}" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
             </DockPanel>
 
             <StackPanel Grid.Row="1">
-                <TextBlock Text="Plan Name" Foreground="White" Margin="0,0,0,5"/>
+                <TextBlock Text="Plan Name" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
                 <TextBox x:Name="txtPlanName" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
                 <TextBlock x:Name="lblPlanNameError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                <TextBlock Text="Price (₱)" Foreground="White" Margin="0,0,0,5"/>
+                <TextBlock Text="Price (₱)" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
                 <TextBox x:Name="txtPrice" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
                 <TextBlock x:Name="lblPriceError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                <TextBlock Text="Duration (Days)" Foreground="White" Margin="0,0,0,5"/>
+                <TextBlock Text="Duration (Days)" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
                 <TextBox x:Name="txtDuration" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
                 <TextBlock x:Name="lblDurationError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                <TextBlock Text="Note: Changes affect future payments only." Foreground="#888" FontSize="11" FontStyle="Italic" TextWrapping="Wrap"/>
+                <TextBlock Text="Note: Changes affect future payments only." Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontStyle="Italic" TextWrapping="Wrap"/>
             </StackPanel>
 
             <Grid Grid.Row="2" Margin="0,20,0,0">
@@ -49,7 +49,7 @@
                         </Style>
                     </Button.Resources>
                 </Button>
-                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click">
+                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="{DynamicResource ThemeNavBtnBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeNavBtnBorder}" Click="Cancel_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="8"/>

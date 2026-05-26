@@ -12,7 +12,7 @@
         <local:PlanNameSplitterConverter x:Key="PlanSplitter"/>
     </Window.Resources>
 
-    <Border Background="#222222" Height="600" CornerRadius="15" BorderBrush="#333333" BorderThickness="1" Margin="0,0,0,-74">
+    <Border Background="{DynamicResource ThemeCardBg}" Height="600" CornerRadius="15" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" Margin="0,0,0,-74">
         <Grid Margin="25">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -22,8 +22,8 @@
 
             <!-- Header / Close button -->
             <DockPanel Grid.Row="0" Margin="0,0,0,15">
-                <TextBlock Text="Member Profile" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Close_Click" Cursor="Hand">
+                <TextBlock Text="Member Profile" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0" FontSize="18" Click="Close_Click" Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="Transparent">
@@ -31,7 +31,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -43,8 +43,8 @@
             <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,20">
                 <Grid Width="110" Height="110" HorizontalAlignment="Center">
                     <!-- Initials Fallback (Dark Background) -->
-                    <Border x:Name="brdInitials" Width="100" Height="100" CornerRadius="50" BorderThickness="2" Background="#1a1a1c">
-                        <TextBlock x:Name="txtInitials" Text="--" Foreground="White" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border x:Name="brdInitials" Width="100" Height="100" CornerRadius="50" BorderThickness="2" Background="{DynamicResource ThemePanelBg}">
+                        <TextBlock x:Name="txtInitials" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <!-- Perfect Circle Image -->
                     <Ellipse x:Name="ellPhoto" Width="100" Height="100" Stroke="#ff6b00" StrokeThickness="2" Visibility="Collapsed">
@@ -54,7 +54,7 @@
                     </Ellipse>
                 </Grid>
                 
-                <TextBlock x:Name="txtFullName" Text="John Doe" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,8,0,2" TextAlignment="Center"/>
+                <TextBlock x:Name="txtFullName" Text="John Doe" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,8,0,2" TextAlignment="Center"/>
                 <Border x:Name="brdStatusBadge" CornerRadius="12" Padding="12,4" HorizontalAlignment="Center" Margin="0,4,0,0">
                     <TextBlock x:Name="txtStatus" Text="ACTIVE" Foreground="White" FontSize="11" FontWeight="Bold"/>
                 </Border>
@@ -67,48 +67,48 @@
                     <UniformGrid Columns="2" Margin="0,0,0,10">
                         <!-- Column 1 & Column 2 details -->
                         <StackPanel Margin="0,0,10,15">
-                            <TextBlock Text="MEMBER ID" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock x:Name="txtMemberID" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="MEMBER ID" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtMemberID" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold"/>
                         </StackPanel>
                         
                         <StackPanel Margin="10,0,0,15">
-                            <TextBlock Text="MEMBER TIER" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock x:Name="txtMemberType" Text="Regular" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="MEMBER TIER" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtMemberType" Text="Regular" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,10,15">
-                            <TextBlock Text="PHONE NUMBER" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock x:Name="txtPhone" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="PHONE NUMBER" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtPhone" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <StackPanel Margin="10,0,0,15">
-                            <TextBlock Text="GENDER" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock x:Name="txtGender" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="GENDER" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtGender" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,10,15">
-                            <TextBlock Text="BIRTHDAY" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock x:Name="txtBirthday" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="BIRTHDAY" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtBirthday" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <StackPanel Margin="10,0,0,15">
-                            <TextBlock Text="DATE JOINED" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBlock x:Name="txtDateJoined" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="DATE JOINED" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="txtDateJoined" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold"/>
                         </StackPanel>
                     </UniformGrid>
 
                     <!-- Student ID Expiry (Only shown for Students) -->
                     <StackPanel x:Name="secStudentExpiry" Margin="0,5,0,15" Visibility="Collapsed">
-                        <TextBlock Text="STUDENT ID EXPIRY DATE" Foreground="Gray" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="STUDENT ID EXPIRY DATE" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock x:Name="txtStudentExpiry" Text="--" Foreground="White" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtStudentExpiry" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             <Border x:Name="brdStudentStatus" CornerRadius="8" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
                                 <TextBlock x:Name="txtStudentStatus" Text="ACTIVE" Foreground="White" FontSize="9" FontWeight="Bold"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
 
-                    <Border Background="#1a1a1c" CornerRadius="10" Padding="15" Margin="0,5,0,0" BorderBrush="#333" BorderThickness="1">
+                    <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="10" Padding="15" Margin="0,5,0,0" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="MEMBERSHIP PLAN INFORMATION" Foreground="#00a651" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
                             
@@ -118,7 +118,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                    <TextBlock Text="CURRENT PLAN" Foreground="Gray" FontSize="11" Margin="0,0,0,6"/>
+                                    <TextBlock Text="CURRENT PLAN" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" Margin="0,0,0,6"/>
                                     <!-- Reused Badges Container -->
                                     <ItemsControl ItemsSource="{Binding MembershipPlan, Converter={StaticResource StringToCollectionConverter}}"
                                                   HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -137,11 +137,11 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    <TextBlock x:Name="txtDaysRemaining" Text="--" Foreground="Gray" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                                    <TextBlock x:Name="txtDaysRemaining" Text="--" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                    <TextBlock Text="EXPIRY DATE" Foreground="Gray" FontSize="11" Margin="0,0,0,6"/>
-                                    <TextBlock x:Name="txtExpiryDate" Text="--" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                                    <TextBlock Text="EXPIRY DATE" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" Margin="0,0,0,6"/>
+                                    <TextBlock x:Name="txtExpiryDate" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="14" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>

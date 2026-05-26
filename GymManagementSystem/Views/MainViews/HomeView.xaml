@@ -10,10 +10,10 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="0,10,15,10">
 
-        <TextBlock Text="Dashboard Overview" Foreground="White" FontSize="28" FontWeight="Bold"/>
-        <TextBlock x:Name="txtWelcomeMessage" FontSize="16" Text="Welcome back! Here's what's happening today." Foreground="Gray" Margin="0,4,0,12"/>
+        <TextBlock Text="Dashboard Overview" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="28" FontWeight="Bold"/>
+        <TextBlock x:Name="txtWelcomeMessage" FontSize="16" Text="Welcome back! Here's what's happening today." Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,4,0,12"/>
 
-        <TextBlock Text="MEMBERS &amp; ATTENDANCE" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+        <TextBlock Text="MEMBERS &amp; ATTENDANCE" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
         <Grid Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -22,38 +22,38 @@
             </Grid.ColumnDefinitions>
 
             <!-- Column 0: Today's Check-ins Card -->
-            <Border Grid.Column="0" Background="#1a3d2b" BorderBrush="#26593f" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Grid.Column="0" Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="📋" FontSize="26" Foreground="#4caf50"/>
-                    <TextBlock Text="Today's Check-ins" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
-                    <TextBlock x:Name="lblTodayCheckIns" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                    <TextBlock Text="📋" FontSize="26" Foreground="{DynamicResource ThemeCheckinsIconFg}"/>
+                    <TextBlock Text="Today's Check-ins" Foreground="{DynamicResource ThemeCheckinsLabelFg}" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTodayCheckIns" Text="0" Foreground="{DynamicResource ThemeCheckinsFg}" FontSize="26" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
 
             <!-- Column 1: Occupancy Meter Card -->
-            <Border Grid.Column="1" Background="#142622" BorderBrush="#22423c" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Grid.Column="1" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="🏋️" FontSize="26" Foreground="#26c6a6"/>
-                    <TextBlock Text="Gym Occupancy" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock Text="🏋️" FontSize="26" Foreground="{DynamicResource ThemeOccupancyIconFg}"/>
+                    <TextBlock Text="Gym Occupancy" Foreground="{DynamicResource ThemeOccupancyLabelFg}" Margin="0,8,0,3" FontSize="13"/>
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock x:Name="lblCurrentlyIn" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
-                            <TextBlock Text="/" Foreground="#666" FontSize="20" Margin="4,0,4,0" VerticalAlignment="Bottom"/>
-                            <TextBlock x:Name="lblMaxCapacity" Text="100" Foreground="#aaa" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
+                            <TextBlock x:Name="lblCurrentlyIn" Text="0" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="26" FontWeight="Bold"/>
+                            <TextBlock Text="/" Foreground="{DynamicResource ThemeCheckinsLabelFg}" FontSize="20" Margin="4,0,4,0" VerticalAlignment="Bottom"/>
+                            <TextBlock x:Name="lblMaxCapacity" Text="100" Foreground="{DynamicResource ThemeCheckinsLabelFg}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
 
             <!-- Column 2: Inline Check-in/Out Box -->
-            <Border Grid.Column="2" Background="#162238" BorderBrush="#263b5e" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
+            <Border Grid.Column="2" Background="{DynamicResource ThemeInlineAttendanceBg}" BorderBrush="{DynamicResource ThemeInlineAttendanceBorder}" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     
-                    <TextBlock Grid.Row="0" Text="INLINE ATTENDANCE CHECK-IN/CHECKOUT" Foreground="#85a3d0" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <TextBlock Grid.Row="0" Text="INLINE ATTENDANCE CHECK-IN/CHECKOUT" Foreground="{DynamicResource ThemeInlineAttendanceLabelFg}" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
                     
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
@@ -72,7 +72,7 @@
                                          HorizontalAlignment="Stretch" Margin="0,0,10,0"/>
                                 
                                 <Popup x:Name="popInlineSearch" PlacementTarget="{Binding ElementName=txtInlineSearch}" Placement="Bottom" IsOpen="False" StaysOpen="False" Width="{Binding ElementName=txtInlineSearch, Path=ActualWidth}">
-                                    <Border Background="#222" BorderBrush="#333" BorderThickness="1" CornerRadius="0,0,10,10">
+                                    <Border Background="{DynamicResource ThemeDropdownBg}" BorderBrush="{DynamicResource ThemeDropdownBorder}" BorderThickness="1" CornerRadius="0,0,10,10">
                                         <ListBox x:Name="lstInlineSearchResults" Background="Transparent" BorderThickness="0" MaxHeight="200" 
                                                  SelectionChanged="LstInlineSearchResults_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                             <ListBox.ItemContainerStyle>
@@ -80,10 +80,10 @@
                                                     <Setter Property="Background" Value="Transparent"/>
                                                     <Setter Property="BorderThickness" Value="0"/>
                                                     <Setter Property="Padding" Value="10,6"/>
-                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                                                     <Style.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#222"/>
+                                                            <Setter Property="Background" Value="{DynamicResource ThemeDropdownHoverBg}"/>
                                                         </Trigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -91,8 +91,8 @@
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Margin="10,5">
-                                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="14" Foreground="White"/>
-                                                        <TextBlock Text="{Binding MemberID}" Foreground="Gray" FontSize="12"/>
+                                                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ThemeFgPrimary}"/>
+                                                        <TextBlock Text="{Binding MemberID}" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
@@ -121,19 +121,19 @@
                                 Width="80" Height="40" VerticalAlignment="Center" Cursor="Hand">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="#263b5e" BorderBrush="#3f5a8a" BorderThickness="1" CornerRadius="8" x:Name="border">
+                                    <Border Background="{DynamicResource ThemeInlineAttendanceButtonBg}" BorderBrush="{DynamicResource ThemeInlineAttendanceButtonBorder}" BorderThickness="1" CornerRadius="8" x:Name="border">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="border" Property="Background" Value="#334e7c"/>
+                                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeInlineAttendanceButtonHoverBg}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Button.Template>
                             <Button.Style>
                                 <Style TargetType="Button">
-                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ThemeInlineAttendanceButtonFg}"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                 </Style>
                             </Button.Style>
@@ -143,32 +143,32 @@
             </Border>
         </Grid>
 
-        <TextBlock Text="REVENUE &amp; GROWTH" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+        <TextBlock Text="REVENUE &amp; GROWTH" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
         <UniformGrid Columns="3" Margin="0,0,0,12">
             <!-- Today's Revenue Card -->
-            <Border Background="#143d26" BorderBrush="#1e5938" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Background="{DynamicResource ThemeTodayRevenueBg}" BorderBrush="{DynamicResource ThemeTodayRevenueBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="💰" FontSize="26" Foreground="#4caf50"/>
-                    <TextBlock Text="Today's Revenue" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
-                    <TextBlock x:Name="lblTodayRevenue" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Text="💰" FontSize="26" Foreground="{DynamicResource ThemeTodayRevenueIconFg}"/>
+                    <TextBlock Text="Today's Revenue" Foreground="{DynamicResource ThemeTodayRevenueLabelFg}" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblTodayRevenue" Text="₱0.00" Foreground="{DynamicResource ThemeTodayRevenueFg}" FontSize="24" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
 
             <!-- Monthly Revenue Card -->
-            <Border Background="#1a3520" BorderBrush="#254d2f" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="📈" FontSize="26" Foreground="#81c784"/>
-                    <TextBlock Text="Monthly Revenue" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
-                    <TextBlock x:Name="lblMonthlyRevenue" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Text="📈" FontSize="26" Foreground="{DynamicResource ThemeMonthlyRevenueIconFg}"/>
+                    <TextBlock Text="Monthly Revenue" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblMonthlyRevenue" Text="₱0.00" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="24" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
 
             <!-- New Members Card -->
-            <Border Background="#3d2614" BorderBrush="#59391e" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
+            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="🌟" FontSize="26" Foreground="#ff9800"/>
-                    <TextBlock Text="New Members This Month" Foreground="#888" Margin="0,8,0,3" FontSize="13"/>
-                    <TextBlock x:Name="lblNewMembers" Text="0" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                    <TextBlock Text="🌟" FontSize="26" Foreground="{DynamicResource ThemeNewMembersIconFg}"/>
+                    <TextBlock Text="New Members This Month" Foreground="{DynamicResource ThemeNewMembersLabelFg}" Margin="0,8,0,3" FontSize="13"/>
+                    <TextBlock x:Name="lblNewMembers" Text="0" Foreground="{DynamicResource ThemeNewMembersFg}" FontSize="26" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
         </UniformGrid>
@@ -185,13 +185,13 @@
                 <StackPanel x:Name="ExpiringSoonSection" Margin="0,0,0,20">
                     <DockPanel Margin="0,0,0,10">
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                            <TextBlock Text="⚠️ EXPIRING SOON" Foreground="#EF4444" FontSize="11" FontWeight="Bold"/>
-                            <TextBlock x:Name="lblExpiringSubscriptions" Text="0" Foreground="#EF4444" FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
-                            <TextBlock Text=" members in the next 3 days" Foreground="#555" FontSize="11"/>
+                            <TextBlock Text="▲ EXPIRING SOON" Foreground="{DynamicResource ThemeAlertRedFg}" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock x:Name="lblExpiringSubscriptions" Text="0" Foreground="{DynamicResource ThemeAlertRedFg}" FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
+                            <TextBlock Text=" members in the next 3 days" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11"/>
                         </StackPanel>
                     </DockPanel>
 
-                    <Border Background="#141416" CornerRadius="14" Padding="5">
+                    <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="14" Padding="5">
                         <Grid>
                             <DataGrid x:Name="dgExpiringSoon" 
                                       Style="{StaticResource ModernDataGrid}"
@@ -206,8 +206,8 @@
                                     <DataGridTemplateColumn Header="Status" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Border CornerRadius="6" Padding="6,3" Background="#3B1214" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding DaysLeft}" Foreground="#EF4444" FontSize="11" FontWeight="Bold"/>
+                                                <Border CornerRadius="6" Padding="6,3" Background="{DynamicResource ThemeBadgeRefundBg}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding DaysLeft}" Foreground="{DynamicResource ThemeBadgeRefundFg}" FontSize="11" FontWeight="Bold"/>
                                                 </Border>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -263,12 +263,12 @@
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border Background="Transparent" Padding="4">
-                                            <TextBlock Text="→" FontSize="14" Foreground="#888">
+                                            <TextBlock Text="→" FontSize="14" Foreground="{DynamicResource ThemeFgMuted}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Style.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                                                             </Trigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -286,13 +286,13 @@
                 <StackPanel x:Name="PendingRegistrationsSection">
                     <DockPanel Margin="0,0,0,10">
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                            <TextBlock Text="⏳ PENDING REGISTRATIONS" Foreground="#ff9800" FontSize="11" FontWeight="Bold"/>
-                            <TextBlock x:Name="lblPendingRegistrationsCount" Text="0" Foreground="#ff9800" FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
-                            <TextBlock Text=" members require initial payment" Foreground="#555" FontSize="11"/>
+                            <TextBlock Text="✕ PENDING REGISTRATIONS" Foreground="{DynamicResource ThemeAlertOrangeFg}" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock x:Name="lblPendingRegistrationsCount" Text="0" Foreground="{DynamicResource ThemeAlertOrangeFg}" FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
+                            <TextBlock Text=" members require initial payment" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11"/>
                         </StackPanel>
                     </DockPanel>
 
-                    <Border Background="#141416" CornerRadius="14" Padding="5">
+                    <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="14" Padding="5">
                         <DataGrid x:Name="dgPendingRegistrations" 
                                   Style="{StaticResource ModernDataGrid}"
                                   IsReadOnly="True"
@@ -336,8 +336,8 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2">
-                <TextBlock Text="RECENT TRANSACTIONS" Foreground="#555" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
-                <Border Background="#141416" CornerRadius="14" Padding="5">
+                <TextBlock Text="RECENT TRANSACTIONS" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
+                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="14" Padding="5">
                     <DataGrid x:Name="dgRecentTransactions" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"
@@ -357,12 +357,12 @@
                                             <Border x:Name="refundPlanBadge"
                                                     CornerRadius="6"
                                                     Padding="8,3"
-                                                    Background="#2A2A2E"
+                                                    Background="{DynamicResource ThemeBadgeBg}"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
                                                     Visibility="Collapsed">
                                                 <TextBlock Text="{Binding DisplayMembershipType}"
-                                                           Foreground="#8A8A93"
+                                                           Foreground="{DynamicResource ThemeFgMuted}"
                                                            FontSize="11"
                                                            FontWeight="Bold"
                                                            TextDecorations="Strikethrough"/>
@@ -393,24 +393,24 @@
                                                             </Style.Triggers>
                                                         </Style>
                                                     </ToolTip.Style>
-                                                    <Border Background="#1a1a1c" BorderBrush="#ff6b00" BorderThickness="1.5" CornerRadius="8" Padding="12">
+                                                    <Border Background="{DynamicResource ThemeCardBg}" BorderBrush="#ff6b00" BorderThickness="1.5" CornerRadius="8" Padding="12">
                                                         <StackPanel Width="220" Margin="2">
                                                             <TextBlock Text="Savings Breakdown" Foreground="#ff6b00" FontWeight="Bold" FontSize="13" Margin="0,0,0,10"/>
                                                             
                                                             <Grid Margin="0,3">
-                                                                <TextBlock Text="Original Rate" Foreground="#aaa" FontSize="11"/>
-                                                                <TextBlock Text="{Binding SubtotalAmount, StringFormat=₱\{0:N2\}}" Foreground="White" FontSize="11" HorizontalAlignment="Right"/>
+                                                                <TextBlock Text="Original Rate" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11"/>
+                                                                <TextBlock Text="{Binding SubtotalAmount, StringFormat=₱\{0:N2\}}" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="11" HorizontalAlignment="Right"/>
                                                             </Grid>
                                                             
                                                             <Grid Margin="0,3">
-                                                                <TextBlock Text="{Binding DiscountDescription}" Foreground="#aaa" FontSize="11"/>
+                                                                <TextBlock Text="{Binding DiscountDescription}" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11"/>
                                                                 <TextBlock Text="{Binding DiscountAmount, StringFormat=-₱\{0:N2\}}" Foreground="#ff4444" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Right"/>
                                                             </Grid>
                                                             
                                                             <Border BorderBrush="#333" BorderThickness="0,1,0,0" Margin="0,8,0,8"/>
                                                             
                                                             <Grid Margin="0,3">
-                                                                <TextBlock Text="Net Paid" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                                                <TextBlock Text="Net Paid" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="12" FontWeight="SemiBold"/>
                                                                 <TextBlock Text="{Binding TotalAmount, StringFormat=₱\{0:N2\}}" Foreground="#2ecc71" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
                                                             </Grid>
                                                         </StackPanel>
@@ -435,17 +435,17 @@
                             <DataGridTemplateColumn Header="Mode" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border x:Name="modeBorder" CornerRadius="6" Padding="6,3" Background="#1a2b1a" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <TextBlock x:Name="modeText" Text="{Binding PaymentMode}" Foreground="#81c784" FontSize="11"/>
+                                        <Border x:Name="modeBorder" CornerRadius="6" Padding="6,3" Background="{DynamicResource ThemeBadgeCashBg}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock x:Name="modeText" Text="{Binding PaymentMode}" Foreground="{DynamicResource ThemeBadgeCashFg}" FontSize="11"/>
                                         </Border>
                                         <DataTemplate.Triggers>
                                             <DataTrigger Binding="{Binding PaymentMode}" Value="GCash">
-                                                <Setter TargetName="modeBorder" Property="Background" Value="#0d1f3d"/>
-                                                <Setter TargetName="modeText" Property="Foreground" Value="#4a90e2"/>
+                                                <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeGCashBg}"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeGCashFg}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PaymentMode}" Value="Refund">
-                                                <Setter TargetName="modeBorder" Property="Background" Value="#3B1214"/>
-                                                <Setter TargetName="modeText" Property="Foreground" Value="#EF4444"/>
+                                                <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeRefundBg}"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeRefundFg}"/>
                                             </DataTrigger>
                                         </DataTemplate.Triggers>
                                     </DataTemplate>

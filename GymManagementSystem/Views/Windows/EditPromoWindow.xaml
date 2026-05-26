@@ -5,7 +5,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
-    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1" Margin="10">
+    <Border Background="{DynamicResource ThemeCardBg}" CornerRadius="15" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" Margin="10">
         <Border.Effect>
             <DropShadowEffect BlurRadius="15" Direction="270" Opacity="0.5" ShadowDepth="2"/>
         </Border.Effect>
@@ -18,18 +18,18 @@
 
             <!-- Title Area -->
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBlock x:Name="lblTitle" Text="Create Promo Code" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
+                <TextBlock x:Name="lblTitle" Text="Create Promo Code" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
             </DockPanel>
 
             <!-- Input Fields Scrollable -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="0,0,5,0">
-                    <TextBlock Text="Promo Code (e.g., SUMMER30)" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                    <TextBlock Text="Promo Code (e.g., SUMMER30)" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5" FontWeight="SemiBold"/>
                     <TextBox x:Name="txtPromoCode" Style="{StaticResource ModernTextBox}" Margin="0,0,0,2"/>
                     <TextBlock x:Name="lblPromoCodeError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                    <TextBlock Text="Campaign / Promo Name" Foreground="White" Margin="0,5,0,5" FontWeight="SemiBold"/>
+                    <TextBlock Text="Campaign / Promo Name" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,5,0,5" FontWeight="SemiBold"/>
                     <TextBox x:Name="txtPromoName" Style="{StaticResource ModernTextBox}" Margin="0,0,0,2"/>
                     <TextBlock x:Name="lblPromoNameError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
@@ -39,14 +39,14 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,8,0">
-                            <TextBlock Text="Discount Type" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <TextBlock Text="Discount Type" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5" FontWeight="SemiBold"/>
                             <ComboBox x:Name="cmbDiscountType" Style="{StaticResource ModernComboBox}" Height="38" SelectionChanged="DiscountType_SelectionChanged">
                                 <ComboBoxItem Content="Percentage" IsSelected="True"/>
                                 <ComboBoxItem Content="Fixed Amount"/>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock x:Name="lblDiscountValHeader" Text="Discount Value (%)" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="lblDiscountValHeader" Text="Discount Value (%)" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5" FontWeight="SemiBold"/>
                             <TextBox x:Name="txtDiscountValue" Style="{StaticResource ModernTextBox}" Height="38"/>
                             <TextBlock x:Name="lblDiscountValueError" Foreground="#FF4444" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
@@ -58,26 +58,26 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,8,0">
-                            <TextBlock Text="Start Date" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <TextBlock Text="Start Date" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5" FontWeight="SemiBold"/>
                             <DatePicker x:Name="dpStartDate" Style="{StaticResource ModernDatePicker}" Tag="MM-DD-YYYY" ToolTip="Input start date in MM-DD-YYYY format." Height="38"/>
                             <TextBlock x:Name="lblStartDateError" Foreground="#FF4444" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="End Date" Foreground="White" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                            <TextBlock Text="End Date" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5" FontWeight="SemiBold"/>
                             <DatePicker x:Name="dpEndDate" Style="{StaticResource ModernDatePicker}" Tag="MM-DD-YYYY" ToolTip="Input end date in MM-DD-YYYY format." Height="38"/>
                             <TextBlock x:Name="lblEndDateError" Foreground="#FF4444" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Grid>
 
-                    <CheckBox x:Name="chkAllRates" Content="Apply to all membership rates" Foreground="White" IsChecked="True" Checked="ChkAllRates_Changed" Unchecked="ChkAllRates_Changed" Margin="0,5,0,10" FontWeight="SemiBold"/>
+                    <CheckBox x:Name="chkAllRates" Content="Apply to all membership rates" Foreground="{DynamicResource ThemeFgPrimary}" IsChecked="True" Checked="ChkAllRates_Changed" Unchecked="ChkAllRates_Changed" Margin="0,5,0,10" FontWeight="SemiBold"/>
 
-                    <TextBlock Text="Select Applicable Rates:" Foreground="White" Margin="0,5,0,5" FontWeight="SemiBold"/>
-                    <Border Background="#1a1a1a" BorderBrush="#333" BorderThickness="1" Height="100" CornerRadius="5">
+                    <TextBlock Text="Select Applicable Rates:" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,5,0,5" FontWeight="SemiBold"/>
+                    <Border Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" Height="100" CornerRadius="5">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <ItemsControl x:Name="icMembershipRates" Margin="5">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <CheckBox Content="{Binding PlanName}" Tag="{Binding PlanName}" Foreground="LightGray" Margin="5,3" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                                        <CheckBox Content="{Binding PlanName}" Tag="{Binding PlanName}" Foreground="{DynamicResource ThemeFgPrimary}" Margin="5,3" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -99,7 +99,7 @@
                         </Style>
                     </Button.Resources>
                 </Button>
-                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click">
+                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="{DynamicResource ThemeNavBtnBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeNavBtnBorder}" Click="Cancel_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="8"/>

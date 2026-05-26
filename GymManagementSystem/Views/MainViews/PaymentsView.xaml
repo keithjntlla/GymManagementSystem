@@ -16,10 +16,10 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Payment Processing" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+            <TextBlock Grid.Row="0" Text="Payment Processing" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <StackPanel Grid.Row="1" Margin="0,0,0,20">
-                <TextBlock Text="Search Member" Foreground="Gray" Margin="0,0,0,5"/>
+                <TextBlock Text="Search Member" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,5"/>
                 <Grid>
                     <TextBox x:Name="txtSearch" 
                              Style="{StaticResource ModernTextBox}"
@@ -27,15 +27,15 @@
                              FontSize="14" 
                              TextChanged="TxtSearch_TextChanged" 
                              GotFocus="TxtSearch_GotFocus"/>
-                    <TextBlock Text="🔍" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0" IsHitTestVisible="False"/>
+                    <TextBlock Text="🔍" Foreground="{DynamicResource ThemeFgSecondary}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0" IsHitTestVisible="False"/>
                     <Popup x:Name="popSearch" PlacementTarget="{Binding ElementName=txtSearch}" Placement="Bottom" StaysOpen="False" Width="{Binding ElementName=txtSearch, Path=ActualWidth}">
-                        <Border Background="#222" BorderBrush="#333" BorderThickness="1" CornerRadius="0,0,10,10">
-                            <ListBox x:Name="lstSearchResults" Background="Transparent" BorderThickness="0" Foreground="White" MaxHeight="200" SelectionChanged="LstSearchResults_SelectionChanged">
+                        <Border Background="{DynamicResource ThemeDropdownBg}" BorderBrush="{DynamicResource ThemeDropdownBorder}" BorderThickness="1" CornerRadius="0,0,10,10">
+                            <ListBox x:Name="lstSearchResults" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeFgPrimary}" MaxHeight="200" SelectionChanged="LstSearchResults_SelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="10,5">
                                             <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="14"/>
-                                            <TextBlock Text="{Binding MemberID}" Foreground="Gray" FontSize="12"/>
+                                            <TextBlock Text="{Binding MemberID}" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -52,13 +52,13 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#141e3c" BorderBrush="#2b4273" BorderThickness="1" CornerRadius="15" Margin="0,0,10,0" Padding="20" MinHeight="250">
+                <Border Grid.Column="0" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="15" Margin="0,0,10,0" Padding="20" MinHeight="250">
                     <Grid>
                         <StackPanel x:Name="panelMemberInfo" Visibility="Collapsed">
-                            <TextBlock Text="Member Information" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+                            <TextBlock Text="Member Information" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
                             <Grid Width="110" Height="110" HorizontalAlignment="Center" Margin="0,0,0,15">
-                                <Border x:Name="brdInitials" Width="100" Height="100" CornerRadius="50" BorderThickness="2" Background="#1a1a1c">
-                                    <TextBlock x:Name="txtInitials" Text="--" Foreground="White" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border x:Name="brdInitials" Width="100" Height="100" CornerRadius="50" BorderThickness="2" Background="{DynamicResource ThemeInputBg}">
+                                    <TextBlock x:Name="txtInitials" Text="--" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <Ellipse x:Name="ellPhoto" Width="100" Height="100" Stroke="#ff6b00" StrokeThickness="2" Visibility="Collapsed">
                                     <Ellipse.Fill>
@@ -66,8 +66,8 @@
                                     </Ellipse.Fill>
                                 </Ellipse>
                             </Grid>
-                            <TextBlock x:Name="lblMemberName" Text="Name" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="lblMemberID" Text="ID" Foreground="Gray" HorizontalAlignment="Center" Margin="0,5,0,20"/>
+                            <TextBlock x:Name="lblMemberName" Text="Name" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="lblMemberID" Text="ID" Foreground="{DynamicResource ThemeOccupancyLabelFg}" HorizontalAlignment="Center" Margin="0,5,0,20"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -77,49 +77,49 @@
 
                                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                     <StackPanel Margin="0,0,0,12">
-                                        <TextBlock Text="Phone" Foreground="Gray" FontSize="12"/>
-                                        <TextBlock x:Name="lblMemberPhone" Text="-" Foreground="White" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="Phone" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
+                                        <TextBlock x:Name="lblMemberPhone" Text="-" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
 
                                     <StackPanel Margin="0,0,0,12">
-                                        <TextBlock Text="Birthday" Foreground="Gray" FontSize="12"/>
-                                        <TextBlock x:Name="lblMemberBirthday" Text="-" Foreground="White" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Birthday" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
+                                        <TextBlock x:Name="lblMemberBirthday" Text="-" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <StackPanel>
-                                        <TextBlock Text="Current Plan" Foreground="Gray" FontSize="12"/>
-                                        <TextBlock x:Name="lblMemberPlan" Text="-" Foreground="White" Margin="0,2,0,0" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Current Plan" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
+                                        <TextBlock x:Name="lblMemberPlan" Text="-" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,2,0,0" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Margin="10,0,0,0">
                                     <StackPanel Margin="0,0,0,12">
-                                        <TextBlock Text="Gender" Foreground="Gray" FontSize="12"/>
-                                        <TextBlock x:Name="lblMemberGender" Text="-" Foreground="White" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Gender" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
+                                        <TextBlock x:Name="lblMemberGender" Text="-" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <StackPanel Margin="0,0,0,12">
-                                        <TextBlock Text="Type" Foreground="Gray" FontSize="12"/>
-                                        <TextBlock x:Name="lblMemberType" Text="-" Foreground="White" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Type" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
+                                        <TextBlock x:Name="lblMemberType" Text="-" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <StackPanel>
-                                        <TextBlock Text="Current Expiry" Foreground="Gray" FontSize="12"/>
-                                        <TextBlock x:Name="lblCurrentExpiry" Text="-" Foreground="White" Margin="0,2,0,0" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Current Expiry" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12"/>
+                                        <TextBlock x:Name="lblCurrentExpiry" Text="-" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,2,0,0" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
                         <StackPanel x:Name="panelNoMember" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="👤" FontSize="48" Foreground="#333" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Select a member to view details" Foreground="Gray" Margin="0,10,0,0"/>
+                            <TextBlock Text="👤" FontSize="48" Foreground="{DynamicResource ThemeFgMuted}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Select a member to view details" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,10,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" Background="#2d1441" BorderBrush="#412b5c" BorderThickness="1" CornerRadius="15" Margin="10,0,0,0" Padding="20" MinHeight="250">
+                <Border Grid.Column="1" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="15" Margin="10,0,0,0" Padding="20" MinHeight="250">
                     <StackPanel>
-                        <TextBlock Text="Membership Rates" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <TextBlock Text="Membership Rates" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
                         <ItemsControl x:Name="icRates" Margin="0,0,0,15">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -128,13 +128,13 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Margin="5" Padding="0" Background="#1a1a1c" BorderBrush="#333"
+                                    <Button Margin="5" Padding="0" Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}"
                                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                                             Click="Rate_Click" Tag="{Binding}">
                                         <Grid Margin="8,10,8,8">
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding PlanName}" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                                                <TextBlock Text="{Binding Price, StringFormat=₱\{0:N0\}}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                <TextBlock Text="{Binding PlanName}" Foreground="{DynamicResource ThemeFgSecondary}" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                                <TextBlock Text="{Binding Price, StringFormat=₱\{0:N0\}}" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                             </StackPanel>
                                             <Border Background="#f44336" CornerRadius="4" Padding="5,2"
                                                     HorizontalAlignment="Right" VerticalAlignment="Top"
@@ -164,7 +164,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="5,0,5,0">
-                                <TextBlock Text="Quantity / Duration Multiplier" Foreground="Gray" FontSize="14" Margin="0,0,0,5"/>
+                                <TextBlock Text="Quantity / Duration Multiplier" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="14" Margin="0,0,0,5"/>
 
                                 <Grid Width="150" Height="40" HorizontalAlignment="Left">
                                     <Grid.ColumnDefinitions>
@@ -173,7 +173,7 @@
                                         <ColumnDefinition Width="40"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Button x:Name="btnDecrement" Grid.Column="0" Content="-" FontSize="18" FontWeight="Bold" Background="#141416" Foreground="White" BorderBrush="#333" BorderThickness="1" Click="BtnMultiplier_Decrement_Click" Cursor="Hand">
+                                    <Button x:Name="btnDecrement" Grid.Column="0" Content="-" FontSize="18" FontWeight="Bold" Background="{DynamicResource ThemeInputBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" Click="BtnMultiplier_Decrement_Click" Cursor="Hand">
                                         <Button.Resources>
                                             <Style TargetType="Border">
                                                 <Setter Property="CornerRadius" Value="5,0,0,5"/>
@@ -181,11 +181,11 @@
                                         </Button.Resources>
                                     </Button>
 
-                                    <Border Grid.Column="1" Background="#141416" BorderBrush="#333" BorderThickness="0,1,0,1">
-                                        <TextBlock x:Name="lblMultiplierValue" Text="1" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1" Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="0,1,0,1">
+                                        <TextBlock x:Name="lblMultiplierValue" Text="1" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
 
-                                    <Button x:Name="btnIncrement" Grid.Column="2" Content="+" FontSize="18" FontWeight="Bold" Background="#141416" Foreground="White" BorderBrush="#333" BorderThickness="1" Click="BtnMultiplier_Increment_Click" Cursor="Hand">
+                                    <Button x:Name="btnIncrement" Grid.Column="2" Content="+" FontSize="18" FontWeight="Bold" Background="{DynamicResource ThemeInputBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" Click="BtnMultiplier_Increment_Click" Cursor="Hand">
                                         <Button.Resources>
                                             <Style TargetType="Border">
                                                 <Setter Property="CornerRadius" Value="0,5,5,0"/>
@@ -196,7 +196,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0,5,0">
-                                <TextBlock Text="Selected Membership Rate" Foreground="Gray" FontSize="14" Margin="0,0,0,5"/>
+                                <TextBlock Text="Selected Membership Rate" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="14" Margin="0,0,0,5"/>
                                 <TextBlock x:Name="lblSelectedPlanDisplay" Text="" Foreground="#9b59b6" FontSize="16" FontWeight="Bold" Height="40" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
@@ -204,7 +204,7 @@
                 </Border>
             </Grid>
 
-            <Border Grid.Row="3" Background="#1a1a1c" BorderBrush="#2e2e31" BorderThickness="1" CornerRadius="15" Margin="0,20,0,0" Padding="20">
+            <Border Grid.Row="3" Background="{DynamicResource ThemePanelBg}" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="15" Margin="0,20,0,0" Padding="20">
                 <StackPanel>
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
@@ -213,14 +213,14 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Payment Mode" Foreground="Gray" Margin="0,0,0,10"/>
+                            <TextBlock Text="Payment Mode" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,10"/>
                             <StackPanel Orientation="Horizontal">
                                 <RadioButton x:Name="rbCash" Content="Cash" Style="{StaticResource LargeRadioButton}" IsChecked="True" Margin="0,0,20,0"/>
                                 <RadioButton x:Name="rbGCash" Content="GCash" Style="{StaticResource LargeRadioButton}"/>
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="10,0,10,0">
-                            <TextBlock Text="Promo Code (Optional)" Foreground="Gray" Margin="0,0,0,5"/>
+                            <TextBlock Text="Promo Code (Optional)" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,5"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -238,8 +238,8 @@
                             <TextBlock x:Name="lblPromoStatus" Foreground="#00a651" FontSize="11" Margin="0,2,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                            <TextBlock Text="Amount Paid" Foreground="Gray" Margin="0,0,0,5"/>
-                            <TextBox x:Name="txtAmountPaid" Background="#141416" Foreground="White" BorderBrush="#333" Padding="10" FontSize="16" TextChanged="TxtAmountPaid_TextChanged" Margin="0,0,0,5"/>
+                            <TextBlock Text="Amount Paid" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,5"/>
+                            <TextBox x:Name="txtAmountPaid" Background="{DynamicResource ThemeInputBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeInputBorder}" Padding="10" FontSize="16" TextChanged="TxtAmountPaid_TextChanged" Margin="0,0,0,5"/>
                             <TextBlock x:Name="lblAmountPaidError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Grid>
@@ -251,29 +251,29 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="#1e2a4a" BorderBrush="#2c3e6b" BorderThickness="1" CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                        <Border Grid.Column="0" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="0,0,10,0">
                             <StackPanel>
-                                <TextBlock Text="Total Amount" Foreground="Gray" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="Total Amount" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="12" VerticalAlignment="Center"/>
 
                                 <StackPanel Margin="0,5,0,0">
-                                    <TextBlock x:Name="lblOriginalSubtotal" Text="₱0.00" Foreground="Gray" FontSize="14" TextDecorations="Strikethrough" Visibility="Collapsed"/>
-                                    <TextBlock x:Name="lblTotalAmount" Text="₱0.00" Foreground="#4a90e2" FontSize="26" FontWeight="Bold"/>
+                                    <TextBlock x:Name="lblOriginalSubtotal" Text="₱0.00" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="14" TextDecorations="Strikethrough" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="lblTotalAmount" Text="₱0.00" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="26" FontWeight="Bold"/>
                                     <TextBlock x:Name="lblDiscountDeductionDisplay" Text="-₱0.00 discount" Foreground="#ff6b00" FontSize="12" FontWeight="SemiBold" Visibility="Collapsed" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="#1e3a2a" BorderBrush="#2b543c" BorderThickness="1" CornerRadius="10" Padding="15" Margin="5,0,5,0">
+                        <Border Grid.Column="1" Background="{DynamicResource ThemeTodayRevenueBg}" BorderBrush="{DynamicResource ThemeTodayRevenueBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="5,0,5,0">
                             <StackPanel>
-                                <TextBlock Text="Amount Paid" Foreground="Gray" FontSize="12"/>
-                                <TextBlock x:Name="lblAmountPaidDisplay" Text="₱0.00" Foreground="#2ecc71" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
+                                <TextBlock Text="Amount Paid" Foreground="{DynamicResource ThemeTodayRevenueLabelFg}" FontSize="12"/>
+                                <TextBlock x:Name="lblAmountPaidDisplay" Text="₱0.00" Foreground="{DynamicResource ThemeTodayRevenueFg}" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="#3a1e4a" BorderBrush="#552b6d" BorderThickness="1" CornerRadius="10" Padding="15" Margin="10,0,0,0">
+                        <Border Grid.Column="2" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="10,0,0,0">
                             <StackPanel>
-                                <TextBlock Text="Change" Foreground="Gray" FontSize="12"/>
-                                <TextBlock x:Name="lblChange" Text="₱0.00" Foreground="#9b59b6" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
+                                <TextBlock Text="Change" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" FontSize="12"/>
+                                <TextBlock x:Name="lblChange" Text="₱0.00" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -284,20 +284,20 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Date of Transaction" Foreground="Gray" Margin="0,0,0,5"/>
-                            <Border Background="#141416" BorderBrush="#333" BorderThickness="1" Padding="10">
-                                <TextBlock x:Name="lblTransactionDate" Text="-" Foreground="White"/>
+                            <TextBlock Text="Date of Transaction" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,5"/>
+                            <Border Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" Padding="10">
+                                <TextBlock x:Name="lblTransactionDate" Text="-" Foreground="{DynamicResource ThemeFgPrimary}"/>
                             </Border>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock x:Name="lblExpiryTitle" Text="New Expiry Date" Foreground="Gray" Margin="0,0,0,5"/>
-                            <Border Background="#141416" BorderBrush="#333" BorderThickness="1" Padding="10">
-                                <TextBlock x:Name="lblNewExpiryDate" Text="-" Foreground="White"/>
+                            <TextBlock x:Name="lblExpiryTitle" Text="New Expiry Date" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,5"/>
+                            <Border Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" Padding="10">
+                                <TextBlock x:Name="lblNewExpiryDate" Text="-" Foreground="{DynamicResource ThemeFgPrimary}"/>
                             </Border>
                         </StackPanel>
                     </Grid>
 
-                    <Button x:Name="btnProcessPayment" Content="Process Payment" Padding="0,15" Background="#3e4a5e" Foreground="White" FontSize="18" FontWeight="Bold" BorderThickness="0" Click="ProcessPayment_Click">
+                    <Button x:Name="btnProcessPayment" Content="Process Payment" Padding="0,15" Background="#00A651" Foreground="White" FontSize="18" FontWeight="Bold" BorderThickness="0" Click="ProcessPayment_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>

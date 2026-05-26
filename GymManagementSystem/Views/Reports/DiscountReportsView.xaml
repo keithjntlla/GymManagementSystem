@@ -19,46 +19,46 @@
             <!-- Card Summary Grid -->
             <UniformGrid Grid.Row="0" Columns="3" Margin="0,0,0,30">
                 <!-- Promos Active Card -->
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#142622" BorderBrush="#22423c" Margin="0,0,8,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" Margin="0,0,8,0">
                     <StackPanel VerticalAlignment="Center">
-                        <Border Width="40" Height="40" Background="#22423c" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
+                        <Border Width="40" Height="40" Background="{DynamicResource ThemeOccupancyBorder}" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                             <TextBlock Text="🔥" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Active Campaigns" Foreground="Gray" FontSize="14"/>
-                        <TextBlock x:Name="lblActiveCampaignsCount" Text="0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
-                        <TextBlock Text="currently running" Foreground="Gray" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="Active Campaigns" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="14"/>
+                        <TextBlock x:Name="lblActiveCampaignsCount" Text="0" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock Text="currently running" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Total Promo Savings Card -->
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a2a1a" BorderBrush="#5c4530" Margin="0,0,8,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" Margin="0,0,8,0">
                     <StackPanel VerticalAlignment="Center">
-                        <Border Width="40" Height="40" Background="#4a3a2a" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
+                        <Border Width="40" Height="40" Background="{DynamicResource ThemeNewMembersBorder}" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                             <TextBlock Text="🏷️" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Promo Campaign Savings" Foreground="LightGray" FontSize="14"/>
-                        <TextBlock x:Name="lblPromoSavings" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
-                        <TextBlock x:Name="lblPromoSavingsCount" Text="0 redemptions" Foreground="LightGray" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="Promo Campaign Savings" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="14"/>
+                        <TextBlock x:Name="lblPromoSavings" Text="&#x20B1;0.00" Foreground="{DynamicResource ThemeNewMembersFg}" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock x:Name="lblPromoSavingsCount" Text="0 redemptions" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Total Member Tier Savings Card -->
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#2d1441" BorderBrush="#412b5c" Margin="0,0,0,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" Margin="0,0,0,0">
                     <StackPanel VerticalAlignment="Center">
-                        <Border Width="40" Height="40" Background="#412b5c" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
+                        <Border Width="40" Height="40" Background="{DynamicResource ThemeMonthlyRevenueBorder}" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
                             <TextBlock Text="👥" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Fixed Tier Savings" Foreground="LightGray" FontSize="14"/>
-                        <TextBlock x:Name="lblTierSavings" Text="₱0.00" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
-                        <TextBlock x:Name="lblTierSavingsCount" Text="0 transactions" Foreground="LightGray" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="Fixed Tier Savings" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" FontSize="14"/>
+                        <TextBlock x:Name="lblTierSavings" Text="&#x20B1;0.00" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock x:Name="lblTierSavingsCount" Text="0 transactions" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>
 
             <!-- Table 1: Promotional Code Campaign Audit Grid -->
             <StackPanel Grid.Row="1" Margin="0,0,0,25">
-                <TextBlock Text="PROMOTIONAL CODE CAMPAIGN AUDIT" Foreground="#ff6b00" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
-                <Border Background="#141416" CornerRadius="15" Padding="10">
+                <TextBlock Text="PROMOTIONAL CODE CAMPAIGN AUDIT" Foreground="{DynamicResource ThemeAuditHeaderFg}" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
+                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
                     <DataGrid x:Name="dgPromoAudit" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"
@@ -82,17 +82,17 @@
                             <DataGridTemplateColumn Header="Campaign Status" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border x:Name="statusBorder" CornerRadius="6" Padding="6,3" Background="#1a2b1a" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <TextBlock x:Name="statusText" Text="{Binding CampaignStatus}" Foreground="#81c784" FontSize="11" FontWeight="Bold"/>
-                                        </Border>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Ellipse x:Name="statusDot" Width="8" Height="8" Fill="#00ff00" Margin="0,0,8,0"/>
+                                            <TextBlock x:Name="statusText" Text="{Binding CampaignStatus}" VerticalAlignment="Center"/>
+                                        </StackPanel>
                                         <DataTemplate.Triggers>
                                             <DataTrigger Binding="{Binding CampaignStatus}" Value="Expired">
-                                                <Setter TargetName="statusBorder" Property="Background" Value="#3B1214"/>
-                                                <Setter TargetName="statusText" Property="Foreground" Value="#EF4444"/>
+                                                <Setter TargetName="statusDot" Property="Fill" Value="#ff3333"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding CampaignStatus}" Value="Inactive">
-                                                <Setter TargetName="statusBorder" Property="Background" Value="#2A2A2E"/>
-                                                <Setter TargetName="statusText" Property="Foreground" Value="#8A8A93"/>
+                                                <Setter TargetName="statusDot" Property="Fill" Value="#9CA3AF"/>
+                                                <Setter TargetName="statusText" Property="Foreground" Value="{DynamicResource ThemeFgMuted}"/>
                                             </DataTrigger>
                                         </DataTemplate.Triggers>
                                     </DataTemplate>
@@ -105,8 +105,8 @@
 
             <!-- Table 2: Fixed Customer Tier Discounts Audit Grid -->
             <StackPanel Grid.Row="2" Margin="0,0,0,10">
-                <TextBlock Text="FIXED CUSTOMER TIER SAVINGS AUDIT" Foreground="#ff6b00" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
-                <Border Background="#141416" CornerRadius="15" Padding="10">
+                <TextBlock Text="FIXED CUSTOMER TIER SAVINGS AUDIT" Foreground="{DynamicResource ThemeAuditHeaderFg}" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
+                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
                     <DataGrid x:Name="dgTierAudit" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"

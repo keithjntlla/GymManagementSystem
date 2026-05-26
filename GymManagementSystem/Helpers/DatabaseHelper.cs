@@ -11,6 +11,7 @@ namespace GymManagementSystem
         private const string dbName = "GymManagement.db";
         public static string ConnectionString = $"Data Source={dbName};Version=3;";
         public static event Action? ProfileUpdated;
+        public static event Action? AppearanceUpdated;
 
         public static void InitializeDatabase()
         {
@@ -224,6 +225,7 @@ namespace GymManagementSystem
             MigratePaymentsTableForRefundReason();
             MigrateMemberNotificationsTable();
             MigrateGymProfileTableForCapacity();
+            MigrateGymProfileTableForAppearance();
             MigrateMembersTableForInstructors();
             MigrateInstructorsTable();
             MigrateMembersTableForDiscountAndStudent();
@@ -569,6 +571,105 @@ namespace GymManagementSystem
                     using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
                 }
             }
+        }
+
+        private static void MigrateGymProfileTableForAppearance()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                bool hasTheme = false;
+                bool hasButtonStyle = false;
+                bool hasAccentColor = false;
+                using (var cmd = new SQLiteCommand("PRAGMA table_info(GymProfile)", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string colName = reader["name"]?.ToString() ?? "";
+                        if (colName == "Theme") hasTheme = true;
+                        if (colName == "ButtonStyle") hasButtonStyle = true;
+                        if (colName == "AccentColor") hasAccentColor = true;
+                    }
+                }
+
+                if (!hasTheme)
+                {
+                    string alter = "ALTER TABLE GymProfile ADD COLUMN Theme TEXT DEFAULT 'Dark'";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasButtonStyle)
+                {
+                    string alter = "ALTER TABLE GymProfile ADD COLUMN ButtonStyle TEXT DEFAULT 'Gradient'";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+                if (!hasAccentColor)
+                {
+                    string alter = "ALTER TABLE GymProfile ADD COLUMN AccentColor TEXT DEFAULT 'Orange'";
+                    using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static void SaveAppearanceSettings(string theme, string buttonStyle, string accentColor)
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                // Ensure a row exists (id=1)
+                string checkSql = "SELECT COUNT(*) FROM GymProfile WHERE ID = 1";
+                bool exists = false;
+                using (var cmd = new SQLiteCommand(checkSql, conn))
+                {
+                    exists = Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                }
+
+                if (!exists)
+                {
+                    string insertSql = @"INSERT INTO GymProfile (ID, GymName, Address, ContactNumber, Email, LogoPath, MaxCapacity, Theme, ButtonStyle, AccentColor) 
+                                         VALUES (1, 'Gym', '', '', '', '', 100, @theme, @btn, @accent)";
+                    using (var cmd = new SQLiteCommand(insertSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@theme", theme);
+                        cmd.Parameters.AddWithValue("@btn", buttonStyle);
+                        cmd.Parameters.AddWithValue("@accent", accentColor);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    string updateSql = "UPDATE GymProfile SET Theme = @theme, ButtonStyle = @btn, AccentColor = @accent WHERE ID = 1";
+                    using (var cmd = new SQLiteCommand(updateSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@theme", theme);
+                        cmd.Parameters.AddWithValue("@btn", buttonStyle);
+                        cmd.Parameters.AddWithValue("@accent", accentColor);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            AppearanceUpdated?.Invoke();
+        }
+
+        public static (string theme, string buttonStyle, string accentColor) GetAppearanceSettings()
+        {
+            using (var conn = new SQLiteConnection(ConnectionString))
+            {
+                conn.Open();
+                string sql = "SELECT Theme, ButtonStyle, AccentColor FROM GymProfile WHERE ID = 1";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        string theme = reader["Theme"]?.ToString() ?? "Dark";
+                        string buttonStyle = reader["ButtonStyle"]?.ToString() ?? "Gradient";
+                        string accentColor = reader["AccentColor"]?.ToString() ?? "Orange";
+                        return (theme, buttonStyle, accentColor);
+                    }
+                }
+            }
+            return ("Dark", "Gradient", "Orange");
         }
 
         // FIXED CS8619: Enforced clear non-nullable string parsing rules

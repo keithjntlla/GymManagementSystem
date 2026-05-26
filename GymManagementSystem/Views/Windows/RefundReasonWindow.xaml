@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Refund Reason" Height="420" Width="480"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        Background="#1e1e20" WindowStyle="None" AllowsTransparency="True">
+        Background="{DynamicResource ThemeBg}" WindowStyle="None" AllowsTransparency="True">
 
-    <Border BorderBrush="#333" BorderThickness="1" CornerRadius="15" Background="#1e1e20">
+    <Border BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="15" Background="{DynamicResource ThemeBg}">
         <Grid Margin="28,24,28,24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -19,23 +19,23 @@
             <!-- Header -->
             <Grid Grid.Row="0" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="↩  Refund Request" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="↩  Refund Request" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="20" FontWeight="Bold"/>
                     <TextBlock x:Name="lblSubtitle" Text="Please state the reason before processing."
-                               Foreground="Gray" FontSize="13" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                               Foreground="{DynamicResource ThemeFgSecondary}" FontSize="13" Margin="0,5,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
-                <Button Content="✕" Foreground="Gray" FontSize="18"
+                <Button Content="✕" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="18"
                         HorizontalAlignment="Right" VerticalAlignment="Top"
                         Background="Transparent" BorderThickness="0" Cursor="Hand"
                         Click="Cancel_Click"/>
             </Grid>
 
             <!-- Separator -->
-            <Separator Grid.Row="1" Background="#2a2a2e" Margin="0,0,0,20"/>
+            <Separator Grid.Row="1" Background="{DynamicResource ThemeSeparator}" Margin="0,0,0,20"/>
 
             <!-- Reason dropdown -->
             <StackPanel Grid.Row="2" Margin="0,0,0,18">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <TextBlock Text="Reason " Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="Reason " Foreground="{DynamicResource ThemeFgPrimary}" FontSize="14" FontWeight="SemiBold"/>
                     <TextBlock Text="*" Foreground="#EF4444" FontSize="14" FontWeight="Bold"/>
                 </StackPanel>
                 <ComboBox x:Name="cbReason"
@@ -61,13 +61,13 @@
 
             <!-- Notes field -->
             <StackPanel Grid.Row="3" Margin="0,0,0,6">
-                <TextBlock Text="Additional Notes (optional)" Foreground="White" FontSize="14"
+                <TextBlock Text="Additional Notes (optional)" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="14"
                            FontWeight="SemiBold" Margin="0,0,0,8"/>
-                <Border Background="#141416" BorderBrush="#333" BorderThickness="1" CornerRadius="8">
+                <Border Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" CornerRadius="8">
                     <TextBox x:Name="txtNotes"
                              Background="Transparent"
-                             Foreground="White"
-                             CaretBrush="White"
+                             Foreground="{DynamicResource ThemeFgPrimary}"
+                             CaretBrush="{DynamicResource ThemeFgPrimary}"
                              BorderThickness="0"
                              FontSize="13"
                              Padding="12,10"
@@ -78,7 +78,7 @@
                              MaxLength="250"
                              VerticalContentAlignment="Top"/>
                 </Border>
-                <TextBlock Text="Max 250 characters" Foreground="#52525B" FontSize="11"
+                <TextBlock Text="Max 250 characters" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11"
                            HorizontalAlignment="Right" Margin="0,4,0,0"/>
             </StackPanel>
 
@@ -92,8 +92,8 @@
 
                 <Button Grid.Column="0" Content="Cancel"
                         Height="44" FontSize="14" FontWeight="SemiBold"
-                        Background="#2a2a2e" Foreground="#aaa" BorderThickness="1"
-                        BorderBrush="#3a3a3e" Cursor="Hand"
+                        Background="{DynamicResource ThemeCardBg}" Foreground="{DynamicResource ThemeFgMuted}" BorderThickness="1"
+                        BorderBrush="{DynamicResource ThemeCardBorder}" Cursor="Hand"
                         Click="Cancel_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -105,8 +105,8 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#333"/>
-                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="Background" Value="{DynamicResource ThemeNavBtnHoverBg}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

@@ -16,7 +16,7 @@
             </Grid.RowDefinitions>
 
             <!-- Filters Bar -->
-            <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="12" Margin="0,0,0,15">
+            <Border Grid.Row="0" Background="{DynamicResource ThemePanelBg}" CornerRadius="12" Padding="12" Margin="0,0,0,15">
                 <DockPanel LastChildFill="False">
 
                     <!-- Date Navigator (Left) -->
@@ -28,8 +28,8 @@
 
                     <!-- Segmented Control: Members | Instructors -->
                     <Border DockPanel.Dock="Left"
-                            Background="#1a1a1c" 
-                            BorderBrush="#333" BorderThickness="1"
+                            Background="{DynamicResource ThemeInputBg}" 
+                            BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1"
                             CornerRadius="10" 
                             Height="36"
                             VerticalAlignment="Center"
@@ -51,10 +51,10 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right">
 
                         <!-- Search Bar -->
-                        <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="8,0" Width="220" Height="36" Margin="0,0,8,0">
+                        <Border Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" CornerRadius="8" Padding="8,0" Width="220" Height="36" Margin="0,0,8,0">
                             <DockPanel VerticalAlignment="Center">
-                                <TextBlock Text="🔍" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
-                                <TextBox x:Name="txtAttendanceSearch" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" FontSize="13" VerticalAlignment="Center" Tag="Search name..." TextChanged="TxtAttendanceSearch_TextChanged">
+                                <TextBlock Text="🔍" FontSize="14" Foreground="{DynamicResource ThemeFgSecondary}" VerticalAlignment="Center" Margin="0,0,6,0" DockPanel.Dock="Left"/>
+                                <TextBox x:Name="txtAttendanceSearch" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeFgPrimary}" CaretBrush="{DynamicResource ThemeFgPrimary}" FontSize="13" VerticalAlignment="Center" Tag="Search name..." TextChanged="TxtAttendanceSearch_TextChanged">
                                     <TextBox.Style>
                                         <Style TargetType="TextBox">
                                             <Setter Property="Template">
@@ -62,7 +62,7 @@
                                                     <ControlTemplate TargetType="TextBox">
                                                         <Grid>
                                                             <ScrollViewer x:Name="PART_ContentHost" Background="Transparent" VerticalAlignment="Center"/>
-                                                            <TextBlock Foreground="Gray" FontSize="13" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
+                                                            <TextBlock Foreground="{DynamicResource ThemeFgSecondary}" FontSize="13" VerticalAlignment="Center" IsHitTestVisible="False" Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
                                                                 <TextBlock.Style>
                                                                     <Style TargetType="TextBlock">
                                                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -106,7 +106,7 @@
                         </ComboBox>
 
                         <Button x:Name="btnRefreshAttendance" Style="{StaticResource IconButtonStyle}" Click="BtnRefreshAttendance_Click" ToolTip="Refresh">
-                            <TextBlock Text="↺" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="↺" FontSize="18" Foreground="{DynamicResource ThemeFgPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
                         <Button Style="{StaticResource ModernGradientButton}" Padding="18,10" Margin="8,0,0,0" Click="ExportCsv_Click">
                             <TextBlock Text="Export CSV" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
@@ -118,24 +118,24 @@
 
             <!-- Summary Cards -->
             <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#1a2a4a" BorderBrush="#2b4273" Margin="0,0,8,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" Margin="0,0,8,0">
                     <DockPanel VerticalAlignment="Center">
                         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                            <TextBlock x:Name="lblTotalVisitorsTitle" Text="Total Visitors Today" Foreground="#8899bb" FontSize="13"/>
-                            <TextBlock x:Name="lblTotalVisitors" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                            <TextBlock x:Name="lblTotalVisitorsTitle" Text="Total Visitors Today" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="13"/>
+                            <TextBlock x:Name="lblTotalVisitors" Text="0" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Border x:Name="brdVisitorsIcon" Width="48" Height="48" Background="#2a3a5a" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="brdVisitorsIcon" Width="48" Height="48" Background="{DynamicResource ThemeOccupancyBorder}" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <TextBlock Text="👥" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </DockPanel>
                 </Border>
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a1e0a" BorderBrush="#59391e" Margin="8,0,0,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" Margin="8,0,0,0">
                     <DockPanel VerticalAlignment="Center">
                         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                            <TextBlock Text="Peak Hour" Foreground="#bb8866" FontSize="13"/>
-                            <TextBlock x:Name="lblPeakHour" Text="--" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                            <TextBlock Text="Peak Hour" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="13"/>
+                            <TextBlock x:Name="lblPeakHour" Text="--" Foreground="{DynamicResource ThemeNewMembersFg}" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Border Width="48" Height="48" Background="#5a3010" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border Width="48" Height="48" Background="{DynamicResource ThemeNewMembersBorder}" CornerRadius="12" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <TextBlock Text="📈" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </DockPanel>
@@ -145,7 +145,7 @@
             <!-- Report Grids -->
             <Grid Grid.Row="2" Margin="0,0,0,10">
                 <!-- MEMBER DATA GRID -->
-                <Border x:Name="brdMemberGrid" Background="#141416" CornerRadius="15" Padding="10" Visibility="Visible">
+                <Border x:Name="brdMemberGrid" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Visibility="Visible">
                     <DataGrid x:Name="dgAttendanceReport" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"
@@ -161,7 +161,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
@@ -180,7 +180,7 @@
                 </Border>
 
                 <!-- INSTRUCTOR DATA GRID -->
-                <Border x:Name="brdInstructorGrid" Background="#141416" CornerRadius="15" Padding="10" Visibility="Collapsed">
+                <Border x:Name="brdInstructorGrid" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Visibility="Collapsed">
                     <DataGrid x:Name="dgInstructorAttendanceReport" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"
@@ -196,7 +196,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>

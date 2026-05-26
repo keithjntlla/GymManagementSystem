@@ -61,7 +61,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="Promotional Campaigns &amp; Promo Codes" Foreground="White" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="0" Text="Promotional Campaigns &amp; Promo Codes" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
 
             <TextBox x:Name="txtSearch" 
                      Grid.Column="1"
@@ -85,7 +85,7 @@
         </Grid>
 
         <!-- Active Promos Table -->
-        <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
+        <Border Grid.Row="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgPromos" 
                       Style="{StaticResource ModernDataGrid}"
                       AutoGenerateColumns="False" 
@@ -95,7 +95,7 @@
                     <DataGridTemplateColumn Header="Code" Width="1.2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding PromoCode}" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding PromoCode}" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -111,8 +111,8 @@
                     <DataGridTemplateColumn Header="Discount Value" Width="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#2b1a3d">
-                                    <TextBlock Text="{Binding DiscountValueDisplay}" FontSize="13" FontWeight="Bold" Foreground="#B176F0" VerticalAlignment="Center"/>
+                                <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource ThemeDiscountBadgeBg}">
+                                    <TextBlock Text="{Binding DiscountValueDisplay}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource ThemeDiscountBadgeFg}" VerticalAlignment="Center"/>
                                 </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -129,7 +129,7 @@
                     <DataGridTemplateColumn Header="Status" Width="110">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="10" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center" Background="#1a1a1c" BorderBrush="{Binding StatusColor}" BorderThickness="1">
+                                <Border CornerRadius="10" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource ThemeCardBg}" BorderBrush="{Binding StatusColor}" BorderThickness="1">
                                     <TextBlock Text="{Binding StatusDisplay}" FontSize="11" FontWeight="Bold" Foreground="{Binding StatusColor}" VerticalAlignment="Center"/>
                                 </Border>
                             </DataTemplate>
@@ -169,11 +169,11 @@
         <Border Grid.Row="2" x:Name="ArchivedSection" Visibility="Collapsed" Margin="0,20,0,0">
             <StackPanel>
                 <DockPanel Margin="0,0,0,10">
-                    <TextBlock Text="Archived Promo Campaigns" Foreground="#888" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    <TextBlock Text="These campaigns are hidden from checkout forms but preserved for financial history." Foreground="#555" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    <TextBlock Text="Archived Promo Campaigns" Foreground="{DynamicResource ThemeFgMuted}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="These campaigns are hidden from checkout forms but preserved for financial history." Foreground="{DynamicResource ThemeFgMuted}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
                 </DockPanel>
 
-                <Border Background="#141416" CornerRadius="15" Padding="10">
+                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
                     <DataGrid x:Name="dgArchivedPromos" 
                               Style="{StaticResource ModernDataGrid}"
                               AutoGenerateColumns="False" 
@@ -185,9 +185,9 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding PromoCode}" Foreground="#555" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                                            <Border Background="#2a2a2a" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                <TextBlock Text="ARCHIVED" Foreground="#555" FontSize="10" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding PromoCode}" Foreground="{DynamicResource ThemeFgMuted}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                            <Border Background="{DynamicResource ThemeCardBg}" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="ARCHIVED" Foreground="{DynamicResource ThemeFgMuted}" FontSize="10" FontWeight="Bold"/>
                                             </Border>
                                         </StackPanel>
                                     </DataTemplate>
@@ -197,7 +197,7 @@
                             <DataGridTemplateColumn Header="Campaign Name" Width="1.8*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding PromoName}" Foreground="#555" FontSize="14" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                        <TextBlock Text="{Binding PromoName}" Foreground="{DynamicResource ThemeFgMuted}" FontSize="14" VerticalAlignment="Center" Margin="5,0,0,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -205,7 +205,7 @@
                             <DataGridTemplateColumn Header="Discount Value" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding DiscountValueDisplay}" Foreground="#555" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding DiscountValueDisplay}" Foreground="{DynamicResource ThemeFgMuted}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -213,7 +213,7 @@
                             <DataGridTemplateColumn Header="Validity Period" Width="2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding DateRangeDisplay}" Foreground="#555" FontSize="13" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding DateRangeDisplay}" Foreground="{DynamicResource ThemeFgMuted}" FontSize="13" VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -237,12 +237,12 @@
         </Border>
 
         <!-- Information Notice -->
-        <Border Grid.Row="3" Background="#1e2533" CornerRadius="10" Padding="15" Margin="0,20,0,0">
+        <Border Grid.Row="3" Background="{DynamicResource ThemeNoteAlertBg}" CornerRadius="10" Padding="15" Margin="0,20,0,0">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="ⓘ" Foreground="#4090f0" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                <TextBlock Text="ⓘ" Foreground="{DynamicResource ThemeNoteAlertIconFg}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
                 <TextBlock VerticalAlignment="Center">
-                    <Run Text="Note:" Foreground="#4090f0" FontWeight="Bold"/>
-                    <Run Text=" Promos can be applied during member registrations or payment checkouts, but cannot be combined with Member Tier Discounts (Student/Senior)." Foreground="#88aacc"/>
+                    <Run Text="Note:" Foreground="{DynamicResource ThemeNoteAlertIconFg}" FontWeight="Bold"/>
+                    <Run Text=" Promos can be applied during member registrations or payment checkouts, but cannot be combined with Member Tier Discounts (Student/Senior)." Foreground="{DynamicResource ThemeNoteAlertFg}"/>
                 </TextBlock>
             </StackPanel>
         </Border>

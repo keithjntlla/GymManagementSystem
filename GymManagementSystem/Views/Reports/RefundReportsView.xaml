@@ -17,7 +17,7 @@
             </Grid.RowDefinitions>
 
             <!-- Filter / Export bar -->
-            <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="15" Margin="0,0,0,25">
+            <Border Grid.Row="0" Background="{DynamicResource ThemePanelBg}" CornerRadius="12" Padding="15" Margin="0,0,0,25">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -29,21 +29,21 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                        <TextBlock Text="Start Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                        <TextBlock Text="Start Date" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,8" FontSize="12"/>
                         <DatePicker x:Name="dpStart" Width="160" Height="40"
                                     Style="{StaticResource ModernDatePicker}"
                                     SelectedDateChanged="DatePicker_SelectedDateChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                        <TextBlock Text="End Date" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                        <TextBlock Text="End Date" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,8" FontSize="12"/>
                         <DatePicker x:Name="dpEnd" Width="160" Height="40"
                                     Style="{StaticResource ModernDatePicker}"
                                     SelectedDateChanged="DatePicker_SelectedDateChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                        <TextBlock Text="Filter by Plan" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                        <TextBlock Text="Filter by Plan" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,8" FontSize="12"/>
                         <ComboBox x:Name="cbPlanFilter"
                                   Width="160"
                                   Height="40"
@@ -54,7 +54,7 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="3" Margin="0,0,16,0">
-                        <TextBlock Text="Filter by Reason" Foreground="Gray" Margin="0,0,0,8" FontSize="12"/>
+                        <TextBlock Text="Filter by Reason" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,8" FontSize="12"/>
                         <ComboBox x:Name="cbReasonFilter"
                                   Width="175"
                                   Height="40"
@@ -85,29 +85,29 @@
 
             <!-- Summary cards -->
             <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,30">
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#3B1214" BorderBrush="#5c2025" Margin="0,0,10,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" Margin="0,0,10,0">
                     <StackPanel VerticalAlignment="Center">
-                        <Border Width="40" Height="40" Background="#5A1B1E" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
-                            <TextBlock Text="↩" FontSize="20" Foreground="#EF4444" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Width="40" Height="40" Background="{DynamicResource ThemeOccupancyBorder}" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
+                            <TextBlock Text="↩" FontSize="20" Foreground="{DynamicResource ThemeOccupancyIconFg}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Total Refunds" Foreground="#E5E7EB" FontSize="14"/>
-                        <TextBlock Text="{Binding TotalRefundsCount, FallbackValue='0'}" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock Text="Total Refunds" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="14"/>
+                        <TextBlock Text="{Binding TotalRefundsCount, FallbackValue='0'}" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#29123A" BorderBrush="#412b5c" Margin="10,0,0,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" Margin="10,0,0,0">
                     <StackPanel VerticalAlignment="Center">
-                        <Border Width="40" Height="40" Background="#3C1C55" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
-                            <TextBlock Text="₱" FontSize="20" Foreground="#E879F9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Width="40" Height="40" Background="{DynamicResource ThemeMonthlyRevenueBorder}" CornerRadius="10" HorizontalAlignment="Left" Margin="0,0,0,15">
+                            <TextBlock Text="₱" FontSize="20" Foreground="{DynamicResource ThemeMonthlyRevenueIconFg}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Total Amount" Foreground="#E5E7EB" FontSize="14"/>
-                        <TextBlock Text="{Binding TotalRefundsAmount, StringFormat=₱\{0:N2\}, FallbackValue='₱0.00'}" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
+                        <TextBlock Text="Total Amount" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" FontSize="14"/>
+                        <TextBlock Text="{Binding TotalRefundsAmount, StringFormat=₱\{0:N2\}, FallbackValue='₱0.00'}" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="24" FontWeight="Bold" Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>
 
             <!-- Data table -->
-            <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
+            <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Margin="0,0,0,10">
                 <DataGrid x:Name="dgRefundTransactions"
                           ItemsSource="{Binding RefundTransactions}"
                           Style="{StaticResource ModernDataGrid}"
@@ -139,7 +139,7 @@
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Text"       Value="{Binding RefundReason}"/>
-                                                    <Setter Property="Foreground" Value="#fbbf24"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource ThemeRefundReasonFg}"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding RefundReason}" Value="">
                                                             <Setter Property="Text"       Value="—"/>
@@ -150,7 +150,7 @@
                                             </TextBlock.Style>
                                         </TextBlock>
                                         <TextBlock Text="{Binding RefundNotes}"
-                                                   Foreground="#888" FontSize="11"
+                                                   Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11"
                                                    TextWrapping="Wrap" Margin="0,2,0,0">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -176,7 +176,7 @@
             <TextBlock Grid.Row="3"
                        Text="{Binding RefundTransactions.Count, StringFormat='Showing {0} refunds', FallbackValue='Showing 0 refunds'}"
                        HorizontalAlignment="Center"
-                       Foreground="#52525B"
+                       Foreground="{DynamicResource ThemeFgMuted}"
                        FontSize="14"
                        Margin="0,5,0,10"/>
         </Grid>

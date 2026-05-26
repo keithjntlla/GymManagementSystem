@@ -15,10 +15,10 @@
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid SnapsToDevicePixels="True">
                             <!-- Background Track -->
-                            <Border x:Name="Track" Background="#333333" CornerRadius="15" BorderBrush="#444444" BorderThickness="1">
+                            <Border x:Name="Track" Background="{DynamicResource ThemeCardBorder}" CornerRadius="15" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1">
                                 <Grid>
                                     <TextBlock x:Name="txtActive" Text="ON" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="Collapsed"/>
-                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="Visible"/>
+                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="{DynamicResource ThemeFgMuted}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="Visible"/>
                                 </Grid>
                             </Border>
                             <!-- Thumb Indicator -->
@@ -43,7 +43,7 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1">
+    <Border Background="{DynamicResource ThemeCardBg}" CornerRadius="15" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1">
         <Grid Margin="25">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -52,8 +52,8 @@
             </Grid.RowDefinitions>
 
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBlock x:Name="lblTitle" Text="Add New Instructor" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="Gray" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
+                <TextBlock x:Name="lblTitle" Text="Add New Instructor" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0" FontSize="18" Click="Cancel_Click"/>
             </DockPanel>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,5,0">
@@ -67,7 +67,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,5,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                <TextBlock Text="First Name" Foreground="White"/>
+                                <TextBlock Text="First Name" Foreground="{DynamicResource ThemeFgPrimary}"/>
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
                             <TextBox x:Name="txtFirstName" Style="{StaticResource ModernTextBox}"/>
@@ -75,14 +75,14 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="M.I." Foreground="White" Margin="0,0,0,5"/>
+                            <TextBlock Text="M.I." Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
                             <TextBox x:Name="txtMiddleInitial" Style="{StaticResource ModernTextBox}" MaxLength="1" HorizontalContentAlignment="Center"/>
                             <TextBlock x:Name="lblMiddleInitialError" Foreground="#FF4444" FontSize="11" Margin="0,3,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Margin="5,0,0,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                <TextBlock Text="Last Name" Foreground="White"/>
+                                <TextBlock Text="Last Name" Foreground="{DynamicResource ThemeFgPrimary}"/>
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
                             <TextBox x:Name="txtLastName" Style="{StaticResource ModernTextBox}"/>
@@ -92,7 +92,7 @@
 
                     <!-- Phone Number -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                        <TextBlock Text="Phone Number" Foreground="White"/>
+                        <TextBlock Text="Phone Number" Foreground="{DynamicResource ThemeFgPrimary}"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
                     <TextBox x:Name="txtPhone" Style="{StaticResource ModernTextBox}" Tag="09XXXXXXXXX" MaxLength="11" Margin="0,0,0,5"/>
@@ -107,7 +107,7 @@
 
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                <TextBlock Text="Birthday" Foreground="White"/>
+                                <TextBlock Text="Birthday" Foreground="{DynamicResource ThemeFgPrimary}"/>
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
                             <DatePicker x:Name="dpBirthday" 
@@ -120,7 +120,7 @@
 
                         <StackPanel Grid.Column="1">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                <TextBlock Text="Gender" Foreground="White"/>
+                                <TextBlock Text="Gender" Foreground="{DynamicResource ThemeFgPrimary}"/>
                                 <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                             </StackPanel>
                             <ComboBox x:Name="cmbGender" Style="{StaticResource ModernComboBox}">
@@ -134,7 +134,7 @@
 
                     <!-- Specializations -->
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                        <TextBlock Text="Specialization" Foreground="White"/>
+                        <TextBlock Text="Specialization" Foreground="{DynamicResource ThemeFgPrimary}"/>
                         <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold"/>
                     </StackPanel>
                     <ComboBox x:Name="cmbSpecialization" Style="{StaticResource ModernComboBox}" Margin="0,0,0,5"/>
@@ -143,23 +143,23 @@
                     <!-- Status Toggle -->
                     <StackPanel Margin="0,0,0,20">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <TextBlock Text="Instructor Status" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="Instructor Status" Foreground="{DynamicResource ThemeFgPrimary}" VerticalAlignment="Center"/>
                             <TextBlock Text=" *" Foreground="#FF4444" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <ToggleButton x:Name="tglStatus" Style="{StaticResource ModernToggleSwitch}" IsChecked="True"/>
-                            <TextBlock x:Name="lblStatusText" Text="Active" Foreground="White" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            <TextBlock x:Name="lblStatusText" Text="Active" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Photo Upload -->
-                    <TextBlock Text="Photo" Foreground="White" Margin="0,0,0,5"/>
+                    <TextBlock Text="Photo" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Border Width="80" Height="80" Background="#1a1a1a" CornerRadius="10" BorderBrush="#333" BorderThickness="1">
+                        <Border Width="80" Height="80" Background="{DynamicResource ThemeInputBg}" CornerRadius="10" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1">
                             <Image x:Name="imgPhoto" Stretch="UniformToFill"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <Button Content="↑ Upload Photo" Margin="15,0,0,0" Padding="15,8" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="UploadPhoto_Click"/>
+                            <Button Content="↑ Upload Photo" Margin="15,0,0,0" Padding="15,8" Background="{DynamicResource ThemeNavBtnBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeNavBtnBorder}" Click="UploadPhoto_Click"/>
                             <TextBlock x:Name="lblPhotoError" Foreground="#FF4444" FontSize="11" Margin="15,5,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
                         </StackPanel>
                     </StackPanel>
@@ -172,7 +172,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button x:Name="btnSave" Content="Save" Grid.Column="0" Margin="0,0,10,0" Padding="0,12" Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="Save_Click"/>
-                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="#1a1a1a" Foreground="White" BorderBrush="#333" Click="Cancel_Click"/>
+                <Button Content="Cancel" Grid.Column="1" Margin="10,0,0,0" Padding="0,12" Background="{DynamicResource ThemeNavBtnBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeNavBtnBorder}" Click="Cancel_Click"/>
             </Grid>
         </Grid>
     </Border>

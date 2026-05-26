@@ -5,11 +5,11 @@
         WindowStyle="None" Background="Transparent" AllowsTransparency="True"
         WindowStartupLocation="CenterScreen">
 
-    <Border Background="#1a191b" CornerRadius="25" BorderBrush="#333" BorderThickness="1">
+    <Border Background="{DynamicResource ThemeBg}" CornerRadius="25" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1">
         <StackPanel Margin="40">
 
             <Button Content="✕" HorizontalAlignment="Right" Background="Transparent" 
-                    Foreground="Gray" BorderThickness="0" Click="Close_Click"/>
+                    Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0" Click="Close_Click"/>
 
             <!-- Logo: set x:Name so code-behind can swap it with the gym's custom logo -->
             <Image x:Name="imgLogo"
@@ -21,21 +21,21 @@
 
             <!-- Gym name (big) -->
             <TextBlock x:Name="txtLoginTitle" 
-                       Foreground="White" FontSize="28" 
+                       Foreground="{DynamicResource ThemeFgPrimary}" FontSize="28" 
                        FontWeight="SemiBold" HorizontalAlignment="Center" 
                        TextAlignment="Center" TextWrapping="Wrap"
                        Margin="0,0,0,6"/>
 
             <!-- "Staff Login" subtitle -->
             <TextBlock x:Name="txtLoginSubtitle" Text="Member Login" 
-                       Foreground="#999" FontSize="15" 
+                       Foreground="{DynamicResource ThemeFgMuted}" FontSize="15" 
                        HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-            <TextBlock Text="Username" Foreground="#999" Margin="0,0,0,8" FontSize="16"/>
+            <TextBlock Text="Username" Foreground="{DynamicResource ThemeFgMuted}" Margin="0,0,0,8" FontSize="16"/>
             <Grid Margin="0,0,0,5">
-                <TextBox x:Name="txtUsername" Background="#222123" Foreground="White" 
-                         BorderBrush="#444" Padding="15,10" FontSize="16" 
-                         CaretBrush="White">
+                <TextBox x:Name="txtUsername" Background="{DynamicResource ThemeInputBg}" Foreground="{DynamicResource ThemeFgPrimary}" 
+                         BorderBrush="{DynamicResource ThemeInputBorder}" Padding="15,10" FontSize="16" 
+                         CaretBrush="{DynamicResource ThemeFgPrimary}">
                     <TextBox.Resources>
                         <Style TargetType="{x:Type Border}">
                             <Setter Property="CornerRadius" Value="10"/>
@@ -44,7 +44,7 @@
                 </TextBox>
                 <TextBlock IsHitTestVisible="False" Text="Enter your username" 
                            VerticalAlignment="Center" HorizontalAlignment="Left" 
-                           Margin="15,0,0,0" Foreground="#555" FontSize="16">
+                           Margin="15,0,0,0" Foreground="{DynamicResource ThemeFgMuted}" FontSize="16">
                     <TextBlock.Style>
                         <Style TargetType="{x:Type TextBlock}">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -59,9 +59,9 @@
             </Grid>
             <TextBlock x:Name="lblUsernameError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-            <TextBlock Text="Password" Foreground="#999" Margin="0,0,0,8" FontSize="16"/>
-            <PasswordBox x:Name="txtPassword" Background="#222123" Foreground="White" 
-                         BorderBrush="#444" Padding="15,10" FontSize="16" CaretBrush="White" Margin="0,0,0,5">
+            <TextBlock Text="Password" Foreground="{DynamicResource ThemeFgMuted}" Margin="0,0,0,8" FontSize="16"/>
+            <PasswordBox x:Name="txtPassword" Background="{DynamicResource ThemeInputBg}" Foreground="{DynamicResource ThemeFgPrimary}" 
+                         BorderBrush="{DynamicResource ThemeInputBorder}" Padding="15,10" FontSize="16" CaretBrush="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5">
                 <PasswordBox.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="10"/>
@@ -70,7 +70,7 @@
             </PasswordBox>
             <TextBlock x:Name="lblPasswordError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-            <TextBlock Text="Forgot password?" Foreground="#ff6b00" HorizontalAlignment="Right" 
+            <TextBlock Text="Forgot password?" Foreground="{DynamicResource AppAccentBrush}" HorizontalAlignment="Right" 
                        Margin="0,15,0,30" Cursor="Hand" FontSize="14"
                        MouseLeftButtonUp="ForgotPassword_Click"/>
 

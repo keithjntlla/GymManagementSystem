@@ -64,7 +64,7 @@ namespace GymManagementSystem.Views.MainViews
             if (txtMemberSearch.Text == (string)txtMemberSearch.Tag)
             {
                 txtMemberSearch.Text = "";
-                txtMemberSearch.Foreground = Brushes.White;
+                txtMemberSearch.SetResourceReference(TextBox.ForegroundProperty, "ThemeFgPrimary");
             }
         }
 
@@ -73,7 +73,7 @@ namespace GymManagementSystem.Views.MainViews
             if (string.IsNullOrWhiteSpace(txtMemberSearch.Text))
             {
                 txtMemberSearch.Text = (string)txtMemberSearch.Tag;
-                txtMemberSearch.Foreground = Brushes.Gray;
+                txtMemberSearch.SetResourceReference(TextBox.ForegroundProperty, "ThemeFgMuted");
             }
         }
 
@@ -171,7 +171,7 @@ namespace GymManagementSystem.Views.MainViews
 
                 popSearch.IsOpen = false;
                 txtMemberSearch.Text = member.FullName;
-                txtMemberSearch.Foreground = Brushes.White;
+                txtMemberSearch.SetResourceReference(TextBox.ForegroundProperty, "ThemeFgPrimary");
 
                 // 3. This method updates the text/colors, but we must ensure the border is visible first
                 PreviewMember(member);
@@ -203,7 +203,7 @@ namespace GymManagementSystem.Views.MainViews
             // 5. Allow check-in if all conditions pass
             else
             {
-                UpdateStatusIndicator("Ready to Check In", "✓", Color.FromRgb(47, 205, 112), "#1e3a2a");
+                UpdateStatusIndicator("Ready to Check In", "✓", Color.FromRgb(47, 205, 112), "Ready");
                 btnCheckIn.Visibility = Visibility.Visible;
             }
         }
@@ -419,23 +419,23 @@ namespace GymManagementSystem.Views.MainViews
                     if (daysRemaining < 0)
                     {
                         lblDaysRemaining.Text = "Expired";
-                        lblDaysRemaining.Foreground = Brushes.Red;
+                        lblDaysRemaining.SetResourceReference(TextBlock.ForegroundProperty, "ThemeAlertRedFg");
                     }
                     else if (daysRemaining == 0)
                     {
                         lblDaysRemaining.Text = "Expires Today";
-                        lblDaysRemaining.Foreground = Brushes.Orange;
+                        lblDaysRemaining.SetResourceReference(TextBlock.ForegroundProperty, "ThemeAlertOrangeFg");
                     }
                     else
                     {
                         lblDaysRemaining.Text = $"{daysRemaining} days";
-                        lblDaysRemaining.Foreground = Brushes.LightGreen;
+                        lblDaysRemaining.SetResourceReference(TextBlock.ForegroundProperty, "ThemeCheckinsFg");
                     }
                 }
                 else
                 {
                     lblDaysRemaining.Text = "N/A";
-                    lblDaysRemaining.Foreground = Brushes.Gray;
+                    lblDaysRemaining.SetResourceReference(TextBlock.ForegroundProperty, "ThemeFgMuted");
                 }
 
                 if (!string.IsNullOrEmpty(member.PhotoPath) && File.Exists(member.PhotoPath))
@@ -456,11 +456,22 @@ namespace GymManagementSystem.Views.MainViews
 
         private void UpdateStatusIndicator(string message, string icon, Color iconColor, string bgColorHex)
         {
-            brdStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
+            if (bgColorHex == "Ready")
+                brdStatusIndicator.SetResourceReference(Border.BackgroundProperty, "ThemeInlineAttendanceBg");
+            else
+                brdStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
             txtStatusIcon.Text = icon;
             txtStatusMessage.Text = message;
-            txtStatusIcon.Foreground = new SolidColorBrush(iconColor);
-            txtStatusMessage.Foreground = Brushes.White;
+            if (bgColorHex == "Ready")
+            {
+                txtStatusIcon.SetResourceReference(TextBlock.ForegroundProperty, "ThemeInlineAttendanceButtonFg");
+                txtStatusMessage.SetResourceReference(TextBlock.ForegroundProperty, "ThemeInlineAttendanceButtonFg");
+            }
+            else
+            {
+                txtStatusIcon.Foreground = new SolidColorBrush(iconColor);
+                txtStatusMessage.Foreground = Brushes.White;
+            }
         }
 
         private void ResetStatusIndicator()
@@ -625,7 +636,7 @@ namespace GymManagementSystem.Views.MainViews
             if (txtInstructorSearch.Text == (string)txtInstructorSearch.Tag)
             {
                 txtInstructorSearch.Text = "";
-                txtInstructorSearch.Foreground = Brushes.White;
+                txtInstructorSearch.SetResourceReference(TextBox.ForegroundProperty, "ThemeFgPrimary");
             }
         }
 
@@ -634,7 +645,7 @@ namespace GymManagementSystem.Views.MainViews
             if (string.IsNullOrWhiteSpace(txtInstructorSearch.Text))
             {
                 txtInstructorSearch.Text = (string)txtInstructorSearch.Tag;
-                txtInstructorSearch.Foreground = Brushes.Gray;
+                txtInstructorSearch.SetResourceReference(TextBox.ForegroundProperty, "ThemeFgMuted");
             }
         }
 
@@ -714,7 +725,7 @@ namespace GymManagementSystem.Views.MainViews
 
                 popInstructorSearch.IsOpen = false;
                 txtInstructorSearch.Text = instructor.FullName;
-                txtInstructorSearch.Foreground = Brushes.White;
+                txtInstructorSearch.SetResourceReference(TextBox.ForegroundProperty, "ThemeFgPrimary");
 
                 PreviewInstructor(instructor);
             }
@@ -737,7 +748,7 @@ namespace GymManagementSystem.Views.MainViews
             }
             else
             {
-                UpdateInstructorStatusIndicator("Ready to Clock In", "✓", Color.FromRgb(47, 205, 112), "#1e3a2a");
+                UpdateInstructorStatusIndicator("Ready to Clock In", "✓", Color.FromRgb(47, 205, 112), "Ready");
                 btnInstructorCheckIn.Visibility = Visibility.Visible;
             }
         }
@@ -921,11 +932,22 @@ namespace GymManagementSystem.Views.MainViews
 
         private void UpdateInstructorStatusIndicator(string message, string icon, Color iconColor, string bgColorHex)
         {
-            brdInstructorStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
+            if (bgColorHex == "Ready")
+                brdInstructorStatusIndicator.SetResourceReference(Border.BackgroundProperty, "ThemeInlineAttendanceBg");
+            else
+                brdInstructorStatusIndicator.Background = (Brush?)new BrushConverter().ConvertFromString(bgColorHex) ?? Brushes.Transparent;
             txtInstructorStatusIcon.Text = icon;
             txtInstructorStatusMessage.Text = message;
-            txtInstructorStatusIcon.Foreground = new SolidColorBrush(iconColor);
-            txtInstructorStatusMessage.Foreground = Brushes.White;
+            if (bgColorHex == "Ready")
+            {
+                txtInstructorStatusIcon.SetResourceReference(TextBlock.ForegroundProperty, "ThemeInlineAttendanceButtonFg");
+                txtInstructorStatusMessage.SetResourceReference(TextBlock.ForegroundProperty, "ThemeInlineAttendanceButtonFg");
+            }
+            else
+            {
+                txtInstructorStatusIcon.Foreground = new SolidColorBrush(iconColor);
+                txtInstructorStatusMessage.Foreground = Brushes.White;
+            }
         }
 
         private void ResetInstructorStatusIndicator()

@@ -799,7 +799,7 @@ namespace GymManagementSystem.Views.MainViews
             else
             {
                 lblMemberType.Text = member.MemberType.ToString();
-                lblMemberType.Foreground = System.Windows.Media.Brushes.White;
+                lblMemberType.SetResourceReference(TextBlock.ForegroundProperty, "ThemeFgPrimary");
             }
 
             // ── FIXED: EXTRACT BASE PLAN AND MULTIPLIER SEPARATELY FOR DISPLAY ──

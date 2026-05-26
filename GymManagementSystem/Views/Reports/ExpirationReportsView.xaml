@@ -15,7 +15,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#141416" CornerRadius="12" Padding="20" Margin="0,0,0,15">
+            <Border Grid.Row="0" Background="{DynamicResource ThemePanelBg}" CornerRadius="12" Padding="20" Margin="0,0,0,15">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -23,14 +23,14 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                        <TextBlock Text="Showing active members expiring within 7 days" Foreground="#666" FontSize="11" Margin="0,0,0,8"/>
-                        <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1"
+                        <TextBlock Text="Showing active members expiring within 7 days" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1"
                                 CornerRadius="8" Padding="10,0" Height="40">
                             <DockPanel VerticalAlignment="Center">
-                                <TextBlock Text="🔍" FontSize="14" Foreground="Gray"
+                                <TextBlock Text="🔍" FontSize="14" Foreground="{DynamicResource ThemeFgSecondary}"
                                            VerticalAlignment="Center" Margin="0,0,8,0" DockPanel.Dock="Left"/>
                                 <TextBox x:Name="txtExpirationSearch" Background="Transparent"
-                                         BorderThickness="0" Foreground="White" CaretBrush="White"
+                                         BorderThickness="0" Foreground="{DynamicResource ThemeFgPrimary}" CaretBrush="{DynamicResource ThemeFgPrimary}"
                                          FontSize="13" VerticalAlignment="Center"
                                          Tag="Search by member name..."
                                          TextChanged="TxtExpirationSearch_TextChanged">
@@ -43,7 +43,7 @@
                                                             <ScrollViewer x:Name="PART_ContentHost"
                                                                           Background="Transparent"
                                                                           VerticalAlignment="Center"/>
-                                                            <TextBlock Foreground="Gray" FontSize="13"
+                                                            <TextBlock Foreground="{DynamicResource ThemeFgSecondary}" FontSize="13"
                                                                        VerticalAlignment="Center"
                                                                        IsHitTestVisible="False"
                                                                        Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=TextBox}}">
@@ -80,15 +80,15 @@
             </Border>
 
             <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,15">
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a1020" BorderBrush="#5a2035" Margin="0,0,8,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" Margin="0,0,8,0">
                     <DockPanel VerticalAlignment="Center">
                         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                            <TextBlock Text="Critical Count (72 Hours)" Foreground="#cc7788" FontSize="13"/>
-                            <TextBlock x:Name="lblCriticalCount" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
-                            <TextBlock Text="Expiring within 3 days" Foreground="#885566" FontSize="12" Margin="0,4,0,0"/>
+                            <TextBlock Text="Critical Count (72 Hours)" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="13"/>
+                            <TextBlock x:Name="lblCriticalCount" Text="0" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                            <TextBlock Text="Expiring within 3 days" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="12" Margin="0,4,0,0"/>
                         </StackPanel>
                         <Button Style="{StaticResource SummaryCardIconButtonStyle}"
-                                Background="#5a1a30"
+                                Background="{DynamicResource ThemeOccupancyBorder}"
                                 ToolTip="Notify members"
                                 Click="NotifyCritical_Click"
                                 HorizontalAlignment="Right"
@@ -98,15 +98,15 @@
                     </DockPanel>
                 </Border>
 
-                <Border Style="{StaticResource SummaryCardStyle}" Background="#3a2010" BorderBrush="#5c3826" Margin="8,0,0,0">
+                <Border Style="{StaticResource SummaryCardStyle}" Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" Margin="8,0,0,0">
                     <DockPanel VerticalAlignment="Center">
                         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                            <TextBlock Text="Pending Renewals" Foreground="#cc9966" FontSize="13"/>
-                            <TextBlock x:Name="lblPendingRenewals" Text="0" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
-                            <TextBlock Text="Already expired members" Foreground="#886644" FontSize="12" Margin="0,4,0,0"/>
+                            <TextBlock Text="Pending Renewals" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="13"/>
+                            <TextBlock x:Name="lblPendingRenewals" Text="0" Foreground="{DynamicResource ThemeNewMembersFg}" FontSize="36" FontWeight="Bold" Margin="0,4,0,0"/>
+                            <TextBlock Text="Already expired members" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="12" Margin="0,4,0,0"/>
                         </StackPanel>
                         <Button Style="{StaticResource SummaryCardIconButtonStyle}"
-                                Background="#5a3010"
+                                Background="{DynamicResource ThemeNewMembersBorder}"
                                 ToolTip="View expired members"
                                 Click="ViewExpiredMembers_Click"
                                 HorizontalAlignment="Right"
@@ -117,7 +117,7 @@
                 </Border>
             </UniformGrid>
 
-            <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10" Margin="0,0,0,10">
+            <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Margin="0,0,0,10">
                 <DataGrid x:Name="dgExpirations" 
                           Style="{StaticResource ModernDataGrid}"
                           IsReadOnly="True"
@@ -133,16 +133,16 @@
                             <Setter Property="BorderThickness" Value="0"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding UrgencyLevel}" Value="Expired">
-                                    <Setter Property="Background" Value="#1f0a0a"/>
+                                    <Setter Property="Background" Value="{DynamicResource ThemeExpiredRowBg}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding UrgencyLevel}" Value="Critical">
-                                    <Setter Property="Background" Value="#291407"/>
+                                    <Setter Property="Background" Value="{DynamicResource ThemeCriticalRowBg}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding UrgencyLevel}" Value="Warning">
-                                    <Setter Property="Background" Value="#1a1500"/>
+                                    <Setter Property="Background" Value="{DynamicResource ThemeWarningRowBg}"/>
                                 </DataTrigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#252528"/>
+                                    <Setter Property="Background" Value="{DynamicResource ThemeDataGridAltRow}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -154,7 +154,7 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <Ellipse x:Name="UrgencyDot" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center" Fill="Transparent"/>
-                                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="{DynamicResource ThemeFgPrimary}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding DaysRemaining}" Value="0">
@@ -168,7 +168,7 @@
                         <DataGridTextColumn Header="Phone Number" Binding="{Binding Phone}" Width="1.2*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#aaaaaa"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ThemeFgSecondary}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -187,7 +187,7 @@
                         <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" Width="1*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#aaaaaa"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ThemeFgSecondary}"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -197,8 +197,8 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center" Margin="0,4,0,4">
-                                        <TextBlock x:Name="DaysLabel" Text="{Binding DaysRemainingLabel}" FontWeight="SemiBold" FontSize="13" Foreground="#aaaaaa" Margin="0,0,0,4"/>
-                                        <Border x:Name="ProgressTrack" Height="5" CornerRadius="3" Background="#2a2a2c" Visibility="Visible">
+                                        <TextBlock x:Name="DaysLabel" Text="{Binding DaysRemainingLabel}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource ThemeFgSecondary}" Margin="0,0,0,4"/>
+                                        <Border x:Name="ProgressTrack" Height="5" CornerRadius="3" Background="{DynamicResource ThemeCardBorder}" Visibility="Visible">
                                             <Border x:Name="ProgressFill" HorizontalAlignment="Left" CornerRadius="3" Background="#4090f0" Width="{Binding ProgressWidth}"/>
                                         </Border>
                                     </StackPanel>
@@ -219,7 +219,7 @@
                         <DataGridTemplateColumn Header="Last Notified" Width="1.1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding LastNotifiedLabel}" Foreground="#777" FontSize="12"
+                                    <TextBlock Text="{Binding LastNotifiedLabel}" Foreground="{DynamicResource ThemeFgMuted}" FontSize="12"
                                                VerticalAlignment="Center" FontStyle="Italic"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

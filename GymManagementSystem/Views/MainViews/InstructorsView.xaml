@@ -14,8 +14,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ContentControl">
-                        <Border Background="#2b1b10" BorderBrush="#ff6b00" BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="0,0,5,0">
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="#ffb74d" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource ThemeSpecializationBadgeBg}" BorderBrush="{DynamicResource ThemeSpecializationBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="0,0,5,0">
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="{DynamicResource ThemeSpecializationBadgeFg}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -31,10 +31,10 @@
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid SnapsToDevicePixels="True">
                             <!-- Background Track -->
-                            <Border x:Name="Track" Background="#333333" CornerRadius="15" BorderBrush="#444444" BorderThickness="1">
+                            <Border x:Name="Track" Background="{DynamicResource ThemeCardBorder}" CornerRadius="15" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1">
                                 <Grid>
                                     <TextBlock x:Name="txtActive" Text="ON" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="Collapsed"/>
-                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="Visible"/>
+                                    <TextBlock x:Name="txtInactive" Text="OFF" Foreground="{DynamicResource ThemeFgMuted}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="Visible"/>
                                 </Grid>
                             </Border>
                             <!-- Thumb Indicator -->
@@ -75,7 +75,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="Instructors Directory" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="0" Text="Instructors Directory" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
 
             <TextBox x:Name="txtSearch" 
                      Grid.Column="1"
@@ -113,42 +113,42 @@
         <!-- Summary Cards (Top Row) -->
         <UniformGrid Grid.Row="1" Columns="3" Height="110" Margin="0,0,0,20">
             <!-- Total Staff -->
-            <Border Background="#111a30" BorderBrush="#1c2a4e" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
+            <Border Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Total Instructors" Foreground="#8a99ad" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="lblTotalInstructorsCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Total Instructors" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblTotalInstructorsCount" Text="0" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Active Coaches -->
-            <Border Background="#0e291d" BorderBrush="#133827" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
+            <Border Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Active Coaches" Foreground="#81c784" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="lblActiveInstructorsCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Active Coaches" Foreground="{DynamicResource ThemeCheckinsLabelFg}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblActiveInstructorsCount" Text="0" Foreground="{DynamicResource ThemeCheckinsFg}" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Inactive -->
-            <Border Background="#2b0d0e" BorderBrush="#4a1618" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
+            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Inactive / On Leave" Foreground="#e57373" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="lblInactiveInstructorsCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Inactive / On Leave" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblInactiveInstructorsCount" Text="0" Foreground="{DynamicResource ThemeNewMembersFg}" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
         </UniformGrid>
 
         <!-- Instructors Table -->
-        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
+        <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgInstructors" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridRow">
@@ -156,7 +156,7 @@
                         <Setter Property="BorderThickness" Value="0"/>
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#1a1a1c"/>
+                                <Setter Property="Background" Value="{DynamicResource ThemeDataGridAltRow}"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -177,7 +177,7 @@
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <TextBlock x:Name="txtBtn" Text="{TemplateBinding Content}" 
-                                                       Foreground="White" 
+                                                       Foreground="{DynamicResource ThemeFgPrimary}" 
                                                        FontWeight="SemiBold"
                                                        VerticalAlignment="Center"/>
                                             <ControlTemplate.Triggers>
@@ -227,16 +227,15 @@
                                         VerticalAlignment="Center">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
-                                            <Border x:Name="brdBadge" Background="#111a30" BorderBrush="#1c2a4e" BorderThickness="1" CornerRadius="10" Padding="8,3">
+                                            <Border x:Name="brdBadge" Background="{DynamicResource ThemePanelBg}" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="5" Padding="6,2">
                                                 <TextBlock x:Name="txtBtn" Text="{TemplateBinding Content}" 
-                                                           Foreground="#8a99ad" 
+                                                           Foreground="#ff6b00" 
                                                            FontWeight="SemiBold"
-                                                           FontSize="12"/>
+                                                           FontSize="11"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="brdBadge" Property="Background" Value="#1c2a4e"/>
-                                                    <Setter TargetName="txtBtn" Property="Foreground" Value="White"/>
+                                                    <Setter TargetName="brdBadge" Property="Background" Value="{DynamicResource ThemeNavBtnHoverBg}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>

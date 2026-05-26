@@ -13,7 +13,7 @@
 
         <DockPanel Grid.Row="0" Margin="0,0,0,25">
             <TextBlock Text="User Accounts &amp; Staff Management" 
-                       Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,25"
+                       Foreground="{DynamicResource ThemeFgPrimary}" FontSize="24" FontWeight="Bold" Margin="0,0,0,25"
                        VerticalAlignment="Center"/>
 
             <Button Style="{StaticResource ModernGradientButton}"
@@ -28,7 +28,7 @@
             </Button>
         </DockPanel>
 
-        <Border Grid.Row="1" Background="#141416" CornerRadius="15" Padding="10">
+        <Border Grid.Row="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgUsers" 
                       Style="{StaticResource ModernDataGrid}"
                       AutoGenerateColumns="False" 
@@ -44,7 +44,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Username}" VerticalAlignment="Center" 
-                                           Foreground="White" FontSize="15" Margin="10,0,0,0"/>
+                                           Foreground="{DynamicResource ThemeFgPrimary}" FontSize="15" Margin="10,0,0,0"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -55,10 +55,10 @@
                                 <Border CornerRadius="8" Padding="12,5" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#2D1A3D"/>
+                                            <Setter Property="Background" Value="{DynamicResource ThemeRoleAdminBg}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Role}" Value="Staff">
-                                                    <Setter Property="Background" Value="#1A2B3D"/>
+                                                    <Setter Property="Background" Value="{DynamicResource ThemeRoleStaffBg}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -66,10 +66,10 @@
                                     <TextBlock Text="{Binding Role}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="#B176F0"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource ThemeRoleAdminFg}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Role}" Value="Staff">
-                                                        <Setter Property="Foreground" Value="#5BA4E5"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource ThemeRoleStaffFg}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -86,20 +86,20 @@
                                 <Border CornerRadius="8" Padding="12,5" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#1A3D25"/>
+                                            <Setter Property="Background" Value="{DynamicResource ThemeStatusActiveBg}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Status}" Value="Inactive">
-                                                    <Setter Property="Background" Value="#3D1A1A"/>
+                                                    <Setter Property="Background" Value="{DynamicResource ThemeStatusInactiveBg}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="{Binding Status}" FontSize="13" FontWeight="SemiBold" Foreground="#5BE582" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Status}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource ThemeStatusActiveFg}" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Status}" Value="Inactive">
-                                                        <Setter Property="Foreground" Value="#E55B5B"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource ThemeStatusInactiveFg}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -115,7 +115,7 @@
                              <DataTemplate>
                                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                      <Button x:Name="btnEditUser" Width="70" Height="34" FontSize="13" Margin="0,0,8,0"
-                                             Background="#1A1A1C" Foreground="White" BorderBrush="#333" BorderThickness="1"
+                                             Background="{DynamicResource ThemePanelBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1"
                                              VerticalAlignment="Center" Cursor="Hand" Click="btnEditUser_Click">
                                          <Button.Template>
                                              <ControlTemplate TargetType="Button">
@@ -128,7 +128,7 @@
                                      </Button>
 
                                      <Button Width="90" Height="34" FontSize="13"
-                                             Background="#222" Foreground="#AAA" BorderThickness="0"
+                                             Background="{DynamicResource ThemeNavBtnBg}" Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0"
                                              VerticalAlignment="Center" Cursor="Hand" Click="btnToggleStatus_Click">
                                          <Button.Template>
                                              <ControlTemplate TargetType="Button">
@@ -140,8 +140,8 @@
                                          <Button.Style>
                                              <Style TargetType="Button">
                                                  <Setter Property="Content" Value="Deactivate"/>
-                                                 <Setter Property="Background" Value="#222"/>
-                                                 <Setter Property="Foreground" Value="#AAA"/>
+                                                 <Setter Property="Background" Value="{DynamicResource ThemeNavBtnBg}"/>
+                                                 <Setter Property="Foreground" Value="{DynamicResource ThemeFgSecondary}"/>
                                                  <Style.Triggers>
                                                      <DataTrigger Binding="{Binding Status}" Value="Inactive">
                                                          <Setter Property="Content" Value="Activate"/>

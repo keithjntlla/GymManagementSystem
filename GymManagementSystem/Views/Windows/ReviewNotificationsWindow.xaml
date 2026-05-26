@@ -5,7 +5,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
-    <Border Background="#222222" CornerRadius="15" BorderBrush="#333333" BorderThickness="1">
+    <Border Background="{DynamicResource ThemeCardBg}" CornerRadius="15" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1">
         <Grid Margin="24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -15,21 +15,21 @@
 
             <DockPanel Grid.Row="0" Margin="0,0,0,16">
                 <StackPanel DockPanel.Dock="Left">
-                    <TextBlock Text="Review Notifications" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="Review Notifications" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="20" FontWeight="Bold"/>
                     <TextBlock Text="Select members to notify regarding their upcoming expiration."
-                               Foreground="#888" FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                               Foreground="{DynamicResource ThemeFgMuted}" FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
                 <Button Content="✕" DockPanel.Dock="Right" HorizontalAlignment="Right"
-                        Background="Transparent" Foreground="Gray" BorderThickness="0"
+                        Background="Transparent" Foreground="{DynamicResource ThemeFgSecondary}" BorderThickness="0"
                         FontSize="18" Click="Cancel_Click"/>
             </DockPanel>
 
-            <Border Grid.Row="1" Background="#1a1a1c" CornerRadius="10" BorderBrush="#333" BorderThickness="1">
+            <Border Grid.Row="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="10" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
                     <ItemsControl x:Name="itemsMembers">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#141416" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
+                                <Border Background="{DynamicResource ThemeCardBg}" CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -40,13 +40,13 @@
                                                   IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                                   IsEnabled="{Binding CanNotify}"
                                                   VerticalAlignment="Center" Margin="0,0,12,0"
-                                                  Foreground="White"/>
+                                                  Foreground="{DynamicResource ThemeFgPrimary}"/>
 
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding FullName}" Foreground="White"
+                                                <TextBlock Text="{Binding FullName}" Foreground="{DynamicResource ThemeFgPrimary}"
                                                            FontWeight="SemiBold" FontSize="14"/>
-                                                <TextBlock Text="{Binding NotifiedStatusLabel}" Foreground="#666"
+                                                <TextBlock Text="{Binding NotifiedStatusLabel}" Foreground="{DynamicResource ThemeFgMuted}"
                                                            FontSize="11" Margin="8,2,0,0"
                                                            VerticalAlignment="Center"/>
                                             </StackPanel>
@@ -56,7 +56,7 @@
                                                     <TextBlock Text="{Binding DaysRemainingLabel}"
                                                                Foreground="#ff9800" FontSize="11" FontWeight="Bold"/>
                                                 </Border>
-                                                <TextBlock Text="{Binding ExpiryDate}" Foreground="#777"
+                                                <TextBlock Text="{Binding ExpiryDate}" Foreground="{DynamicResource ThemeFgMuted}"
                                                            FontSize="11" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -74,7 +74,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button Content="Cancel" Grid.Column="0" Margin="0,0,8,0" Padding="0,12"
-                        Background="#1a1a1a" Foreground="White" BorderBrush="#333"
+                        Background="{DynamicResource ThemeNavBtnBg}" Foreground="{DynamicResource ThemeFgPrimary}" BorderBrush="{DynamicResource ThemeNavBtnBorder}"
                         Click="Cancel_Click"/>
                 <Button x:Name="btnSend" Grid.Column="1" Margin="8,0,0,0" Padding="0,12"
                         Background="#00a651" Foreground="White" FontWeight="Bold" BorderThickness="0"

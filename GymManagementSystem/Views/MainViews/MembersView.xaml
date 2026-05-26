@@ -9,7 +9,7 @@
 
     <UserControl.Resources>
         <Style x:Key="PopupCheckBox" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -22,8 +22,8 @@
                                 <Border x:Name="Border" 
                                         Width="16" Height="16" 
                                         CornerRadius="3" 
-                                        Background="#141416" 
-                                        BorderBrush="#333" 
+                                        Background="{DynamicResource ThemeInputBg}" 
+                                        BorderBrush="{DynamicResource ThemeInputBorder}" 
                                         BorderThickness="1"
                                         Margin="0,0,8,0"
                                         VerticalAlignment="Center">
@@ -71,7 +71,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="Members Management" Foreground="White" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="0" Text="Members Management" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
 
             <TextBox x:Name="txtSearch" 
              Grid.Column="1"
@@ -84,9 +84,9 @@
                 <Button x:Name="btnFilter" 
                         Click="FilterButton_Click" 
                         Content="Filter ▾" 
-                        Background="#1a1a1c"
-                        Foreground="White"
-                        BorderBrush="#333"
+                        Background="{DynamicResource ThemeNavBtnBg}"
+                        Foreground="{DynamicResource ThemeFgPrimary}"
+                        BorderBrush="{DynamicResource ThemeNavBtnBorder}"
                         BorderThickness="1"
                         Width="90" Height="40" 
                         Margin="0,0,15,0"
@@ -102,7 +102,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#2a2a2c"/>
+                                    <Setter Property="Background" Value="{DynamicResource ThemeNavBtnHoverBg}"/>
                                     <Setter Property="BorderBrush" Value="#ff6b00"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -111,25 +111,25 @@
                 </Button>
                 
                 <Popup x:Name="popFilter" PlacementTarget="{Binding ElementName=btnFilter}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
-                    <Border Background="#1a1a1c" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Padding="15" Width="200" Margin="0,5,0,0">
+                    <Border Background="{DynamicResource ThemeDropdownBg}" BorderBrush="{DynamicResource ThemeDropdownBorder}" BorderThickness="1" CornerRadius="8" Padding="15" Width="200" Margin="0,5,0,0">
                         <StackPanel>
                             <!-- Status Category -->
-                            <TextBlock Text="STATUS" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <TextBlock Text="STATUS" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
                             <CheckBox x:Name="chkStatusActive" Content="Active" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
                             <CheckBox x:Name="chkStatusPending" Content="Pending" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
                             <CheckBox x:Name="chkStatusExpired" Content="Expired" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed" Margin="0,0,0,12"/>
 
                             <!-- Member Type Category -->
-                            <TextBlock Text="MEMBER TYPE" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <TextBlock Text="MEMBER TYPE" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
                             <CheckBox x:Name="chkTypeRegular" Content="Regular" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
                             <CheckBox x:Name="chkTypeStudent" Content="Student" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
                             <StackPanel x:Name="spDynamicTypes"/>
                             
                             <!-- Divider line -->
-                            <Border BorderBrush="#333" BorderThickness="0,0,0,1" Margin="0,4,0,12"/>
+                            <Border BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="0,0,0,1" Margin="0,4,0,12"/>
 
                             <!-- Plan Category -->
-                            <TextBlock Text="PLAN" Foreground="Gray" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <TextBlock Text="PLAN" Foreground="{DynamicResource ThemeFgSecondary}" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
                             <StackPanel x:Name="spDynamicPlans"/>
                             <CheckBox x:Name="chkPlanNone" Content="None" Style="{StaticResource PopupCheckBox}" Checked="FilterCheckbox_Changed" Unchecked="FilterCheckbox_Changed"/>
                         </StackPanel>
@@ -148,7 +148,7 @@
             Click="Refresh_Click" 
             ToolTip="Refresh">
                 <Viewbox Width="18" Height="18">
-                    <Path Fill="White" 
+                    <Path Fill="{DynamicResource ThemeFgPrimary}" 
                   Data="M19,8l-2.6,2.6C17.6,11.9,18,13.4,18,15c0,3.3-2.7,6-6,6s-6-2.7-6-6s2.7-6,6-6v3l5-4l-5-4v3c-4.4,0-8,3.6-8,8 s3.6,8,8,8s8-3.6,8-8C20,12.3,19.6,10,19,8z"/>
                 </Viewbox>
             </Button>
@@ -171,45 +171,45 @@
         <!-- Active, Pending & Expired Summary Cards -->
         <UniformGrid Grid.Row="1" Columns="3" Height="110" Margin="0,0,0,20">
             <!-- Active Members Card -->
-            <Border Background="#111a30" BorderBrush="#1c2a4e" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
+            <Border Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Active Members" Foreground="#8a99ad" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="lblActiveCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Active Members" Foreground="{DynamicResource ThemeCheckinsLabelFg}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblActiveCount" Text="0" Foreground="{DynamicResource ThemeCheckinsFg}" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Pending Members Card -->
-            <Border Background="#3a2010" BorderBrush="#5c351a" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
+            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Pending Members" Foreground="#d29e74" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="lblPendingCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Pending Members" Foreground="{DynamicResource ThemeNewMembersLabelFg}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblPendingCount" Text="0" Foreground="{DynamicResource ThemeNewMembersFg}" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Expired Members Card -->
-            <Border Background="#2b0d0e" BorderBrush="#4a1618" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
+            <Border Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Expired Members" Foreground="#d08587" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="lblExpiredCount" Text="0" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
+                        <TextBlock Text="Expired Members" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblExpiredCount" Text="0" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="26" FontWeight="Bold" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
         </UniformGrid>
 
-        <Border Grid.Row="2" Background="#141416" CornerRadius="15" Padding="10">
+        <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
             <DataGrid x:Name="dgMembers" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
 
                 <DataGrid.Resources>
@@ -220,7 +220,7 @@
                         <Setter Property="BorderThickness" Value="0"/>
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#1a1a1c"/>
+                                <Setter Property="Background" Value="{DynamicResource ThemeDataGridAltRow}"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -240,7 +240,7 @@
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <TextBlock x:Name="txtBtn" Text="{TemplateBinding Content}" 
-                                                       Foreground="White" 
+                                                       Foreground="{DynamicResource ThemeFgPrimary}" 
                                                        FontWeight="SemiBold"/>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
