@@ -85,7 +85,7 @@
         </Grid>
 
         <!-- Active Promos Table -->
-        <Border Grid.Row="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+        <Border Grid.Row="1" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
             <DataGrid x:Name="dgPromos" 
                       Style="{StaticResource ModernDataGrid}"
                       AutoGenerateColumns="False" 
@@ -173,7 +173,7 @@
                     <TextBlock Text="These campaigns are hidden from checkout forms but preserved for financial history." Foreground="{DynamicResource ThemeFgMuted}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
                 </DockPanel>
 
-                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+                <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
                     <DataGrid x:Name="dgArchivedPromos" 
                               Style="{StaticResource ModernDataGrid}"
                               AutoGenerateColumns="False" 

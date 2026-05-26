@@ -52,7 +52,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="15" Margin="0,0,10,0" Padding="20" MinHeight="250">
+                <Border Grid.Column="0" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="15" Margin="0,0,10,0" Padding="20" MinHeight="250" Effect="{DynamicResource ThemeCardShadow}">
                     <Grid>
                         <StackPanel x:Name="panelMemberInfo" Visibility="Collapsed">
                             <TextBlock Text="Member Information" Foreground="{DynamicResource ThemeOccupancyFg}" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
@@ -117,7 +117,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="15" Margin="10,0,0,0" Padding="20" MinHeight="250">
+                <Border Grid.Column="1" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="15" Margin="10,0,0,0" Padding="20" MinHeight="250" Effect="{DynamicResource ThemeCardShadow}">
                     <StackPanel>
                         <TextBlock Text="Membership Rates" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
                         <ItemsControl x:Name="icRates" Margin="0,0,0,15">
@@ -204,7 +204,7 @@
                 </Border>
             </Grid>
 
-            <Border Grid.Row="3" Background="{DynamicResource ThemePanelBg}" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="15" Margin="0,20,0,0" Padding="20">
+            <Border Grid.Row="3" Background="{DynamicResource ThemePanelBg}" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="15" Margin="0,20,0,0" Padding="20" Effect="{DynamicResource ThemeCardShadow}">
                 <StackPanel>
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
@@ -251,7 +251,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                        <Border Grid.Column="0" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="0,0,10,0" Effect="{DynamicResource ThemeCardShadow}">
                             <StackPanel>
                                 <TextBlock Text="Total Amount" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="12" VerticalAlignment="Center"/>
 
@@ -263,14 +263,14 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="1" Background="{DynamicResource ThemeTodayRevenueBg}" BorderBrush="{DynamicResource ThemeTodayRevenueBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="5,0,5,0">
+                        <Border Grid.Column="1" Background="{DynamicResource ThemeTodayRevenueBg}" BorderBrush="{DynamicResource ThemeTodayRevenueBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="5,0,5,0" Effect="{DynamicResource ThemeCardShadow}">
                             <StackPanel>
                                 <TextBlock Text="Amount Paid" Foreground="{DynamicResource ThemeTodayRevenueLabelFg}" FontSize="12"/>
                                 <TextBlock x:Name="lblAmountPaidDisplay" Text="₱0.00" Foreground="{DynamicResource ThemeTodayRevenueFg}" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Column="2" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="10,0,0,0">
+                        <Border Grid.Column="2" Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="10" Padding="15" Margin="10,0,0,0" Effect="{DynamicResource ThemeCardShadow}">
                             <StackPanel>
                                 <TextBlock Text="Change" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" FontSize="12"/>
                                 <TextBlock x:Name="lblChange" Text="₱0.00" Foreground="{DynamicResource ThemeMonthlyRevenueFg}" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>

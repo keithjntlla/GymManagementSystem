@@ -145,7 +145,7 @@
             <!-- Report Grids -->
             <Grid Grid.Row="2" Margin="0,0,0,10">
                 <!-- MEMBER DATA GRID -->
-                <Border x:Name="brdMemberGrid" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Visibility="Visible">
+                <Border x:Name="brdMemberGrid" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Visibility="Visible" Effect="{DynamicResource ThemeTableShadow}">
                     <DataGrid x:Name="dgAttendanceReport" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"
@@ -180,7 +180,7 @@
                 </Border>
 
                 <!-- INSTRUCTOR DATA GRID -->
-                <Border x:Name="brdInstructorGrid" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Visibility="Collapsed">
+                <Border x:Name="brdInstructorGrid" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Visibility="Collapsed" Effect="{DynamicResource ThemeTableShadow}">
                     <DataGrid x:Name="dgInstructorAttendanceReport" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"

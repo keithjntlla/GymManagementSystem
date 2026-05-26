@@ -28,7 +28,7 @@
             </Button>
         </DockPanel>
 
-        <Border Grid.Row="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+        <Border Grid.Row="1" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
             <DataGrid x:Name="dgUsers" 
                       Style="{StaticResource ModernDataGrid}"
                       AutoGenerateColumns="False" 

@@ -20,7 +20,25 @@ namespace GymManagementSystem.Models
             ? $"{DiscountValue:0.##}%" 
             : $"₱{DiscountValue:N2}";
 
-        public string DateRangeDisplay => $"{StartDate} to {EndDate}";
+        public string DateRangeDisplay
+        {
+            get
+            {
+                string startDisplay = StartDate;
+                string endDisplay = EndDate;
+
+                if (DateTime.TryParse(StartDate, out DateTime start))
+                {
+                    startDisplay = start.ToString("MMM dd, yyyy");
+                }
+                if (DateTime.TryParse(EndDate, out DateTime end))
+                {
+                    endDisplay = end.ToString("MMM dd, yyyy");
+                }
+
+                return $"{startDisplay} \u2192 {endDisplay}";
+            }
+        }
 
         public string StatusDisplay
         {

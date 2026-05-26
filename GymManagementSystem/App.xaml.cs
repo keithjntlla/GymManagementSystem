@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace GymManagementSystem
 {
@@ -130,6 +131,7 @@ namespace GymManagementSystem
                 Set("ThemeSidebarBg",       B("#F8FAFC"));
                 Set("ThemeSidebarBorder",   B("#E2E6EC"));
                 Set("ThemePanelBg",         B("#ECEFF3"));
+                Set("ThemeTableBg",         B("#ECEFF3"));
                 Set("ThemeCardBg",          B("#F8FAFC"));
                 Set("ThemeCardBorder",      B("#E2E6EC"));
                 Set("ThemeInputBg",         B("#F8FAFC"));
@@ -256,6 +258,29 @@ namespace GymManagementSystem
                 Set("ThemeNoteAlertBg",       B("#E8F0FE"));
                 Set("ThemeNoteAlertFg",       B("#1967D2"));
                 Set("ThemeNoteAlertIconFg",   B("#1A73E8"));
+
+                // Soft Shadows for Light Mode
+                var cardShadow = new DropShadowEffect
+                {
+                    BlurRadius = 15,
+                    Direction = 270,
+                    ShadowDepth = 4,
+                    Opacity = 0.06,
+                    Color = Colors.Black
+                };
+                cardShadow.Freeze();
+                Set("ThemeCardShadow", cardShadow);
+
+                var tableShadow = new DropShadowEffect
+                {
+                    BlurRadius = 20,
+                    Direction = 270,
+                    ShadowDepth = 5,
+                    Opacity = 0.05,
+                    Color = Colors.Black
+                };
+                tableShadow.Freeze();
+                Set("ThemeTableShadow", tableShadow);
             }
             else
             {
@@ -264,6 +289,7 @@ namespace GymManagementSystem
                 Set("ThemeSidebarBg",       B("#141416"));
                 Set("ThemeSidebarBorder",   B("#222222"));
                 Set("ThemePanelBg",         B("#1a1a1c"));
+                Set("ThemeTableBg",         B("#1E1C1F"));
                 Set("ThemeCardBg",          B("#2a2a2c"));
                 Set("ThemeCardBorder",      B("#333333"));
                 Set("ThemeInputBg",         B("#1a1a1c"));
@@ -387,12 +413,16 @@ namespace GymManagementSystem
                 Set("ThemeNoteAlertBg",       B("#1a2533"));
                 Set("ThemeNoteAlertFg",       B("#88aacc"));
                 Set("ThemeNoteAlertIconFg",   B("#4090f0"));
+
+                // Shadows disabled in Dark Mode
+                Set("ThemeCardShadow", null);
+                Set("ThemeTableShadow", null);
             }
         }
 
         // ── Helpers ─────────────────────────────────────────────────────────────────
         private static Color C(string hex)           => (Color)ColorConverter.ConvertFromString(hex);
         private static SolidColorBrush B(string hex) => new SolidColorBrush(C(hex));
-        private static void Set(string key, object value) => Application.Current.Resources[key] = value;
+        private static void Set(string key, object? value) => Application.Current.Resources[key] = value;
     }
 }

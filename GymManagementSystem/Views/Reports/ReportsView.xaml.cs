@@ -39,6 +39,12 @@ public partial class ReportsView : UserControl
         ReportsFrame.Content = new ExpirationReportsView();
     }
 
+    public void ShowFinancialTab()
+    {
+        rbTabFinancial.IsChecked = true;
+        ReportsFrame.Content = new FinancialReportsView();
+    }
+
     private void TabRefunds_Click(object sender, RoutedEventArgs e)
     {
         ReportsFrame.Content = new RefundReportsView();

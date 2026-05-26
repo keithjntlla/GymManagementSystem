@@ -117,7 +117,7 @@
                 </Border>
             </UniformGrid>
 
-            <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10" Margin="0,0,0,10">
+            <Border Grid.Row="2" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Margin="0,0,0,10" Effect="{DynamicResource ThemeTableShadow}">
                 <DataGrid x:Name="dgExpirations" 
                           Style="{StaticResource ModernDataGrid}"
                           IsReadOnly="True"

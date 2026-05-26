@@ -58,7 +58,7 @@
             <!-- Table 1: Promotional Code Campaign Audit Grid -->
             <StackPanel Grid.Row="1" Margin="0,0,0,25">
                 <TextBlock Text="PROMOTIONAL CODE CAMPAIGN AUDIT" Foreground="{DynamicResource ThemeAuditHeaderFg}" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
-                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+                <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
                     <DataGrid x:Name="dgPromoAudit" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"
@@ -106,7 +106,7 @@
             <!-- Table 2: Fixed Customer Tier Discounts Audit Grid -->
             <StackPanel Grid.Row="2" Margin="0,0,0,10">
                 <TextBlock Text="FIXED CUSTOMER TIER SAVINGS AUDIT" Foreground="{DynamicResource ThemeAuditHeaderFg}" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
-                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+                <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
                     <DataGrid x:Name="dgTierAudit" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"

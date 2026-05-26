@@ -171,7 +171,7 @@
         <!-- Active, Pending & Expired Summary Cards -->
         <UniformGrid Grid.Row="1" Columns="3" Height="110" Margin="0,0,0,20">
             <!-- Active Members Card -->
-            <Border Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
+            <Border Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Active Members" Foreground="{DynamicResource ThemeCheckinsLabelFg}" FontSize="13" FontWeight="SemiBold"/>
@@ -181,7 +181,7 @@
             </Border>
 
             <!-- Pending Members Card -->
-            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
+            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -195,7 +195,7 @@
             </Border>
 
             <!-- Expired Members Card -->
-            <Border Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
+            <Border Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -209,7 +209,7 @@
             </Border>
         </UniformGrid>
 
-        <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+        <Border Grid.Row="2" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
             <DataGrid x:Name="dgMembers" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
 
                 <DataGrid.Resources>

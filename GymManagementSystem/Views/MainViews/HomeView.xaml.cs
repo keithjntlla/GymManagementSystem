@@ -159,12 +159,18 @@ namespace GymManagementSystem.Views.MainViews
                             if (days < 0)
                                 continue;
 
+                            string formattedExpiryDate = expiryStr;
+                            if (DateTime.TryParse(expiryStr, out DateTime parsedExpiryDate))
+                            {
+                                formattedExpiryDate = parsedExpiryDate.ToString("MMM-dd-yyyy");
+                            }
+
                             _expiringMembers.Add(new ExpiringMember
                             {
                                 MemberID = reader["MemberID"]?.ToString() ?? "",
                                 FullName = reader["FullName"]?.ToString() ?? "",
                                 Phone = reader["Phone"]?.ToString() ?? "",
-                                ExpiryDate = expiryStr,
+                                ExpiryDate = formattedExpiryDate,
                                 DaysRemaining = days,
                                 DaysLeft = days == 0 ? "Today" : $"{days}d left"
                             });
@@ -191,13 +197,20 @@ namespace GymManagementSystem.Views.MainViews
                     {
                         while (reader.Read())
                         {
+                            string rawJoined = reader["DateJoined"]?.ToString() ?? "";
+                            string formattedJoined = rawJoined;
+                            if (DateTime.TryParse(rawJoined, out DateTime parsedJoined))
+                            {
+                                formattedJoined = parsedJoined.ToString("MMM-dd-yyyy");
+                            }
+
                             pendingList.Add(new Member
                             {
                                 MemberID = reader["MemberID"]?.ToString() ?? "",
                                 FirstName = reader["FirstName"]?.ToString() ?? "",
                                 MiddleInitial = reader["MiddleInitial"]?.ToString() ?? "",
                                 LastName = reader["LastName"]?.ToString() ?? "",
-                                DateJoined = reader["DateJoined"]?.ToString() ?? "",
+                                DateJoined = formattedJoined,
                                 Status = reader["Status"]?.ToString() ?? ""
                             });
                         }
@@ -232,7 +245,7 @@ namespace GymManagementSystem.Views.MainViews
                                 string formattedDate = rawDate;
                                 if (DateTime.TryParse(rawDate, out DateTime parsedTxDate))
                                 {
-                                    formattedDate = parsedTxDate.ToString("MM-dd-yyyy");
+                                    formattedDate = parsedTxDate.ToString("MMM-dd-yyyy");
                                 }
 
                                 RecentTransactionsList.Add(new PaymentRecord
@@ -268,6 +281,45 @@ namespace GymManagementSystem.Views.MainViews
             reportsView.ShowExpirationsTab();
             mainWindow.MainFrame.Content = reportsView;
             mainWindow.btnNavReports.IsChecked = true;
+        }
+
+        private void ExpiringSoonBorder_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            ViewExpirationReport_Click(sender, e);
+        }
+
+        private void ViewPendingMembers_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow == null)
+                return;
+
+            var membersView = new MembersView();
+            membersView.SetStatusFilter("Pending");
+            mainWindow.MainFrame.Content = membersView;
+            mainWindow.btnNavMembers.IsChecked = true;
+        }
+
+        private void PendingRegistrationsBorder_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            ViewPendingMembers_Click(sender, e);
+        }
+
+        private void ViewRecentTransactions_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow == null)
+                return;
+
+            var reportsView = new ReportsView();
+            reportsView.ShowFinancialTab();
+            mainWindow.MainFrame.Content = reportsView;
+            mainWindow.btnNavReports.IsChecked = true;
+        }
+
+        private void RecentTransactionsBorder_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            ViewRecentTransactions_Click(sender, e);
         }
 
         private void PayMember_Click(object sender, RoutedEventArgs e)

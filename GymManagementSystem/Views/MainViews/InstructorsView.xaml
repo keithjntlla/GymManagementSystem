@@ -11,11 +11,19 @@
         <local:StringToCollectionConverter x:Key="StringToCollectionConverter"/>
         
         <Style x:Key="SpecializationBadge" TargetType="ContentControl">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ContentControl">
-                        <Border Background="{DynamicResource ThemeSpecializationBadgeBg}" BorderBrush="{DynamicResource ThemeSpecializationBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="6,2" Margin="0,0,5,0">
-                            <TextBlock Text="{TemplateBinding Content}" Foreground="{DynamicResource ThemeSpecializationBadgeFg}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Border x:Name="BadgeBorder" CornerRadius="6" Padding="10,4" Background="{DynamicResource ThemeSpecializationBadgeBg}" Margin="0,0,5,0">
+                            <TextBlock x:Name="BadgeText" 
+                                       Text="{TemplateBinding Content}" 
+                                       FontSize="12" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource ThemeSpecializationBadgeFg}"
+                                       VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -113,7 +121,7 @@
         <!-- Summary Cards (Top Row) -->
         <UniformGrid Grid.Row="1" Columns="3" Height="110" Margin="0,0,0,20">
             <!-- Total Staff -->
-            <Border Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16">
+            <Border Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Margin="0,0,10,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Total Instructors" Foreground="{DynamicResource ThemeOccupancyLabelFg}" FontSize="13" FontWeight="SemiBold"/>
@@ -123,7 +131,7 @@
             </Border>
 
             <!-- Active Coaches -->
-            <Border Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16">
+            <Border Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Margin="5,0,5,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Active Coaches" Foreground="{DynamicResource ThemeCheckinsLabelFg}" FontSize="13" FontWeight="SemiBold"/>
@@ -133,7 +141,7 @@
             </Border>
 
             <!-- Inactive -->
-            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16">
+            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Margin="10,0,0,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -148,7 +156,7 @@
         </UniformGrid>
 
         <!-- Instructors Table -->
-        <Border Grid.Row="2" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+        <Border Grid.Row="2" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
             <DataGrid x:Name="dgInstructors" Style="{StaticResource ModernDataGrid}" RowHeaderWidth="0">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridRow">

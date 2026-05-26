@@ -104,7 +104,7 @@
                         <TextBlock Text="Select a member from the list to preview details" 
                                    Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12" Margin="5,0,0,20"/>
 
-                        <Border x:Name="brdMemberProfile" Background="{DynamicResource ThemeCardBg}" CornerRadius="10" Padding="15" Visibility="Collapsed" Margin="0,0,0,10">
+                        <Border x:Name="brdMemberProfile" Background="{DynamicResource ThemeCardBg}" CornerRadius="10" Padding="15" Visibility="Collapsed" Margin="0,0,0,10" Effect="{DynamicResource ThemeCardShadow}">
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="80" Height="80" CornerRadius="40" Background="{DynamicResource ThemeCardBorder}" Margin="0,0,15,0">
                                     <Image x:Name="imgProfilePicture" Stretch="UniformToFill">
@@ -175,7 +175,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="20" Margin="10,0,0,0">
+                <Border Grid.Column="1" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="20" Margin="10,0,0,0" Effect="{DynamicResource ThemeTableShadow}">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,20">
                             <TextBlock Text="Today's Member Attendance" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
@@ -292,7 +292,7 @@
                         <TextBlock Text="Select an instructor from the list to preview details" 
                                    Foreground="{DynamicResource ThemeFgSecondary}" FontSize="12" Margin="5,0,0,20"/>
 
-                        <Border x:Name="brdInstructorProfile" Background="{DynamicResource ThemeCardBg}" CornerRadius="10" Padding="15" Visibility="Collapsed" Margin="0,0,0,10">
+                        <Border x:Name="brdInstructorProfile" Background="{DynamicResource ThemeCardBg}" CornerRadius="10" Padding="15" Visibility="Collapsed" Margin="0,0,0,10" Effect="{DynamicResource ThemeCardShadow}">
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="80" Height="80" CornerRadius="40" Background="{DynamicResource ThemeCardBorder}" Margin="0,0,15,0">
                                     <Image x:Name="imgInstructorProfilePicture" Stretch="UniformToFill">
@@ -363,7 +363,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="20" Margin="10,0,0,0">
+                <Border Grid.Column="1" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="20" Margin="10,0,0,0" Effect="{DynamicResource ThemeTableShadow}">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,20">
                             <TextBlock Text="Today's Instructor Logs" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>

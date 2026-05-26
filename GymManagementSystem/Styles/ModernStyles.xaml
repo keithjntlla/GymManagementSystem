@@ -333,6 +333,7 @@
         <Setter Property="Height" Value="180"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeCardBorder}"/>
+        <Setter Property="Effect" Value="{DynamicResource ThemeCardShadow}"/>
     </Style>
 
     <Style x:Key="NavButtonStyle" TargetType="Button">
@@ -490,6 +491,7 @@
             </Style>
 
             <Style TargetType="DataGridCell">
+                <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Template">
                     <Setter.Value>

@@ -26,7 +26,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Specializations List Card -->
-            <Border Grid.Column="0" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="15">
+            <Border Grid.Column="0" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="15" Effect="{DynamicResource ThemeTableShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -66,7 +66,7 @@
 
             <!-- Add Specialization Panel -->
             <StackPanel Grid.Column="2">
-                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="20">
+                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="20" Effect="{DynamicResource ThemeCardShadow}">
                     <StackPanel>
                         <TextBlock Text="Add New Specialization" Foreground="{DynamicResource ThemeFgPrimary}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
 

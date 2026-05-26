@@ -22,7 +22,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Column 0: Today's Check-ins Card -->
-            <Border Grid.Column="0" Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Grid.Column="0" Background="{DynamicResource ThemeCheckinsBg}" BorderBrush="{DynamicResource ThemeCheckinsBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <StackPanel>
                     <TextBlock Text="📋" FontSize="26" Foreground="{DynamicResource ThemeCheckinsIconFg}"/>
                     <TextBlock Text="Today's Check-ins" Foreground="{DynamicResource ThemeCheckinsLabelFg}" Margin="0,8,0,3" FontSize="13"/>
@@ -31,7 +31,7 @@
             </Border>
 
             <!-- Column 1: Occupancy Meter Card -->
-            <Border Grid.Column="1" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Grid.Column="1" Background="{DynamicResource ThemeOccupancyBg}" BorderBrush="{DynamicResource ThemeOccupancyBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <StackPanel>
                     <TextBlock Text="🏋️" FontSize="26" Foreground="{DynamicResource ThemeOccupancyIconFg}"/>
                     <TextBlock Text="Gym Occupancy" Foreground="{DynamicResource ThemeOccupancyLabelFg}" Margin="0,8,0,3" FontSize="13"/>
@@ -46,7 +46,7 @@
             </Border>
 
             <!-- Column 2: Inline Check-in/Out Box -->
-            <Border Grid.Column="2" Background="{DynamicResource ThemeInlineAttendanceBg}" BorderBrush="{DynamicResource ThemeInlineAttendanceBorder}" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
+            <Border Grid.Column="2" Background="{DynamicResource ThemeInlineAttendanceBg}" BorderBrush="{DynamicResource ThemeInlineAttendanceBorder}" BorderThickness="1" CornerRadius="16" Height="130" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -146,7 +146,7 @@
         <TextBlock Text="REVENUE &amp; GROWTH" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
         <UniformGrid Columns="3" Margin="0,0,0,12">
             <!-- Today's Revenue Card -->
-            <Border Background="{DynamicResource ThemeTodayRevenueBg}" BorderBrush="{DynamicResource ThemeTodayRevenueBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Background="{DynamicResource ThemeTodayRevenueBg}" BorderBrush="{DynamicResource ThemeTodayRevenueBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <StackPanel>
                     <TextBlock Text="💰" FontSize="26" Foreground="{DynamicResource ThemeTodayRevenueIconFg}"/>
                     <TextBlock Text="Today's Revenue" Foreground="{DynamicResource ThemeTodayRevenueLabelFg}" Margin="0,8,0,3" FontSize="13"/>
@@ -155,7 +155,7 @@
             </Border>
 
             <!-- Monthly Revenue Card -->
-            <Border Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16">
+            <Border Background="{DynamicResource ThemeMonthlyRevenueBg}" BorderBrush="{DynamicResource ThemeMonthlyRevenueBorder}" BorderThickness="1" CornerRadius="16" Height="130" Margin="0,0,15,0" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <StackPanel>
                     <TextBlock Text="📈" FontSize="26" Foreground="{DynamicResource ThemeMonthlyRevenueIconFg}"/>
                     <TextBlock Text="Monthly Revenue" Foreground="{DynamicResource ThemeMonthlyRevenueLabelFg}" Margin="0,8,0,3" FontSize="13"/>
@@ -164,7 +164,7 @@
             </Border>
 
             <!-- New Members Card -->
-            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Height="130" Padding="16">
+            <Border Background="{DynamicResource ThemeNewMembersBg}" BorderBrush="{DynamicResource ThemeNewMembersBorder}" BorderThickness="1" CornerRadius="16" Height="130" Padding="16" Effect="{DynamicResource ThemeCardShadow}">
                 <StackPanel>
                     <TextBlock Text="🌟" FontSize="26" Foreground="{DynamicResource ThemeNewMembersIconFg}"/>
                     <TextBlock Text="New Members This Month" Foreground="{DynamicResource ThemeNewMembersLabelFg}" Margin="0,8,0,3" FontSize="13"/>
@@ -191,7 +191,7 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="14" Padding="5">
+                    <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="14" Padding="5" Effect="{DynamicResource ThemeTableShadow}" Cursor="Hand" MouseLeftButtonUp="ExpiringSoonBorder_Click">
                         <Grid>
                             <DataGrid x:Name="dgExpiringSoon" 
                                       Style="{StaticResource ModernDataGrid}"
@@ -200,10 +200,10 @@
                                       VerticalScrollBarVisibility="Disabled"
                                       HorizontalScrollBarVisibility="Disabled">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Member" Binding="{Binding FullName}" Width="1.9*"/>
-                                    <DataGridTextColumn Header="Expiry" Binding="{Binding ExpiryDate}" Width="1.2*"/>
+                                    <DataGridTextColumn Header="Member" Binding="{Binding FullName}" Width="2.2*"/>
+                                    <DataGridTextColumn Header="Expiry" Binding="{Binding ExpiryDate}" Width="1.6*"/>
 
-                                    <DataGridTemplateColumn Header="Status" Width="*">
+                                    <DataGridTemplateColumn Header="Status" Width="1.3*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Border CornerRadius="6" Padding="6,3" Background="{DynamicResource ThemeBadgeRefundBg}" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -213,7 +213,7 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn Header="Actions" Width="115">
+                                    <DataGridTemplateColumn Header="Actions" Width="100">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -254,30 +254,7 @@
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <Button HorizontalAlignment="Right" 
-                    VerticalAlignment="Top" 
-                    Margin="0,6,10,0" 
-                    Cursor="Hand"
-                    Click="ViewExpirationReport_Click" 
-                    ToolTip="View full report">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="Transparent" Padding="4">
-                                            <TextBlock Text="→" FontSize="14" Foreground="{DynamicResource ThemeFgMuted}">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Foreground" Value="{DynamicResource ThemeFgPrimary}"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
+
                         </Grid>
                     </Border>
                 </StackPanel>
@@ -292,7 +269,7 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="14" Padding="5">
+                    <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="14" Padding="5" Effect="{DynamicResource ThemeTableShadow}" Cursor="Hand" MouseLeftButtonUp="PendingRegistrationsBorder_Click">
                         <DataGrid x:Name="dgPendingRegistrations" 
                                   Style="{StaticResource ModernDataGrid}"
                                   IsReadOnly="True"
@@ -337,7 +314,7 @@
 
             <StackPanel Grid.Column="2">
                 <TextBlock Text="RECENT TRANSACTIONS" Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
-                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="14" Padding="5">
+                <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="14" Padding="5" Effect="{DynamicResource ThemeTableShadow}" Cursor="Hand" MouseLeftButtonUp="RecentTransactionsBorder_Click">
                     <DataGrid x:Name="dgRecentTransactions" 
                               Style="{StaticResource ModernDataGrid}"
                               IsReadOnly="True"

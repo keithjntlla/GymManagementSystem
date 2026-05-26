@@ -29,7 +29,7 @@
             </Button>
         </DockPanel>
 
-        <Border Grid.Row="1" Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+        <Border Grid.Row="1" Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
             <DataGrid x:Name="dgFixedDiscounts" 
                       Style="{StaticResource ModernDataGrid}"
                       AutoGenerateColumns="False" 
@@ -87,7 +87,7 @@
                     <TextBlock Text="These logic rules are hidden from registration drop-downs but preserved for metrics logs." Foreground="{DynamicResource ThemeFgMuted}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"/>
                 </DockPanel>
 
-                <Border Background="{DynamicResource ThemePanelBg}" CornerRadius="15" Padding="10">
+                <Border Background="{DynamicResource ThemeTableBg}" CornerRadius="15" Padding="10" Effect="{DynamicResource ThemeTableShadow}">
                     <DataGrid x:Name="dgArchivedDiscounts" 
                               Style="{StaticResource ModernDataGrid}"
                               AutoGenerateColumns="False" 
