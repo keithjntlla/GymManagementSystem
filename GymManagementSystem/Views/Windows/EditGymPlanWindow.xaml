@@ -30,8 +30,20 @@
                 <TextBox x:Name="txtPrice" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
                 <TextBlock x:Name="lblPriceError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
-                <TextBlock Text="Duration (Days)" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
-                <TextBox x:Name="txtDuration" Style="{StaticResource ModernTextBox}" Margin="0,0,0,5"/>
+                <TextBlock Text="Duration" Foreground="{DynamicResource ThemeFgPrimary}" Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="txtDurationValue" Style="{StaticResource ModernTextBox}" Grid.Column="0" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="cmbDurationUnit" Style="{StaticResource ModernComboBox}" Height="38" Grid.Column="1" VerticalContentAlignment="Center" SelectedIndex="0">
+                        <ComboBoxItem Content="Days"/>
+                        <ComboBoxItem Content="Weeks"/>
+                        <ComboBoxItem Content="Months"/>
+                        <ComboBoxItem Content="Years"/>
+                    </ComboBox>
+                </Grid>
                 <TextBlock x:Name="lblDurationError" Foreground="#FF4444" FontSize="11" Margin="0,0,0,10" Visibility="Collapsed" TextWrapping="Wrap"/>
 
                 <TextBlock Text="Note: Changes affect future payments only." Foreground="{DynamicResource ThemeFgMuted}" FontSize="11" FontStyle="Italic" TextWrapping="Wrap"/>

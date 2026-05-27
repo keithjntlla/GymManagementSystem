@@ -25,6 +25,13 @@ namespace GymManagementSystem.Views.Windows
             RefreshBranding();
             // Load the dashboard by default
             MainFrame.Content = new HomeView();
+
+            // Guard: completely hide settings sub-menu for non-admin profiles on load
+            if (LoginWindow.CurrentUser?.Role != "Administrator")
+            {
+                btnSettingsToggle.Visibility = Visibility.Collapsed;
+                SettingsSubMenu.Visibility = Visibility.Collapsed;
+            }
         }
 
         // In MainWindow.xaml.cs
@@ -112,11 +119,23 @@ namespace GymManagementSystem.Views.Windows
 
         private void NavServicesPricing_Click(object sender, RoutedEventArgs e)
         {
+            if (LoginWindow.CurrentUser?.Role != "Administrator")
+            {
+                MessageBox.Show("You do not have permission to access Settings.",
+                                "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             MainFrame.Content = new SettingsView();
         }
 
         private void NavSystem_Click(object sender, RoutedEventArgs e)
         {
+            if (LoginWindow.CurrentUser?.Role != "Administrator")
+            {
+                MessageBox.Show("You do not have permission to access Settings.",
+                                "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             MainFrame.Content = new SystemSettingsView();
         }
 

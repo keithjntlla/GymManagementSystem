@@ -57,7 +57,17 @@ namespace GymManagementSystem.Views.Windows
             EditedPlan = plan;
             txtPlanName.Text = plan.PlanName;
             txtPrice.Text = plan.Price.ToString();
-            txtDuration.Text = plan.DurationDays.ToString();
+            txtDurationValue.Text = plan.DurationValue.ToString();
+
+            foreach (System.Windows.Controls.ComboBoxItem item in cmbDurationUnit.Items)
+            {
+                if (string.Equals(item.Content?.ToString(), plan.DurationUnit, StringComparison.OrdinalIgnoreCase))
+                {
+                    cmbDurationUnit.SelectedItem = item;
+                    break;
+                }
+            }
+
             InitializeValidation();
         }
 
@@ -78,7 +88,7 @@ namespace GymManagementSystem.Views.Windows
             });
 
             _validationHelper.RegisterTextBox(txtPrice, lblPriceError, InputValidator.ValidatePlanPrice);
-            _validationHelper.RegisterTextBox(txtDuration, lblDurationError, InputValidator.ValidatePlanDuration);
+            _validationHelper.RegisterTextBox(txtDurationValue, lblDurationError, InputValidator.ValidatePlanDuration);
         }
 
         private bool IsPlanNameDuplicate(string planName, int excludeRateId = 0)
@@ -108,7 +118,14 @@ namespace GymManagementSystem.Views.Windows
             }
 
             double price = double.Parse(txtPrice.Text);
-            int duration = int.Parse(txtDuration.Text);
+            int durationValue = int.Parse(txtDurationValue.Text);
+            string durationUnit = (cmbDurationUnit.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "Days";
+
+            // Compute equivalent days for backward compatibility
+            int durationDays = durationUnit == "Days" ? durationValue :
+                               durationUnit == "Weeks" ? durationValue * 7 :
+                               durationUnit == "Months" ? durationValue * 30 :
+                               durationValue * 365;
 
             if (_isEditMode)
             {
@@ -122,7 +139,9 @@ namespace GymManagementSystem.Views.Windows
 
                 EditedPlan.PlanName = txtPlanName.Text;
                 EditedPlan.Price = price;
-                EditedPlan.DurationDays = duration;
+                EditedPlan.DurationDays = durationDays;
+                EditedPlan.DurationValue = durationValue;
+                EditedPlan.DurationUnit = durationUnit;
             }
             else
             {
@@ -136,15 +155,17 @@ namespace GymManagementSystem.Views.Windows
 
                 EditedPlan.PlanName = txtPlanName.Text;
                 EditedPlan.Price = price;
-                EditedPlan.DurationDays = duration;
+                EditedPlan.DurationDays = durationDays;
+                EditedPlan.DurationValue = durationValue;
+                EditedPlan.DurationUnit = durationUnit;
 
                 try
                 {
                     using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                     {
                         conn.Open();
-                        string sql = @"INSERT INTO Rates (PlanName, Price, DurationDays)
-                                       VALUES (@name, @price, @duration);
+                        string sql = @"INSERT INTO Rates (PlanName, Price, DurationDays, DurationValue, DurationUnit)
+                                       VALUES (@name, @price, @duration, @value, @unit);
                                        SELECT last_insert_rowid();";
 
                         using (var cmd = new SQLiteCommand(sql, conn))
@@ -152,6 +173,8 @@ namespace GymManagementSystem.Views.Windows
                             cmd.Parameters.AddWithValue("@name", EditedPlan.PlanName);
                             cmd.Parameters.AddWithValue("@price", EditedPlan.Price);
                             cmd.Parameters.AddWithValue("@duration", EditedPlan.DurationDays);
+                            cmd.Parameters.AddWithValue("@value", EditedPlan.DurationValue);
+                            cmd.Parameters.AddWithValue("@unit", EditedPlan.DurationUnit);
 
                             EditedPlan.RateID = Convert.ToInt32(cmd.ExecuteScalar());
                         }

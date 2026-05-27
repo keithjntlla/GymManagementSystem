@@ -232,9 +232,31 @@
                         <DataGridTemplateColumn Header="Plan Type" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <ContentControl Content="{Binding MembershipType}" 
-                                Style="{StaticResource MembershipPlanBadge}"
-                                VerticalAlignment="Center"/>
+                                    <Grid SnapsToDevicePixels="True">
+                                        <ContentControl x:Name="normalPlanBadge"
+                                                        Content="{Binding DisplayMembershipType}"
+                                                        Style="{StaticResource MembershipPlanBadge}"
+                                                        VerticalAlignment="Center"/>
+                                        <Border x:Name="refundPlanBadge"
+                                                CornerRadius="6"
+                                                Padding="8,3"
+                                                Background="{DynamicResource ThemeBadgeBg}"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                Visibility="Collapsed">
+                                            <TextBlock Text="{Binding DisplayMembershipType}"
+                                                       Foreground="{DynamicResource ThemeFgMuted}"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       TextDecorations="Strikethrough"/>
+                                        </Border>
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsRefundTransaction}" Value="True">
+                                            <Setter TargetName="normalPlanBadge" Property="Visibility" Value="Collapsed"/>
+                                            <Setter TargetName="refundPlanBadge" Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -294,12 +316,20 @@
                                     <Border x:Name="modeBorder" CornerRadius="6" Padding="6,3" Background="{DynamicResource ThemeBadgeCashBg}" HorizontalAlignment="Left" VerticalAlignment="Center">
                                         <TextBlock x:Name="modeText" Text="{Binding PaymentMode}" Foreground="{DynamicResource ThemeBadgeCashFg}" FontSize="11"/>
                                     </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding PaymentMode}" Value="GCash">
-                                            <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeGCashBg}"/>
-                                            <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeGCashFg}"/>
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="GCash">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeGCashBg}"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeGCashFg}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="Refund">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeRefundBg}"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeRefundFg}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="Refunded">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeRefundBg}"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeRefundFg}"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

@@ -89,7 +89,8 @@ namespace GymManagementSystem
                 () => validator(datePicker.Text), 
                 cleaned => { 
                     // Set both selected date and text to align picker and text box
-                    if (DateTime.TryParseExact(cleaned, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime dt))
+                    string[] formats = { "MM-dd-yyyy", "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy" };
+                    if (DateTime.TryParseExact(cleaned, formats, null, System.Globalization.DateTimeStyles.None, out DateTime dt))
                     {
                         datePicker.SelectedDate = dt;
                     }

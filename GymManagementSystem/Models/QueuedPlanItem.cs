@@ -11,5 +11,6 @@ namespace GymManagementSystem.Models
         public DateTime ExpiryDate { get; set; }
         public string DurationDescription { get; set; } = string.Empty;
         public double RefundAmount { get; set; }
+        public string RefundStatusDescription { get; set; } = string.Empty;
     }
 }

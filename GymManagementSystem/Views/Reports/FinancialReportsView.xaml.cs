@@ -299,10 +299,6 @@ namespace GymManagementSystem.Views.Reports
                         LEFT JOIN Members M ON P.MemberID = M.MemberID
                         LEFT JOIN MemberPromos MP ON P.PaymentID = MP.PaymentID
                         WHERE P.DateOfTransaction BETWEEN @start AND @end
-                          AND IFNULL(P.PaymentMode, '') <> 'Refund'
-                          AND IFNULL(P.PaymentMode, '') <> 'Refunded'
-                          AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUND]%'
-                          AND IFNULL(P.MembershipType, '') NOT LIKE '[REFUNDED]%'
                         ORDER BY P.DateOfTransaction DESC";
 
                     using (var cmd = new SQLiteCommand(sql, conn))

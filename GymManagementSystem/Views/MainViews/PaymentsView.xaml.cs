@@ -17,6 +17,8 @@ namespace GymManagementSystem.Views.MainViews
         private double totalAmount = 0;
         private string selectedMembershipType = "";
         private int selectedDurationDays = 0;
+        private int selectedDurationValue = 0;
+        private string selectedDurationUnit = "Days";
         private int durationMultiplier = 1;
         private double activeDiscountPercentage = 0;
         private double totalDiscountDeduction = 0;
@@ -262,7 +264,9 @@ namespace GymManagementSystem.Views.MainViews
                             {
                                 PlanName = reader["PlanName"].ToString() ?? "",
                                 Price = Convert.ToDouble(reader["Price"]),
-                                DurationDays = Convert.ToInt32(reader["DurationDays"])
+                                DurationDays = Convert.ToInt32(reader["DurationDays"]),
+                                DurationValue = reader["DurationValue"] != DBNull.Value ? Convert.ToInt32(reader["DurationValue"]) : 0,
+                                DurationUnit = reader["DurationUnit"] != DBNull.Value ? reader["DurationUnit"]?.ToString() ?? "Days" : "Days"
                             });
                         }
                     }
@@ -373,6 +377,8 @@ namespace GymManagementSystem.Views.MainViews
                 basePlanPrice = plan.Price;
                 selectedMembershipType = plan.PlanName;
                 selectedDurationDays = plan.DurationDays;
+                selectedDurationValue = plan.DurationValue;
+                selectedDurationUnit = plan.DurationUnit;
 
                 durationMultiplier = 1;
                 lblMultiplierValue.Text = durationMultiplier.ToString();
@@ -522,20 +528,61 @@ namespace GymManagementSystem.Views.MainViews
                 }
             }
 
-            DateTime newExpiry;
-            int totalDaysToAdd = selectedDurationDays * durationMultiplier;
+            int totalValueToAdd = (selectedDurationValue > 0 ? selectedDurationValue : selectedDurationDays) * durationMultiplier;
+            string unit = string.IsNullOrEmpty(selectedDurationUnit) ? "Days" : selectedDurationUnit;
 
-            if (selectedMembershipType.Equals("Daily", StringComparison.OrdinalIgnoreCase))
+            DateTime newExpiry;
+            if (isAdvancePaymentMode)
             {
-                if (isAdvancePaymentMode)
-                    newExpiry = baseDate.AddDays(totalDaysToAdd);
+                // Advance payment starts the next day after current expiry. We add the exact calendar units directly.
+                if (unit.Equals("Days", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddDays(totalValueToAdd);
+                }
+                else if (unit.Equals("Weeks", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddDays(totalValueToAdd * 7);
+                }
+                else if (unit.Equals("Months", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddMonths(totalValueToAdd);
+                }
+                else if (unit.Equals("Years", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddYears(totalValueToAdd);
+                }
                 else
-                    newExpiry = baseDate.AddDays(totalDaysToAdd - 1);
+                {
+                    newExpiry = baseDate.AddDays(totalValueToAdd);
+                }
             }
             else
             {
-                newExpiry = baseDate.AddDays(totalDaysToAdd);
+                // Normal mode: Plan starts today.
+                // Days and Weeks subtract 1 day so that a 1-Day plan expires today, and a 7-Day (1-Week) plan expires on the 7th day.
+                // Months and Years do NOT subtract 1 day so that a 1-Month plan starting Jan 15 expires on Feb 15.
+                if (unit.Equals("Days", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddDays(totalValueToAdd - 1);
+                }
+                else if (unit.Equals("Weeks", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddDays(totalValueToAdd * 7 - 1);
+                }
+                else if (unit.Equals("Months", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddMonths(totalValueToAdd);
+                }
+                else if (unit.Equals("Years", StringComparison.OrdinalIgnoreCase))
+                {
+                    newExpiry = baseDate.AddYears(totalValueToAdd);
+                }
+                else
+                {
+                    newExpiry = baseDate.AddDays(totalValueToAdd - 1);
+                }
             }
+
             lblNewExpiryDate.Text = newExpiry.ToString("MM-dd-yyyy");
         }
 
@@ -1013,6 +1060,8 @@ namespace GymManagementSystem.Views.MainViews
             totalAmount = 0;
             selectedMembershipType = "";
             selectedDurationDays = 0;
+            selectedDurationValue = 0;
+            selectedDurationUnit = "Days";
             durationMultiplier = 1;
             isAdvancePaymentMode = false;
 

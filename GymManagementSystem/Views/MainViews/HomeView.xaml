@@ -424,6 +424,10 @@
                                                 <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeRefundBg}"/>
                                                 <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeRefundFg}"/>
                                             </DataTrigger>
+                                            <DataTrigger Binding="{Binding PaymentMode}" Value="Refunded">
+                                                <Setter TargetName="modeBorder" Property="Background" Value="{DynamicResource ThemeBadgeRefundBg}"/>
+                                                <Setter TargetName="modeText" Property="Foreground" Value="{DynamicResource ThemeBadgeRefundFg}"/>
+                                            </DataTrigger>
                                         </DataTemplate.Triggers>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

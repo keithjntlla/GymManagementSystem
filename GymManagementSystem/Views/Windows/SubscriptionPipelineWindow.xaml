@@ -103,10 +103,13 @@
                                             </StackPanel>
                                         </UniformGrid>
 
-                                        <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                            <Ellipse Width="6" Height="6" Fill="#4a90e2" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="Paid in Advance - Waiting for activation" Foreground="#4a90e2" FontSize="12" FontWeight="SemiBold"/>
-                                        </StackPanel>
+                                        <Grid Grid.Row="2">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                                <Ellipse Width="6" Height="6" Fill="#4a90e2" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Paid in Advance - Waiting for activation" Foreground="#4a90e2" FontSize="12" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding RefundStatusDescription}" Foreground="#ff9800" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

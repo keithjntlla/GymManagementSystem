@@ -32,7 +32,7 @@ namespace GymManagementSystem.Views.MainViews
                     conn.Open();
                     string sql = @"
                         SELECT I.*, 
-                        (SELECT COUNT(*) FROM Members M WHERE M.AssignedInstructorID = I.InstructorID) as ClientCount
+                        (SELECT COUNT(*) FROM Members M WHERE M.AssignedInstructorID = I.InstructorID AND M.Status = 'Active') as ClientCount
                         FROM Instructors I 
                         ORDER BY I.InstructorID DESC";
 

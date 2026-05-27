@@ -100,11 +100,7 @@ namespace GymManagementSystem.Views.MainViews
                     using (var cmd = new SQLiteCommand(
                         @"SELECT SUM(TotalAmount)
                           FROM Payments
-                          WHERE DateOfTransaction = @today
-                            AND IFNULL(PaymentMode, '') <> 'Refund'
-                            AND IFNULL(PaymentMode, '') <> 'Refunded'
-                            AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
-                            AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'", conn))
+                          WHERE DateOfTransaction = @today", conn))
                     {
                         cmd.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
                         object result = cmd.ExecuteScalar();
@@ -115,11 +111,7 @@ namespace GymManagementSystem.Views.MainViews
                     using (var cmd = new SQLiteCommand(
                         @"SELECT SUM(TotalAmount)
                           FROM Payments
-                          WHERE strftime('%Y-%m', DateOfTransaction) = @month
-                            AND IFNULL(PaymentMode, '') <> 'Refund'
-                            AND IFNULL(PaymentMode, '') <> 'Refunded'
-                            AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
-                            AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'", conn))
+                          WHERE strftime('%Y-%m', DateOfTransaction) = @month", conn))
                     {
                         cmd.Parameters.AddWithValue("@month", DateTime.Now.ToString("yyyy-MM"));
                         object result = cmd.ExecuteScalar();

@@ -17,6 +17,7 @@ namespace GymManagementSystem.Views.Windows
         private string editMemberId = "";
         // Permanent backup variable to safely carry historical join dates during profile modifications
         private string historicalJoinDate = "";
+        private Member? _memberToEdit;
 
         private ValidationHelper _validationHelper = null!;
 
@@ -37,6 +38,7 @@ namespace GymManagementSystem.Views.Windows
             LoadDiscountTiersDropdown();
             LoadTrainersDropdown();
             isEditMode = true;
+            _memberToEdit = memberToEdit;
             editMemberId = memberToEdit.MemberID;
 
             lblTitle.Text = "Edit Member";
@@ -178,10 +180,30 @@ namespace GymManagementSystem.Views.Windows
                     {
                         return (false, "", "Student ID Expiry Date is required.");
                     }
-                    if (dpStudentExpiry.SelectedDate.HasValue && dpStudentExpiry.SelectedDate.Value < DateTime.Today)
+
+                    string[] formats = { "MM-dd-yyyy", "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy" };
+                    if (!DateTime.TryParseExact(input.Trim(), formats, null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
                     {
-                        return (false, input, "Student ID has expired. Expiry date must be in the future.");
+                        return (false, "", "Student ID Expiry Date must follow a valid date format.");
                     }
+
+                    if (parsedDate < DateTime.Today)
+                    {
+                        bool isOriginalDate = false;
+                        if (isEditMode && _memberToEdit != null && 
+                            DateTime.TryParse(_memberToEdit.StudentExpiryDate, out DateTime originalExpiry) && 
+                            originalExpiry.Date == parsedDate.Date)
+                        {
+                            isOriginalDate = true;
+                        }
+
+                        if (!isOriginalDate)
+                        {
+                            return (false, input, "Student ID has expired. Expiry date must be in the future.");
+                        }
+                    }
+
+                    return (true, parsedDate.ToString("yyyy-MM-dd"), "");
                 }
                 return (true, input, "");
             });
@@ -220,6 +242,7 @@ namespace GymManagementSystem.Views.Windows
 
         private void LoadTrainersDropdown()
         {
+            DatabaseHelper.RefreshMemberStatuses();
             var trainersList = new List<Instructor>
             {
                 new Instructor { InstructorID = "", FirstName = "[ None ]", LastName = "", Specialization = "No Trainer Assigned", ClientCount = 0 }

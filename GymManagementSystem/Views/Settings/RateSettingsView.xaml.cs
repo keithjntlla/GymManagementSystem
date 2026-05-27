@@ -1,4 +1,4 @@
-﻿using GymManagementSystem.Models;
+using GymManagementSystem.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
@@ -42,6 +42,8 @@ namespace GymManagementSystem.Views.Settings
                                 PlanName = reader["PlanName"]?.ToString() ?? "",
                                 Price = Convert.ToDouble(reader["Price"]),
                                 DurationDays = Convert.ToInt32(reader["DurationDays"]),
+                                DurationValue = reader["DurationValue"] != DBNull.Value ? Convert.ToInt32(reader["DurationValue"]) : 0,
+                                DurationUnit = reader["DurationUnit"] != DBNull.Value ? reader["DurationUnit"]?.ToString() ?? "Days" : "Days",
                                 IsArchived = Convert.ToInt32(reader["IsArchived"]) == 1
                             };
 
@@ -91,25 +93,29 @@ namespace GymManagementSystem.Views.Settings
                     UpdateDatabase(editWindow.EditedPlan.RateID,
                                    editWindow.EditedPlan.PlanName,
                                    editWindow.EditedPlan.Price,
-                                   editWindow.EditedPlan.DurationDays);
+                                   editWindow.EditedPlan.DurationDays,
+                                   editWindow.EditedPlan.DurationValue,
+                                   editWindow.EditedPlan.DurationUnit);
                     LoadRates();
                 }
             }
         }
 
-        private void UpdateDatabase(int rateId, string name, double price, int duration)
+        private void UpdateDatabase(int rateId, string name, double price, int duration, int durationValue, string durationUnit)
         {
             try
             {
                 using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                 {
                     conn.Open();
-                    string sql = "UPDATE Rates SET PlanName = @name, Price = @price, DurationDays = @duration WHERE RateID = @id";
+                    string sql = "UPDATE Rates SET PlanName = @name, Price = @price, DurationDays = @duration, DurationValue = @value, DurationUnit = @unit WHERE RateID = @id";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@name", name);
                         cmd.Parameters.AddWithValue("@price", price);
                         cmd.Parameters.AddWithValue("@duration", duration);
+                        cmd.Parameters.AddWithValue("@value", durationValue);
+                        cmd.Parameters.AddWithValue("@unit", durationUnit);
                         cmd.Parameters.AddWithValue("@id", rateId);
                         cmd.ExecuteNonQuery();
                     }

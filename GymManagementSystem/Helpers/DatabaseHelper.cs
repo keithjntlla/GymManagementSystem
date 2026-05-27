@@ -9,7 +9,7 @@ namespace GymManagementSystem
     public static class DatabaseHelper
     {
         private const string dbName = "GymManagement.db";
-        public static string ConnectionString = $"Data Source={dbName};Version=3;";
+        public static string ConnectionString = $"Data Source={dbName};Version=3;Busy Timeout=5000;Journal Mode=WAL;";
         public static event Action? ProfileUpdated;
         public static event Action? AppearanceUpdated;
 
@@ -232,6 +232,7 @@ namespace GymManagementSystem
             MigratePromosTableForNewFields();
             CreateMemberPromosTable();
             AutoCheckOutOldSessions();
+            MigrateRatesTableForCalendarUnits();
         }
 
         private static void AutoCheckOutOldSessions()
@@ -1077,31 +1078,148 @@ namespace GymManagementSystem
         public static void RefreshMemberStatuses()
         {
             string today = DateTime.Today.ToString("yyyy-MM-dd");
-            using (var conn = new SQLiteConnection(ConnectionString))
+            try
             {
-                conn.Open();
-
-                // 1. Transition Active -> Expired if the expiry date has passed
-                string expireSql = @"UPDATE Members SET Status = 'Expired'
-                                     WHERE ExpiryDate != '-' AND ExpiryDate != ''
-                                     AND Date(ExpiryDate) < Date(@today)
-                                     AND Status = 'Active'";
-                using (var cmd = new SQLiteCommand(expireSql, conn))
+                using (var conn = new SQLiteConnection(ConnectionString))
                 {
-                    cmd.Parameters.AddWithValue("@today", today);
-                    cmd.ExecuteNonQuery();
+                    conn.Open();
+
+                    // 1. Auto checkout old member sessions
+                    string checkoutMemberSql = @"UPDATE Attendance SET CheckOutTime = '10:00 PM' 
+                                                 WHERE CheckInDate < @today 
+                                                   AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                    using (var cmd = new SQLiteCommand(checkoutMemberSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", today);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 2. Auto checkout old instructor sessions
+                    string checkoutInstSql = @"UPDATE InstructorAttendance SET CheckOutTime = '10:00 PM' 
+                                               WHERE CheckInDate < @today 
+                                                 AND (CheckOutTime IS NULL OR CheckOutTime = '')";
+                    using (var cmd = new SQLiteCommand(checkoutInstSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", today);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 3. Transition Active -> Expired if the expiry date has passed
+                    string expireSql = @"UPDATE Members SET Status = 'Expired'
+                                         WHERE ExpiryDate != '-' AND ExpiryDate != ''
+                                         AND Date(ExpiryDate) < Date(@today)
+                                         AND Status = 'Active'";
+                    using (var cmd = new SQLiteCommand(expireSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", today);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 4. Transition Expired -> Active if the expiry date is today or in the future
+                    string activeSql = @"UPDATE Members SET Status = 'Active'
+                                         WHERE ExpiryDate != '-' AND ExpiryDate != ''
+                                         AND Date(ExpiryDate) >= Date(@today)
+                                         AND Status = 'Expired'";
+                    using (var cmd = new SQLiteCommand(activeSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@today", today);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in RefreshMemberStatuses: " + ex.Message);
+            }
+        }
+
+        public static void MigrateRatesTableForCalendarUnits()
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(ConnectionString))
+                {
+                    conn.Open();
+                    bool hasValue = false;
+                    bool hasUnit = false;
+                    using (var cmd = new SQLiteCommand("PRAGMA table_info(Rates)", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string colName = reader["name"]?.ToString() ?? "";
+                            if (colName == "DurationValue") hasValue = true;
+                            if (colName == "DurationUnit") hasUnit = true;
+                        }
+                    }
+
+                    if (!hasValue)
+                    {
+                        string alter = "ALTER TABLE Rates ADD COLUMN DurationValue INTEGER DEFAULT 0";
+                        using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                    }
+                    if (!hasUnit)
+                    {
+                        string alter = "ALTER TABLE Rates ADD COLUMN DurationUnit TEXT DEFAULT ''";
+                        using (var cmd = new SQLiteCommand(alter, conn)) cmd.ExecuteNonQuery();
+                    }
                 }
 
-                // 2. Transition Expired -> Active if the expiry date is today or in the future
-                string activeSql = @"UPDATE Members SET Status = 'Active'
-                                     WHERE ExpiryDate != '-' AND ExpiryDate != ''
-                                     AND Date(ExpiryDate) >= Date(@today)
-                                     AND Status = 'Expired'";
-                using (var cmd = new SQLiteCommand(activeSql, conn))
+                MigrateExistingRatesToCalendarUnits();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error running MigrateRatesTableForCalendarUnits: " + ex.Message);
+            }
+        }
+
+        private static void MigrateExistingRatesToCalendarUnits()
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(ConnectionString))
                 {
-                    cmd.Parameters.AddWithValue("@today", today);
-                    cmd.ExecuteNonQuery();
+                    conn.Open();
+                    
+                    // Let's check if any plans exist that need migration
+                    string checkSql = "SELECT COUNT(*) FROM Rates WHERE DurationValue IS NULL OR DurationValue = 0";
+                    int unmigratedCount = 0;
+                    using (var cmd = new SQLiteCommand(checkSql, conn))
+                    {
+                        unmigratedCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                    }
+
+                    if (unmigratedCount == 0) return;
+
+                    // Migrate default Daily plan
+                    using (var cmd = new SQLiteCommand("UPDATE Rates SET DurationValue = 1, DurationUnit = 'Days' WHERE PlanName = 'Daily'", conn))
+                        cmd.ExecuteNonQuery();
+
+                    // Migrate default Weekly plan
+                    using (var cmd = new SQLiteCommand("UPDATE Rates SET DurationValue = 1, DurationUnit = 'Weeks' WHERE PlanName = 'Weekly'", conn))
+                        cmd.ExecuteNonQuery();
+
+                    // Migrate default Half-Month plan
+                    using (var cmd = new SQLiteCommand("UPDATE Rates SET DurationValue = 15, DurationUnit = 'Days' WHERE PlanName = 'Half-Month'", conn))
+                        cmd.ExecuteNonQuery();
+
+                    // Migrate default Monthly plan
+                    using (var cmd = new SQLiteCommand("UPDATE Rates SET DurationValue = 1, DurationUnit = 'Months' WHERE PlanName = 'Monthly'", conn))
+                        cmd.ExecuteNonQuery();
+
+                    // Migrate default Yearly plan
+                    using (var cmd = new SQLiteCommand("UPDATE Rates SET DurationValue = 1, DurationUnit = 'Years' WHERE PlanName = 'Yearly'", conn))
+                        cmd.ExecuteNonQuery();
+
+                    // Fallback for custom plans: set DurationValue = DurationDays, DurationUnit = 'Days'
+                    string fallbackSql = "UPDATE Rates SET DurationValue = DurationDays, DurationUnit = 'Days' WHERE DurationValue IS NULL OR DurationValue = 0";
+                    using (var cmd = new SQLiteCommand(fallbackSql, conn))
+                        cmd.ExecuteNonQuery();
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error running MigrateExistingRatesToCalendarUnits: " + ex.Message);
             }
         }
     }

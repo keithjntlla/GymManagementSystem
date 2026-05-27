@@ -37,78 +37,59 @@ namespace GymManagementSystem.Views.Windows
                 {
                     conn.Open();
 
-                    // 1. Fetch the exact payment row tracking what is active right now
-                    string activeSql = @"
-                SELECT MembershipType, DateOfTransaction, NewExpiryDate 
-                FROM Payments 
-                WHERE MemberID = @mid
-                  AND Date(NewExpiryDate) >= Date('now')
-                  AND IFNULL(PaymentMode, '') <> 'Refund'
-                  AND IFNULL(PaymentMode, '') <> 'Refunded'
-                  AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
-                  AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'
-                ORDER BY PaymentID ASC LIMIT 1";
+                    // 1. Fetch all non-refunded subscription payment records chronologically
+                    string sql = @"
+                        SELECT PaymentID, MembershipType, DateOfTransaction, NewExpiryDate, TotalAmount,
+                               COALESCE(RefundReason, '') AS RefundReason,
+                               COALESCE(RefundNotes, '')  AS RefundNotes
+                        FROM Payments 
+                        WHERE MemberID = @mid
+                          AND IFNULL(PaymentMode, '') <> 'Refund'
+                          AND IFNULL(PaymentMode, '') <> 'Refunded'
+                          AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
+                          AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'
+                        ORDER BY PaymentID ASC";
 
-                    DateTime currentHorizon = DateTime.Today;
-
-                    using (var cmd = new SQLiteCommand(activeSql, conn))
+                    using (var cmd = new SQLiteCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@mid", _member.MemberID);
                         using (var reader = cmd.ExecuteReader())
                         {
-                            if (reader.Read())
-                            {
-                                lblActiveType.Text = reader["MembershipType"].ToString();
-                                lblActiveStart.Text = reader["DateOfTransaction"].ToString();
-                                lblActiveExpiry.Text = reader["NewExpiryDate"].ToString();
-
-                                if (DateTime.TryParse(lblActiveExpiry.Text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsedHorizon))
-                                {
-                                    currentHorizon = parsedHorizon;
-                                }
-                            }
-                        }
-                    }
-
-                    // 2. Fetch trailing advanced payment records
-                    string queueSql = @"
-                SELECT PaymentID, MembershipType, DateOfTransaction, NewExpiryDate, TotalAmount,
-                       COALESCE(RefundReason, '') AS RefundReason,
-                       COALESCE(RefundNotes, '')  AS RefundNotes
-                FROM Payments 
-                WHERE MemberID = @mid
-                  AND Date(NewExpiryDate) >= Date('now')
-                  AND IFNULL(PaymentMode, '') <> 'Refund'
-                  AND IFNULL(PaymentMode, '') <> 'Refunded'
-                  AND IFNULL(MembershipType, '') NOT LIKE '[REFUND]%'
-                  AND IFNULL(MembershipType, '') NOT LIKE '[REFUNDED]%'
-                ORDER BY PaymentID ASC";
-
-                    using (var cmd = new SQLiteCommand(queueSql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@mid", _member.MemberID);
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            int rowCounter = 0;
-                            DateTime trackingStart = currentHorizon;
+                            DateTime trackingStart = DateTime.MinValue;
 
                             while (reader.Read())
                             {
-                                rowCounter++;
-                                if (rowCounter == 1) continue; // Skip the active plan line
-
-                                // ── NEW FIX: STRICTLY CAP THE UI DISPLAY TO 1 QUEUED PLAN MAXIMUM ──
-                                if (queuedPlans.Count >= 1)
-                                {
-                                    break; // Stop processing further entries if database has anomalies
-                                }
-
                                 int paymentId = Convert.ToInt32(reader["PaymentID"]);
                                 string rawType = reader["MembershipType"].ToString() ?? "";
+                                double totalAmount = Convert.ToDouble(reader["TotalAmount"]);
+                                string txDateStr = reader["DateOfTransaction"]?.ToString() ?? "";
+                                string expiryStr = reader["NewExpiryDate"]?.ToString() ?? "";
+
+                                if (!DateTime.TryParse(txDateStr, out DateTime txDate)) continue;
+                                if (!DateTime.TryParse(expiryStr, out DateTime planEnd)) continue;
+
+                                DateTime planStart;
+                                if (trackingStart == DateTime.MinValue || txDate.Date > trackingStart)
+                                {
+                                    planStart = txDate.Date;
+                                }
+                                else
+                                {
+                                    planStart = trackingStart.AddDays(1).Date;
+                                }
+
+                                trackingStart = planEnd.Date;
+
+                                // Filter out expired historical plans relative to today
+                                if (planEnd.Date < DateTime.Today)
+                                {
+                                    continue;
+                                }
+                                
                                 string planName = rawType;
                                 string durationDesc = "1 session";
-
                                 int multiplier = 1;
+
                                 if (rawType.Contains("(") && rawType.Contains(")"))
                                 {
                                     int startIdx = rawType.IndexOf("(");
@@ -126,21 +107,38 @@ namespace GymManagementSystem.Views.Windows
                                 int totalDays = daysPerPlan * multiplier;
                                 durationDesc = planName.Equals("Daily", StringComparison.OrdinalIgnoreCase) ? $"{totalDays} days" : rawType;
 
-                                DateTime planStart = trackingStart.AddDays(1);
-                                DateTime planEnd = trackingStart.AddDays(totalDays);
-
-                                trackingStart = planEnd;
-
-                                queuedPlans.Add(new QueuedPlanItem
+                                if (planStart <= DateTime.Today && planEnd.Date >= DateTime.Today)
                                 {
-                                    QueueNumber = queuedPlans.Count + 1,
-                                    PaymentID = paymentId,
-                                    PlanName = rawType,
-                                    StartDate = planStart,
-                                    ExpiryDate = planEnd,
-                                    DurationDescription = durationDesc,
-                                    RefundAmount = Convert.ToDouble(reader["TotalAmount"])
-                                });
+                                    // This is the active subscription today
+                                    lblActiveType.Text = rawType;
+                                    lblActiveStart.Text = planStart.ToString("yyyy-MM-dd");
+                                    lblActiveExpiry.Text = planEnd.ToString("yyyy-MM-dd");
+                                }
+                                else if (planStart > DateTime.Today)
+                                {
+                                    // This is an advanced plan waiting in the pipeline queue
+                                    string refundStatusDesc = "Non-refundable";
+                                    int daysSinceTx = (int)(DateTime.Today - txDate.Date).TotalDays;
+                                    int daysLeftForRefund = 7 - daysSinceTx;
+                                    if (daysLeftForRefund >= 0)
+                                    {
+                                        refundStatusDesc = daysLeftForRefund == 0 
+                                            ? "Refundable: Last day today" 
+                                            : $"Refundable: {daysLeftForRefund} day{(daysLeftForRefund > 1 ? "s" : "")} left";
+                                    }
+
+                                    queuedPlans.Add(new QueuedPlanItem
+                                    {
+                                        QueueNumber = queuedPlans.Count + 1,
+                                        PaymentID = paymentId,
+                                        PlanName = rawType,
+                                        StartDate = planStart,
+                                        ExpiryDate = planEnd,
+                                        DurationDescription = durationDesc,
+                                        RefundAmount = totalAmount,
+                                        RefundStatusDescription = refundStatusDesc
+                                    });
+                                }
                             }
                         }
                     }
@@ -149,7 +147,6 @@ namespace GymManagementSystem.Views.Windows
                 icQueuedPlans.ItemsSource = queuedPlans;
                 lblQueueTitle.Text = $"Queued Plans ({queuedPlans.Count})";
 
-                // ── NEW FIX: CHANGE CAPACITY LIMIT FROM 3 TO 1 ──
                 if (queuedPlans.Count >= 1)
                 {
                     btnAddAdvance.IsEnabled = false;
@@ -181,7 +178,7 @@ namespace GymManagementSystem.Views.Windows
                     using (var conn = new SQLiteConnection(DatabaseHelper.ConnectionString))
                     {
                         conn.Open();
-                        string previewSql = "SELECT TotalAmount, MembershipType FROM Payments WHERE PaymentID = @pid";
+                        string previewSql = "SELECT TotalAmount, MembershipType, DateOfTransaction FROM Payments WHERE PaymentID = @pid";
                         using (var cmd = new SQLiteCommand(previewSql, conn))
                         {
                             cmd.Parameters.AddWithValue("@pid", paymentId);
@@ -191,6 +188,18 @@ namespace GymManagementSystem.Views.Windows
                                 {
                                     previewAmount = Convert.ToDouble(reader["TotalAmount"]);
                                     previewPlan = reader["MembershipType"]?.ToString() ?? "Plan";
+                                    string txDateStr = reader["DateOfTransaction"]?.ToString() ?? "";
+                                    
+                                    if (DateTime.TryParse(txDateStr, out DateTime txDate))
+                                    {
+                                        if ((DateTime.Today - txDate.Date).TotalDays > 7)
+                                        {
+                                            MessageBox.Show(
+                                                $"Action Denied: This transaction was processed on {txDate:MM-dd-yyyy} and is outside the 7-day refund eligibility window.",
+                                                "Refund Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                            return;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -293,10 +302,11 @@ namespace GymManagementSystem.Views.Windows
                                 cmd.ExecuteNonQuery();
                             }
 
-                            string updateMemberSql = "UPDATE Members SET ExpiryDate = @expiry WHERE MemberID = @mid";
+                            string updateMemberSql = "UPDATE Members SET ExpiryDate = @expiry, Status = @status WHERE MemberID = @mid";
                             using (var cmd = new SQLiteCommand(updateMemberSql, conn))
                             {
                                 cmd.Parameters.AddWithValue("@expiry", newMaxExpiry);
+                                cmd.Parameters.AddWithValue("@status", refreshedStatus);
                                 cmd.Parameters.AddWithValue("@mid", memberId);
                                 cmd.ExecuteNonQuery();
                             }

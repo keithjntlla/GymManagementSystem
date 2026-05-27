@@ -36,7 +36,9 @@ namespace GymManagementSystem.Models
 
         public bool IsRefundTransaction =>
             PaymentMode.Equals("Refund", StringComparison.OrdinalIgnoreCase) ||
-            MembershipType.StartsWith("[REFUND]", StringComparison.OrdinalIgnoreCase);
+            PaymentMode.Equals("Refunded", StringComparison.OrdinalIgnoreCase) ||
+            MembershipType.StartsWith("[REFUND]", StringComparison.OrdinalIgnoreCase) ||
+            MembershipType.StartsWith("[REFUNDED]", StringComparison.OrdinalIgnoreCase);
 
         public string DisplayMembershipType
         {
